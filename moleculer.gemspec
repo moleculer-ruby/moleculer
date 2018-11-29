@@ -1,11 +1,11 @@
 
 lib = File.expand_path("../lib", __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require "moleculer/ruby/version"
+require "moleculer/version"
 
 Gem::Specification.new do |spec|
-  spec.name          = "moleculer-ruby"
-  spec.version       = Moleculer::Ruby::VERSION
+  spec.name          = "moleculer"
+  spec.version       = Moleculer::VERSION
   spec.authors       = ["fugufish"]
   spec.email         = ["therealfugu@gmail.com"]
 
