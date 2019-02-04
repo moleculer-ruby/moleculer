@@ -1,5 +1,5 @@
 require "bundler/setup"
-require "moleculer/ruby"
+require "moleculer"
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
