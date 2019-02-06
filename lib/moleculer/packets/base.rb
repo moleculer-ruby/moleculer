@@ -8,11 +8,10 @@ module Moleculer
 
       attr_reader :node_id, :broadcast, :namespace, :target
 
-      def self.field(name, type)
+      def self.field(name)
         @fields       ||= {}
         @fields[name] = {
-          name: name,
-          type: type
+          name: name
         }
         def_delegators :@data, name.to_sym
       end
