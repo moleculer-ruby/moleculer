@@ -1,7 +1,12 @@
+# frozen_string_literal: true
+
+# frozen_string_literal: true
+
 require_relative "./base"
 
 module Moleculer
   module Packets
+    # @private
     class Discover < Base
       NAME = "DISCOVER"
 

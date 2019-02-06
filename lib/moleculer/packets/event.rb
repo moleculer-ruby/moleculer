@@ -1,8 +1,11 @@
+# frozen_string_literal: true
+
 require_relative "./base"
 
 module Moleculer
   module Packets
-    class  Event < Base
+    # @private
+    class Event < Base
       field :ver
       field :sender
       field :event

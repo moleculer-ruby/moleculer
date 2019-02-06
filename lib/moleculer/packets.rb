@@ -1,1 +1,7 @@
+require_relative "./packets/disconnect"
 require_relative "./packets/discover"
+require_relative "./packets/event"
+require_relative "./packets/heartbeat"
+require_relative "./packets/info"
+require_relative "./packets/request"
+require_relative "./packets/response"

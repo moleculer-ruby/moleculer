@@ -1,8 +1,11 @@
+# frozen_string_literal: true
+
 require "forwardable"
 require "ostruct"
 
 module Moleculer
   module Packets
+    # @private
     class Base
       extend Forwardable
 
