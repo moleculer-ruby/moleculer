@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "concurrent-edge"
 require "socket"
 require "uri"
@@ -28,6 +30,7 @@ module Moleculer
       @transporter = Transporters.for(transporter).new(broker: self, uri: transporter)
     end
 
+    # Starts the broker.
     def start
       @logger.info "Moleculer Ruby #{Moleculer::VERSION}"
       @logger.info "Node ID: #{node_id}"
