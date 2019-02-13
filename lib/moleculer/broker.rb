@@ -62,7 +62,7 @@ module Moleculer
     end
 
     def subscribe_to_balanced_events(event)
-      logger.debug "setting up balanced event subscription for '#{event}'"
+      logger.debug "setting up EVENTB subscription for '#{event}'"
       transporter.subscribe("MOL.EVENTB.#{event}", Packets::Event) do
 
       end
@@ -70,14 +70,14 @@ module Moleculer
 
 
     def subscribe_to_balanced_requests(action)
-      logger.debug "setting up balanced requests subscription for action '#{action}'"
-      transporter.subscribe("MOL.REQ.#{action}", Packets::Request) do
+      logger.debug "setting up REQB subscription for action '#{action}'"
+      transporter.subscribe("MOL.REQB.#{action}", Packets::Request) do
 
       end
     end
 
     def subscribe_to_disconnect
-      logger.debug "setting up ping subscription"
+      logger.debug "setting up DISCONNECT subscription"
       transporter.subscribe("MOL.DISCONNECT", Packets::Disconnect) do
 
       end
@@ -85,7 +85,7 @@ module Moleculer
 
 
     def subscribe_to_discover
-      logger.debug "setting up discover subscription"
+      logger.debug "setting up DISCOVER subscription"
       transporter.subscribe("MOL.DISCOVER", Packets::Discover) do
 
       end
@@ -93,49 +93,49 @@ module Moleculer
 
 
     def subscribe_to_events
-      logger.debug "setting up event subscription"
+      logger.debug "setting up EVENT subscription"
       transporter.subscribe("MOL.EVENT.#{node_id}", Packets::Event) do
 
       end
     end
 
     def subscribe_to_info
-      logger.debug "setting up info subscription"
+      logger.debug "setting up INFO subscription"
       transporter.subscribe("MOL.INFO", Packets::Info) do
 
       end
     end
 
     def subscribe_to_ping
-      logger.debug "setting up ping subscription"
+      logger.debug "setting up PING subscription"
       transporter.subscribe("MOL.PING", Packets::Ping) do
 
       end
     end
 
     def subscribe_to_pong
-      logger.debug "setting up pong subscription"
+      logger.debug "setting up PONG subscription"
       transporter.subscribe("MOL.PONG", Packets::Pong) do
 
       end
     end
 
     def subscribe_to_requests
-      logger.debug "setting up requests subscription"
+      logger.debug "setting up REQ subscription"
       transporter.subscribe("MOL.REQ.#{node_id}", Packets::Request) do
 
       end
     end
 
     def subscribe_to_responses
-      logger.debug "setting up responses subscription"
+      logger.debug "setting up RES subscription"
       transporter.subscribe("MOL.RES.#{node_id}", Packets::Response) do
 
       end
     end
 
     def subscribe_to_targeted_discover
-      logger.debug "setting up targeted discover subscription"
+      logger.debug "setting up targeted DISCOVER subscription"
       transporter.subscribe("MOL.DISCOVER.#{node_id}", Packets::Discover) do
 
       end
@@ -143,7 +143,7 @@ module Moleculer
 
 
     def subscribe_to_targeted_ping
-      logger.debug "setting up targeted ping subscription"
+      logger.debug "setting up targeted PING subscription"
       transporter.subscribe("MOL.PING.#{node_id}", Packets::Ping) do
 
       end
@@ -151,7 +151,7 @@ module Moleculer
 
 
     def subscribe_to_targeted_info
-      logger.debug "setting up targeted info subscription"
+      logger.debug "setting up targeted INFO subscription"
       transporter.subscribe("MOL.INFO.#{node_id}", Packets::Info) do
 
       end
