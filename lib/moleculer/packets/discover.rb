@@ -6,7 +6,6 @@ require_relative "./base"
 
 module Moleculer
   module Packets
-    # @private
     class Discover < Base
       NAME = "DISCOVER"
 

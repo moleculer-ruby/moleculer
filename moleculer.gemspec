@@ -39,6 +39,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "concurrent-ruby", "~> 1.1"
   spec.add_dependency "concurrent-ruby-ext", "~> 1.1"
   spec.add_dependency "concurrent-ruby-edge", "~> 0.4"
+  spec.add_dependency "activesupport", ">= 3.0"
 
   spec.add_development_dependency "bundler", "~> 1.16"
   spec.add_development_dependency "redis",   "~> 4.0"

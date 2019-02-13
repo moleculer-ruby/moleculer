@@ -23,23 +23,16 @@ module Moleculer
         @fields
       end
 
-      def initialize(node_id:, namespace:, target: nil, data:)
-        @broadcast = broadcast
-        @namespace = namespace
-        @node_id   = node_id
-        @data      = OpenStruct.new(data)
+      def from(string)
+        new JSON.parse(string)
+      end
+
+      def initialize(options)
+        @data = OpenStruct.new(options)
       end
 
       def name
         self.class::NAME
-      end
-
-      def topic
-        t = "MOL"
-        t = "#{t}-#{namespace}" unless namespace.empty?
-        t = "#{t}.#{name}"
-        t = "#{t}.#{target}" if target
-        t
       end
 
       def serialize

@@ -1,8 +1,14 @@
 require_relative "../../lib/moleculer"
 
-broker = Moleculer::Broker.new(
-  node_id: "client-server",
-)
+class Server
+  include Moleculer::Service
+  moleculer_action "echo.string", :echo
+
+  def echo(string)
+    string
+  end
 
 
-broker.start()
+end
+
+Moleculer.broker.run

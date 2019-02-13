@@ -2,9 +2,17 @@ module Moleculer
   module Transporters
     class Base
 
-      def initialize(broker:, uri:)
+      def initialize(broker, uri)
         @broker = broker
         @uri = uri
+      end
+
+      def join
+        raise NotImplementedError
+      end
+
+      def publish(packet)
+        raise NotImplementedError
       end
 
       def connect
@@ -15,6 +23,9 @@ module Moleculer
         self.class::NAME
       end
 
+      def subscribe(topic, &block)
+        raise NotImplementedError
+      end
     end
   end
 end

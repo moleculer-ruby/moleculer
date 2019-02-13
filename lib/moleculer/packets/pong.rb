@@ -4,8 +4,7 @@ require_relative "./base"
 
 module Moleculer
   module Packets
-    # @private
-    class Ping < Base
+    class Pong < Base
       field :ver
       field :sender
       field :time

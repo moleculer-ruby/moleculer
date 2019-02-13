@@ -4,7 +4,6 @@ require_relative "./base"
 
 module Moleculer
   module Packets
-    # @private
     class Event < Base
       field :ver
       field :sender

@@ -4,8 +4,7 @@ require_relative "./base"
 
 module Moleculer
   module Packets
-    # @private
-    class Request < Base
+    class Response < Base
       field :ver
       field :sender
       field :id
