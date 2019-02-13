@@ -2,6 +2,7 @@
 
 require "forwardable"
 require "ostruct"
+require "json"
 
 module Moleculer
   module Packets
@@ -23,12 +24,16 @@ module Moleculer
         @fields
       end
 
+      def topic
+        "MOL.#{name}"
+      end
+
       def from(string)
         new JSON.parse(string)
       end
 
       def initialize(options)
-        @data = OpenStruct.new(options)
+        @data = OpenStruct.new(options.merge(ver: Moleculer::PROTOCOL_VERSION))
       end
 
       def name
@@ -36,7 +41,7 @@ module Moleculer
       end
 
       def serialize
-        @data.to_json
+        JSON.dump(@data.to_h)
       end
 
     end

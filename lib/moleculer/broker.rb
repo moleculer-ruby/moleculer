@@ -9,11 +9,7 @@ require_relative "./transporters"
 require_relative "./version"
 
 module Moleculer
-  # The Broker is the main component of Moleculer. It handles services, calls actions, emits events and
-  # communicates with remote nodes.
   class Broker
-    PROTOCOL_VERSION = "3"
-
     attr_reader :node_id, :transporter, :logger, :namespace, :services
 
     def initialize(options)
@@ -23,13 +19,13 @@ module Moleculer
       @transporter = Transporters.for(options[:transporter]).new(self, options[:transporter])
     end
 
-    # Starts the broker.
     def start
       logger.info "Moleculer Ruby #{Moleculer::VERSION}"
       logger.info "Node ID: #{node_id}"
       logger.info "Transporter: #{transporter.name}"
       transporter.connect
       subscribe_to_all_events
+      publish_discover
     end
 
     def run
@@ -39,12 +35,10 @@ module Moleculer
 
     private
 
-    def broadcast_discover
-      logger.info "Send #{Packets::Discover::NAME} to '<all nodes>'"
-      transporter.broadcast(Packets::Discover.new(node_id: node_id, namespace: namespace, data: {
-        ver:    PROTOCOL_VERSION,
-        sender: node_id
-      }))
+    def publish_discover
+      @transporter.publish(Packets::Discover.new({
+        sender: @node_id
+                                                 }))
     end
 
     def subscribe_to_all_events

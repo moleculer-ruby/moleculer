@@ -11,11 +11,13 @@ module Moleculer
 
       def connect
         @broker.logger.info "Connecting to Redis transporter"
-        @redis = ::Redis.new(url: @uri)
+        @subscriber = ::Redis.new(url: @uri)
+        @publisher = ::Redis.new(url: @uri)
         @subscriptions = {}
         @redis_thread = Thread.new do
-          @redis.psubscribe("MOL.*") do |on|
+          @subscriber.psubscribe("MOL*") do |on|
             on.message do |channel, message|
+              @logger.debug "received packet '#{channel}'"
               if sub = @subscriptions[channel]
                 sub[:handler].call(sub[:packet].from(message))
               end
@@ -29,8 +31,8 @@ module Moleculer
       end
 
       def publish(packet)
-        @broker.logger.debug "Broadcasting #{packet.name} packet"
-        @redis.publish(packet.topic, packet.serialize)
+        @broker.logger.debug "publishing #{packet.name} packet"
+        @publisher.publish(packet.topic, packet.serialize)
       end
 
       def subscribe(topic, packet, &block)

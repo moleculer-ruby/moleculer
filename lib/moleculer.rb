@@ -3,6 +3,7 @@ require "moleculer/broker"
 require "moleculer/service"
 
 module Moleculer
+  PROTOCOL_VERSION = "3"
   class << self
 
     def broker
