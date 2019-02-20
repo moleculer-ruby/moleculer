@@ -9,7 +9,7 @@ module Moleculer
     extend ActiveSupport::Concern
 
     included do
-      class_attribute :moleculer_service_name, :moleculer_actions, :moleculer_events, :autostart_moleculer_service
+      class_attribute :moleculer_actions, :moleculer_events, :autostart_moleculer_service
 
       self.moleculer_actions = ActiveSupport::HashWithIndifferentAccess.new
       self.moleculer_events = ActiveSupport::HashWithIndifferentAccess.new
@@ -28,6 +28,13 @@ module Moleculer
 
       def moleculer_event(name, method)
         moleculer_events[name] = method
+      end
+
+      def moleculer_service_name(name=nil)
+        if name
+          @name = name
+        end
+        @name
       end
 
       def moleculer_start

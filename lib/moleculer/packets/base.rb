@@ -28,7 +28,7 @@ module Moleculer
         "MOL.#{name}"
       end
 
-      def from(string)
+      def self.from(string)
         new JSON.parse(string)
       end
 

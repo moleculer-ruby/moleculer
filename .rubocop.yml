@@ -1,3 +1,6 @@
+Style/ClassAndModuleChildren:
+  EnforcedStyle: false
+
 Style/StringLiterals:
     EnforcedStyle: "double_quotes"
 Metrics/LineLength:

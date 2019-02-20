@@ -7,6 +7,7 @@ require "logger"
 require_relative "./packets"
 require_relative "./transporters"
 require_relative "./version"
+require_relative "./ternal_service_registry"
 
 module Moleculer
   class Broker
@@ -17,20 +18,25 @@ module Moleculer
       @logger      = Logger.new(STDOUT)
       @node_id     = options[:node_id]
       @transporter = Transporters.for(options[:transporter]).new(self, options[:transporter])
+      @started     = false
+      @service_registry = ExternalServiceRegistry.new(self)
     end
 
     def start
       logger.info "Moleculer Ruby #{Moleculer::VERSION}"
       logger.info "Node ID: #{node_id}"
       logger.info "Transporter: #{transporter.name}"
-      transporter.connect
+      transporter.async.connect
       subscribe_to_all_events
       publish_discover
+      @started = true
     end
 
     def run
       start
-      transporter.join
+      while @started
+        sleep 1
+      end
     end
 
     private
@@ -96,7 +102,7 @@ module Moleculer
     def subscribe_to_info
       logger.debug "setting up INFO subscription"
       transporter.subscribe("MOL.INFO", Packets::Info) do
-
+        @service_registry.process_info_packet(packet)
       end
     end
 
@@ -146,8 +152,8 @@ module Moleculer
 
     def subscribe_to_targeted_info
       logger.debug "setting up targeted INFO subscription"
-      transporter.subscribe("MOL.INFO.#{node_id}", Packets::Info) do
-
+      transporter.subscribe("MOL.INFO.#{node_id}", Packets::Info) do |packet|
+        @service_registry.process_info_packet(packet)
       end
     end
 
