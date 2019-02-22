@@ -7,25 +7,28 @@ require "logger"
 require_relative "./packets"
 require_relative "./transporters"
 require_relative "./version"
-require_relative "./ternal_service_registry"
+require_relative "./external_service_registry"
+require_relative "./local_service_registry"
 
 module Moleculer
   class Broker
     attr_reader :node_id, :transporter, :logger, :namespace, :services
 
     def initialize(options)
-      @namespace   = options[:namespace]
-      @logger      = Logger.new(STDOUT)
-      @node_id     = options[:node_id]
-      @transporter = Transporters.for(options[:transporter]).new(self, options[:transporter])
-      @started     = false
-      @service_registry = ExternalServiceRegistry.new(self)
+      @namespace                 = options[:namespace]
+      @logger                    = Logger.new(STDOUT)
+      @node_id                   = options[:node_id]
+      @transporter               = Transporters.for(options[:transporter]).new(self, options[:transporter])
+      @started                   = false
+      @external_service_registry = ExternalServiceRegistry.new(self)
+      @local_service_registry    = LocalServiceRegistry.new(self)
     end
 
     def start
       logger.info "Moleculer Ruby #{Moleculer::VERSION}"
       logger.info "Node ID: #{node_id}"
       logger.info "Transporter: #{transporter.name}"
+      register_local_services
       transporter.async.connect
       subscribe_to_all_events
       publish_discover
@@ -39,12 +42,22 @@ module Moleculer
       end
     end
 
+    def create_service(service)
+      @local_service_registry.register(service)
+      @local_service_registry
+    end
+
     private
 
     def publish_discover
       @transporter.publish(Packets::Discover.new({
         sender: @node_id
                                                  }))
+    end
+
+    def register_local_services
+      logger.info "Registering #{Moleculer.services.length} services"
+      Moleculer.services.each { |service| create_service(service) }
     end
 
     def subscribe_to_all_events
@@ -102,7 +115,7 @@ module Moleculer
     def subscribe_to_info
       logger.debug "setting up INFO subscription"
       transporter.subscribe("MOL.INFO", Packets::Info) do
-        @service_registry.process_info_packet(packet)
+        @external_service_registry.process_info_packet(packet)
       end
     end
 
@@ -153,7 +166,7 @@ module Moleculer
     def subscribe_to_targeted_info
       logger.debug "setting up targeted INFO subscription"
       transporter.subscribe("MOL.INFO.#{node_id}", Packets::Info) do |packet|
-        @service_registry.process_info_packet(packet)
+        @external_service_registry.process_info_packet(packet)
       end
     end
 

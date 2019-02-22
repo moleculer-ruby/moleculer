@@ -5,10 +5,9 @@ class Server
   moleculer_service_name "ruby-server"
   moleculer_action "echo.string", :echo
 
-  def echo(string)
-    string
+  def self.echo(params)
+    puts params[:message]
   end
-
 
 end
 

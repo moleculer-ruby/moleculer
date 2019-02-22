@@ -6,7 +6,7 @@ module Moleculer
       @is_self = is_self
       @broken = false
       @name = info_packet.sender
-      @services = parse_services(info_packet)
+      @services, @service_index = parse_services(info_packet)
     end
 
     def actions
@@ -16,10 +16,16 @@ module Moleculer
     private
 
     def parse_services(info_packet)
-      info_packet.services.collect { |service|
-        next if service["name"] =~ /^\$/
-        parse_service(service)
-      }.compact
+      service_index = {}
+      services = []
+      info_packet.services.each_index do |idx|
+        svc = info_packet.services[idx]
+        next if svc["name"] =~ /^\$/
+        service = parse_service(svc)
+        service_index[service.name] = idx
+        services << service
+      end
+      [services, service_index]
     end
 
     def parse_service(service)

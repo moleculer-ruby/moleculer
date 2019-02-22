@@ -1,3 +1,5 @@
+require "active_support/core_ext/hash/indifferent_access"
+
 require "moleculer/version"
 require "moleculer/broker"
 require "moleculer/service"
@@ -18,12 +20,8 @@ module Moleculer
       @node_id || "#{Socket.gethostname.downcase}-#{Process.pid}"
     end
 
-    def create_service(klass)
-      services << klass
-    end
-
     def services
-      @services ||= {}
+      @services ||= []
     end
 
     def transporter
@@ -31,7 +29,7 @@ module Moleculer
     end
 
     def register_service(klass)
-      services[klass.moleculer_service_name] = klass
+      services << klass
     end
 
   end

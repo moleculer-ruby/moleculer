@@ -17,7 +17,15 @@ module Moleculer
         @fields[name] = {
           name: name
         }
-        def_delegators :@data, name.to_sym
+        define_getter(name)
+      end
+
+      def self.define_getter(name)
+        self.class_eval <<-DEFINITION
+          def #{name}
+            @data[:#{name}]
+          end
+        DEFINITION
       end
 
       def self.fields
@@ -33,7 +41,7 @@ module Moleculer
       end
 
       def initialize(options)
-        @data = OpenStruct.new(options.merge(ver: Moleculer::PROTOCOL_VERSION))
+        @data = HashWithIndifferentAccess.new(options.merge(ver: Moleculer::PROTOCOL_VERSION))
       end
 
       def name
@@ -42,6 +50,10 @@ module Moleculer
 
       def serialize
         JSON.dump(@data.to_h)
+      end
+
+      def to_h
+        HashWithIndifferentAccess.new(@data)
       end
 
     end

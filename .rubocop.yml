@@ -1,7 +1,11 @@
-Style/ClassAndModuleChildren:
-  EnforcedStyle: false
+Layout/IndentHash:
+  EnforcedStyle: consistent
+
+#Style/ClassAndModuleChildren:
+#  EnforcedStyle: disabled
 
 Style/StringLiterals:
     EnforcedStyle: "double_quotes"
+
 Metrics/LineLength:
   Max: 120
