@@ -159,8 +159,8 @@ module Moleculer
 
     def subscribe_to_requests
       logger.debug "setting up REQ subscription"
-      transporter.subscribe("MOL.REQ.#{node_id}", Packets::Request) do
-
+      transporter.subscribe("MOL.REQ.#{node_id}", Packets::Request) do |packet|
+        @local_service_registry.execute_action(packet.action, packet.params)
       end
     end
 

@@ -6,7 +6,7 @@ class Server
   moleculer_action "echo", :echo
 
   def self.echo(params)
-    puts params[:message]
+    puts "\n\n\n\n\n\n\n" + params["message"]
   end
 
 end

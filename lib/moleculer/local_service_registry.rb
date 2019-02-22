@@ -18,7 +18,7 @@ module Moleculer
     end
 
     def execute_action(action_name, args)
-      action = @actions[action_name.to_sym]
+      action = @actions[action_name]
       action[:service].public_send(action[:name].to_sym, args)
     end
 
