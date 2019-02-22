@@ -13,7 +13,7 @@ module Moleculer
       attr_reader :node_id, :broadcast, :namespace, :target
 
       def self.field(name)
-        @fields       ||= {}
+        @fields ||= {}
         @fields[name] = {
           name: name
         }
@@ -21,15 +21,15 @@ module Moleculer
       end
 
       def self.define_getter(name)
-        self.class_eval <<-DEFINITION
+        class_eval <<-DEFINITION
           def #{name}
-            @data[:#{name}]
+            @data[:#{name}] || @data["#{name}"]
           end
         DEFINITION
       end
 
-      def self.fields
-        @fields
+      class << self
+        attr_reader :fields
       end
 
       def topic
@@ -41,7 +41,7 @@ module Moleculer
       end
 
       def initialize(options)
-        @data = HashWithIndifferentAccess.new(options.merge(ver: Moleculer::PROTOCOL_VERSION))
+        @data = options.merge(ver: Moleculer::PROTOCOL_VERSION)
       end
 
       def name
@@ -49,13 +49,12 @@ module Moleculer
       end
 
       def serialize
-        JSON.dump(@data.to_h)
+        @data.to_json
       end
 
       def to_h
-        HashWithIndifferentAccess.new(@data)
+        @data
       end
-
     end
   end
 end

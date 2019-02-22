@@ -5,6 +5,8 @@ require_relative "./base"
 module Moleculer
   module Packets
     class Info < Base
+      NAME = "INFO"
+
       field :ver
       field :sender
       field :services

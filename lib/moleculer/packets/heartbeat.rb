@@ -5,6 +5,8 @@ require_relative "./base"
 module Moleculer
   module Packets
     class Heartbeat < Base
+      NAME = "HEARTBEAT"
+
       field :ver
       field :sender
       field :cpu

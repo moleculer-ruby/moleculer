@@ -50,7 +50,7 @@ module Moleculer
       end
 
 
-      def moleculer_service_metadata(metadata=nil)
+      def moleculer_metadata(metadata=nil)
         if metadata
           @metadata = metadata
         end
@@ -60,6 +60,14 @@ module Moleculer
       def moleculer_start
 
       end
+
+      def moleculer_action_info
+        info = {}
+        moleculer_actions.each do |info|
+
+        end
+      end
+      
     end
   end
 end

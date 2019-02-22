@@ -32,6 +32,8 @@ module Moleculer
       transporter.async.connect
       subscribe_to_all_events
       publish_discover
+      publish_info
+      start_heartbeat
       @started = true
     end
 
@@ -49,10 +51,32 @@ module Moleculer
 
     private
 
+    def start_heartbeat
+      heartbeat = Concurrent::TimerTask.new(execution_interval: 1, run_now: true) {
+        begin
+        publish_heartbeat
+        rescue => e
+          puts e
+          end
+      }.execute
+      heartbeat
+    end
+
+    def publish_heartbeat
+      @transporter.publish(Packets::Heartbeat.new({
+        sender: @node_id,
+        cpu: 0
+                                                  }))
+    end
+
     def publish_discover
       @transporter.publish(Packets::Discover.new({
         sender: @node_id
                                                  }))
+    end
+
+    def publish_info
+      @transporter.publish(@local_service_registry.to_info)
     end
 
     def register_local_services
@@ -114,7 +138,7 @@ module Moleculer
 
     def subscribe_to_info
       logger.debug "setting up INFO subscription"
-      transporter.subscribe("MOL.INFO", Packets::Info) do
+      transporter.subscribe("MOL.INFO", Packets::Info) do |packet|
         @external_service_registry.process_info_packet(packet)
       end
     end
@@ -150,7 +174,7 @@ module Moleculer
     def subscribe_to_targeted_discover
       logger.debug "setting up targeted DISCOVER subscription"
       transporter.subscribe("MOL.DISCOVER.#{node_id}", Packets::Discover) do
-
+        publish_info
       end
     end
 
@@ -158,7 +182,6 @@ module Moleculer
     def subscribe_to_targeted_ping
       logger.debug "setting up targeted PING subscription"
       transporter.subscribe("MOL.PING.#{node_id}", Packets::Ping) do
-
       end
     end
 

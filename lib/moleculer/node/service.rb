@@ -1,7 +1,7 @@
 class Moleculer::Node::Service
   attr_reader :name, :settings, :metadata, :actions
 
-  def self.info_from_class(klass)
+  def self.from_class(klass)
     info = {
       name: klass.moleculer_service_name,
       settings: klass.moleculer_settings,
@@ -10,19 +10,26 @@ class Moleculer::Node::Service
         [ action,
           {
           name: "#{klass.moleculer_service_name}.#{action}",
-          raw_name: action
+          raw_name: action,
+          params: {},
+          metrics: {}
         }]
-      }]
+      }],
+      events: []
     }
     info
   end
 
   def initialize(service)
-    service = HashWithIndifferentAccess.new(service)
-    @name = service[:name]
-    @settings = service[:settings]
-    @metadata = service[:metadata]
-    @actions = parse_actions(service[:actions])
+    @data = HashWithIndifferentAccess.new(service)
+    @name = @data[:name]
+    @settings = @data[:settings]
+    @metadata = @data[:metadata]
+    @actions = parse_actions(@data[:actions])
+  end
+
+  def to_h
+    @data
   end
 
   private
@@ -35,3 +42,9 @@ class Moleculer::Node::Service
 end
 
 require_relative "./action"
+
+
+
+
+
+
