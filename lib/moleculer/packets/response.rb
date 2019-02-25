@@ -5,6 +5,8 @@ require_relative "./base"
 module Moleculer
   module Packets
     class Response < Base
+      NAME = "RES".freeze
+
       field :ver
       field :sender
       field :id
@@ -13,6 +15,16 @@ module Moleculer
       field :error
       field :meta
       field :stream
+
+      def initialize(options, request)
+        super(options)
+        @request = request
+      end
+
+      def topic
+        "MOL.#{name}.#{@request.sender}"
+      end
+
     end
   end
 end

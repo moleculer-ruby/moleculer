@@ -5,8 +5,8 @@ class Server
   moleculer_service_name "ruby-server"
   moleculer_action "echo", :echo
 
-  def self.echo(params)
-    puts "\n\n\n\n\n\n\n" + params["message"]
+  def self.echo(request)
+    {message: "You said #{request.params["message"]}"}
   end
 
 end

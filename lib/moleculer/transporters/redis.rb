@@ -38,13 +38,18 @@ module Moleculer
       end
 
       def publish(packet)
-        @publisher ||= ::Redis.new(url: @uri, logger: @broker.logger)
         @broker.logger.debug "publishing #{packet.name} packet"
-        @publisher.publish(packet.topic, packet.serialize)
+        publisher.publish(packet.topic, packet.serialize)
       end
 
       def subscribe(topic, packet, &block)
         @subscriptions[topic] = { packet: packet, handler: block }
+      end
+
+      private
+
+      def publisher
+        @publisher ||= ::Redis.new(url: @uri, logger: @broker.logger)
       end
     end
   end

@@ -11,9 +11,16 @@ require_relative "./external_service_registry"
 require_relative "./local_service_registry"
 
 module Moleculer
+  ##
+  # The Broker is the primary component of Moleculer. It handles actions, events, and communication with remote nodes.
   class Broker
     attr_reader :node_id, :transporter, :logger, :namespace, :services
 
+    ##
+    # @param options [Hash] broker options
+    # @option options [string] :namespace Namespace of nodes to segment your nodes on the same network.
+    # @option options [string] :node_id Unique node identifier. Must be unique in a namespace
+    # @option options [string|Moleculer::Transporter] :transporter Transporter settings.
     def initialize(options)
       @namespace                 = options[:namespace]
       @logger                    = Logger.new(STDOUT)
@@ -24,6 +31,8 @@ module Moleculer
       @local_service_registry    = LocalServiceRegistry.new(self)
     end
 
+    ##
+    # Starts the broker asynchronously.
     def start
       logger.info "Moleculer Ruby #{Moleculer::VERSION}"
       logger.info "Node ID: #{node_id}"
@@ -37,6 +46,8 @@ module Moleculer
       @started = true
     end
 
+    ##
+    # Runs the broker synchronously
     def run
       start
       while @started
@@ -44,20 +55,45 @@ module Moleculer
       end
     end
 
+    def stop
+      @started = false
+    end
+
+    ##
+    # Creates a service from a class that includes the {Noleculer::Service} module.
+    #
+    # @param service [Moleculer::Service] creates and registers the service with the broker.
     def create_service(service)
       @local_service_registry.register(service)
       @local_service_registry
+    end
+
+    def destroy_service(name)
+    end
+
+    def call(action_name, params, options)
+    end
+
+    def mcall
+    end
+
+    def emit(event_name, payload, groups)
+    end
+
+    def broadcast(event_name, payload, groups)
+    end
+
+    def broadcast_local(event_name, payload, groups)
+    end
+
+    def ping(node_id, timeout)
     end
 
     private
 
     def start_heartbeat
       heartbeat = Concurrent::TimerTask.new(execution_interval: 1, run_now: true) {
-        begin
         publish_heartbeat
-        rescue => e
-          puts e
-          end
       }.execute
       heartbeat
     end
@@ -77,6 +113,10 @@ module Moleculer
 
     def publish_info
       @transporter.publish(@local_service_registry.to_info)
+    end
+
+    def publish_response(packet)
+      @transporter.publish(packet)
     end
 
     def register_local_services
@@ -160,7 +200,8 @@ module Moleculer
     def subscribe_to_requests
       logger.debug "setting up REQ subscription"
       transporter.subscribe("MOL.REQ.#{node_id}", Packets::Request) do |packet|
-        @local_service_registry.execute_action(packet.action, packet.params)
+        response = @local_service_registry.execute_action(packet.action, packet)
+        publish_response(response)
       end
     end
 
