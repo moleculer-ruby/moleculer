@@ -12,6 +12,14 @@ module Moleculer
       @broker ||= Broker.new(node_id: self.node_id, transporter: self.transporter, namespace: self.namespace)
     end
 
+    def call(action_name, params, options={}, &block)
+      broker.call(action_name, params, options, &block)
+    end
+
+    def start
+      broker.start
+    end
+
     def namespace
       @namespace || ""
     end
@@ -22,6 +30,10 @@ module Moleculer
 
     def services
       @services ||= []
+    end
+
+    def timeout
+      @timeout = 5
     end
 
     def transporter

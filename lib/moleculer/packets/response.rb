@@ -16,7 +16,7 @@ module Moleculer
       field :meta
       field :stream
 
-      def initialize(options, request)
+      def initialize(options, request=nil)
         super(options)
         @request = request
       end

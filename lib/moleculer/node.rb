@@ -1,6 +1,6 @@
 module Moleculer
   class Node
-    attr_reader :broken, :name, :is_self, :actions
+    attr_reader :broken, :name, :is_self, :actions, :services
 
     def initialize(info_packet, is_self)
       @is_self = is_self
@@ -10,7 +10,7 @@ module Moleculer
     end
 
     def actions
-      @services.collect { |s| s.actions }.flatten
+      @actions ||= @services.collect { |s| s.actions }.flatten
     end
 
     private

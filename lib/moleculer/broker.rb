@@ -2,7 +2,7 @@
 
 require "uri"
 require "logger"
-
+require "timeout"
 
 require_relative "./packets"
 require_relative "./transporters"
@@ -14,6 +14,15 @@ module Moleculer
   ##
   # The Broker is the primary component of Moleculer. It handles actions, events, and communication with remote nodes.
   class Broker
+
+    class RequestTimeoutError < Timeout::Error
+      def initialize(request)
+        super("An error occurred executing action '#{request.action}', no response was received within #{Moleculer.timeout} seconds")
+      end
+    end
+
+
+    include Concurrent::Async
     attr_reader :node_id, :transporter, :logger, :namespace, :services
 
     ##
@@ -29,6 +38,7 @@ module Moleculer
       @started                   = false
       @external_service_registry = ExternalServiceRegistry.new(self)
       @local_service_registry    = LocalServiceRegistry.new(self)
+      @responses                 = Concurrent::Map.new
     end
 
     ##
@@ -44,19 +54,23 @@ module Moleculer
       publish_info
       start_heartbeat
       @started = true
+      self
     end
 
     ##
     # Runs the broker synchronously
     def run
       start
-      while @started
-        sleep 1
-      end
+      sleep 1 while @started
     end
 
+    # Stops the broker
     def stop
       @started = false
+    end
+
+    def wait_for_service(name, timeout=5000)
+      @external_service_registry.wait_for_service(name, timeout)
     end
 
     ##
@@ -68,47 +82,72 @@ module Moleculer
       @local_service_registry
     end
 
-    def destroy_service(name)
+    def destroy_service(name); end
+
+    def call(action_name, params, options={}, &block)
+      request = Packets::Request.new({
+        action: action_name,
+        params: params,
+        meta: options[:meta] || {},
+        metrics: false,
+        timeout: Moleculer.timeout,
+        level: 1,
+        stream: false,
+                                     })
+      publish_call(request)
+      return async.handle_response(request, &block) if block_given?
+      handle_response(request) { |_, response| response }
     end
 
-    def call(action_name, params, options)
-    end
+    def mcall; end
 
-    def mcall
-    end
+    def emit(event_name, payload, groups); end
 
-    def emit(event_name, payload, groups)
-    end
+    def broadcast(event_name, payload, groups); end
 
-    def broadcast(event_name, payload, groups)
-    end
+    def broadcast_local(event_name, payload, groups); end
 
-    def broadcast_local(event_name, payload, groups)
-    end
+    def ping(node_id, timeout); end
 
-    def ping(node_id, timeout)
+    def handle_response(request, &block)
+      response = nil
+      Timeout.timeout(Moleculer.timeout) do
+        sleep 0.01 until response = @responses.fetch(request.id, nil)
+      end
+      @responses.delete(request.id)
+      yield request, response
+    rescue Timeout::Error
+      @logger.error(RequestTimeoutError.new(request))
+      nil
     end
 
     private
 
+    def publish_call(request)
+      node = @external_service_registry.get_node_for_action(request.action)
+      request.target_node = node
+      @transporter.publish(request)
+    end
+
+
+
     def start_heartbeat
-      heartbeat = Concurrent::TimerTask.new(execution_interval: 1, run_now: true) {
+      Concurrent::TimerTask.new(execution_interval: 1, run_now: true) {
         publish_heartbeat
       }.execute
-      heartbeat
     end
 
     def publish_heartbeat
-      @transporter.publish(Packets::Heartbeat.new({
-        sender: @node_id,
-        cpu: 0
-                                                  }))
+      @transporter.publish(Packets::Heartbeat.new(
+                             sender: @node_id,
+                             cpu: 0
+                           ))
     end
 
     def publish_discover
-      @transporter.publish(Packets::Discover.new({
-        sender: @node_id
-                                                 }))
+      @transporter.publish(Packets::Discover.new(
+                             sender: @node_id
+                           ))
     end
 
     def publish_info
@@ -141,38 +180,30 @@ module Moleculer
     def subscribe_to_balanced_events(event)
       logger.debug "setting up EVENTB subscription for '#{event}'"
       transporter.subscribe("MOL.EVENTB.#{event}", Packets::Event) do
-
       end
     end
-
 
     def subscribe_to_balanced_requests(action)
       logger.debug "setting up REQB subscription for action '#{action}'"
       transporter.subscribe("MOL.REQB.#{action}", Packets::Request) do
-
       end
     end
 
     def subscribe_to_disconnect
       logger.debug "setting up DISCONNECT subscription"
       transporter.subscribe("MOL.DISCONNECT", Packets::Disconnect) do
-
       end
     end
-
 
     def subscribe_to_discover
       logger.debug "setting up DISCOVER subscription"
       transporter.subscribe("MOL.DISCOVER", Packets::Discover) do
-
       end
     end
-
 
     def subscribe_to_events
       logger.debug "setting up EVENT subscription"
       transporter.subscribe("MOL.EVENT.#{node_id}", Packets::Event) do
-
       end
     end
 
@@ -186,14 +217,12 @@ module Moleculer
     def subscribe_to_ping
       logger.debug "setting up PING subscription"
       transporter.subscribe("MOL.PING", Packets::Ping) do
-
       end
     end
 
     def subscribe_to_pong
       logger.debug "setting up PONG subscription"
       transporter.subscribe("MOL.PONG", Packets::Pong) do
-
       end
     end
 
@@ -207,8 +236,8 @@ module Moleculer
 
     def subscribe_to_responses
       logger.debug "setting up RES subscription"
-      transporter.subscribe("MOL.RES.#{node_id}", Packets::Response) do
-
+      transporter.subscribe("MOL.RES.#{node_id}", Packets::Response) do |packet|
+        @responses.put_if_absent(packet.id, packet)
       end
     end
 
@@ -219,13 +248,11 @@ module Moleculer
       end
     end
 
-
     def subscribe_to_targeted_ping
       logger.debug "setting up targeted PING subscription"
       transporter.subscribe("MOL.PING.#{node_id}", Packets::Ping) do
       end
     end
-
 
     def subscribe_to_targeted_info
       logger.debug "setting up targeted INFO subscription"
@@ -233,9 +260,5 @@ module Moleculer
         @external_service_registry.process_info_packet(packet)
       end
     end
-
   end
 end
-
-
-
