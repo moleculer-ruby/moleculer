@@ -25,8 +25,8 @@ module Moleculer
 
       def initialize(options)
         super(options)
-        @data[:id] = SecureRandom.uuid
-        @data[:sender] = Moleculer.node_id
+        @data[:id] = SecureRandom.uuid     unless id
+        @data[:sender] = Moleculer.node_id unless sender
       end
 
       def topic
