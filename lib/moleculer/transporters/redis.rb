@@ -1,5 +1,4 @@
 require "redis"
-require "concurrent-ruby"
 
 # frozen_string_literal: true
 

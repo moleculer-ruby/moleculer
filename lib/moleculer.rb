@@ -1,5 +1,7 @@
 require "active_support/core_ext/hash/indifferent_access"
 
+require "concurrent"
+
 require "moleculer/version"
 require "moleculer/broker"
 require "moleculer/service"
@@ -10,7 +12,7 @@ module Moleculer
     attr_writer :namespace, :node_id, :transporter
 
     def configure(&block)
-      yield selfk
+      yield self
     end
 
     def broker
