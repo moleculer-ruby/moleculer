@@ -13,6 +13,10 @@ module Moleculer
       @actions ||= @services.collect { |s| s.actions }.flatten
     end
 
+    def events
+      @events ||= @services.collect { |s| s.events }.flatten
+    end
+
     private
 
     def parse_services(info_packet)

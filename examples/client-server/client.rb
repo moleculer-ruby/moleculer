@@ -18,3 +18,5 @@ end
 
 # sync call
 puts "The sync answer is #{Moleculer.call("math.add", {count: 1, a: 2, b: 3}).data["res"]}"
+
+Moleculer.emit("echo.event", {counter: 1})

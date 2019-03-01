@@ -6,12 +6,13 @@ module Moleculer
   # The ExternalServiceRegistry represents all of the available Moleculer services on the network. When a call is to be
   # passed to the network the registry is used to group, balance and deliver the request.
   class ExternalServiceRegistry
-    attr_reader :nodes
+    attr_reader :nodes, :events
 
     def initialize(broker)
       @broker = broker
       @nodes = {}
       @actions = {}
+      @events = {}
       @services = {}
     end
 
@@ -43,6 +44,11 @@ module Moleculer
         @actions[action.name] ||= []
         next if @actions.include?(node.name)
         @actions[action.name] << node.name
+      end
+      node.events.each do |event|
+        @events[event.pattern] ||= []
+        next if @events.include?(node.name)
+        @events[event.pattern] << node
       end
     end
 

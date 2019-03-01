@@ -1,5 +1,5 @@
 class Moleculer::Node::Service
-  attr_reader :name, :settings, :metadata, :actions
+  attr_reader :name, :settings, :metadata, :actions, :events
 
   def self.from_class(klass)
     info = {
@@ -15,7 +15,12 @@ class Moleculer::Node::Service
           metrics: {}
         }]
       }],
-      events: []
+      events: Hash[klass.moleculer_events.keys.collect { |event|
+        [event,
+          {
+            name: event,
+          }]
+      }],
     }
     info
   end
@@ -26,6 +31,7 @@ class Moleculer::Node::Service
     @settings = @data[:settings]
     @metadata = @data[:metadata]
     @actions = parse_actions(@data[:actions])
+    @events = parse_events(@data[:events])
   end
 
   def to_h
@@ -39,10 +45,16 @@ class Moleculer::Node::Service
       Action.new(action)
     end
   end
+
+  def parse_events(events)
+    events.values.collect do |event|
+      Event.new(event)
+    end
+  end
 end
 
 require_relative "./action"
-
+require_relative "./event"
 
 
 

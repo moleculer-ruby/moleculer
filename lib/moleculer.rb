@@ -16,6 +16,10 @@ module Moleculer
       broker.call(action_name, params, options, &block)
     end
 
+    def emit(event_name, payload)
+      broker.emit(event_name, payload)
+    end
+
     def start
       broker.start
     end

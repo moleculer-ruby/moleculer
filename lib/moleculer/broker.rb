@@ -3,6 +3,7 @@
 require "uri"
 require "logger"
 require "timeout"
+require "forwardable"
 
 require_relative "./packets"
 require_relative "./transporters"
@@ -14,13 +15,15 @@ module Moleculer
   ##
   # The Broker is the primary component of Moleculer. It handles actions, events, and communication with remote nodes.
   class Broker
+    include Forwardable
 
+    ##
+    # Thrown when a request times out.
     class RequestTimeoutError < Timeout::Error
       def initialize(request)
         super("An error occurred executing action '#{request.action}', no response was received within #{Moleculer.timeout} seconds")
       end
     end
-
 
     include Concurrent::Async
     attr_reader :node_id, :transporter, :logger, :namespace, :services
@@ -42,7 +45,7 @@ module Moleculer
     end
 
     ##
-    # Starts the broker asynchronously.
+    # Starts the broker asynchronously. The broker will run until #stop is called.
     def start
       logger.info "Moleculer Ruby #{Moleculer::VERSION}"
       logger.info "Node ID: #{node_id}"
@@ -58,7 +61,7 @@ module Moleculer
     end
 
     ##
-    # Runs the broker synchronously
+    # Runs the broker synchronously. Blocks until the broker is stopped.
     def run
       start
       sleep 1 while @started
@@ -69,8 +72,18 @@ module Moleculer
       @started = false
     end
 
-    def wait_for_service(name, timeout=5000)
+    ##
+    # Blocks until the named service starts
+    #
+    # @param name [String] the name of the service to wait for
+    # @param timeout [Integer] the maximum amount of time to wait. Defaults to Moleculer#timeout
+    #
+    # @raise [Moleculer::RequestTimeoutError] if the service is not registered within the timeout period
+    #
+    # @return [Moleculer::Broker] self
+    def wait_for_service(name, timeout = Moleculer.timeout)
       @external_service_registry.wait_for_service(name, timeout)
+      self
     end
 
     ##
@@ -84,24 +97,41 @@ module Moleculer
 
     def destroy_service(name); end
 
-    def call(action_name, params, options={}, &block)
-      request = Packets::Request.new({
+    ##
+    # Calls an action on a remote service. This is load balanced, and will dispatch the action call in rotation to
+    # any node has the service registered.
+    def call(action_name, params, options = {}, &block)
+      request = Packets::Request.new(
         action: action_name,
         params: params,
         meta: options[:meta] || {},
         metrics: false,
         timeout: Moleculer.timeout,
         level: 1,
-        stream: false,
-                                     })
+        stream: false
+      )
       publish_call(request)
       return async.handle_response(request, &block) if block_given?
+
       handle_response(request) { |_, response| response }
     end
 
     def mcall; end
 
-    def emit(event_name, payload, groups); end
+    def emit(event_name, payload, groups=[])
+      event = Packets::Event.new(
+        event: event_name,
+        data: payload,
+        groups: [],
+      )
+      nodes = @external_service_registry.events[event_name]
+      if nodes
+        nodes.each do |node|
+          event.target_node = node.name
+          @transporter.publish(event)
+        end
+      end
+    end
 
     def broadcast(event_name, payload, groups); end
 
@@ -109,16 +139,18 @@ module Moleculer
 
     def ping(node_id, timeout); end
 
-    def handle_response(request, &block)
+    def handle_response(request)
       response = nil
       Timeout.timeout(Moleculer.timeout) do
         sleep 0.01 until response = @responses.fetch(request.id, nil)
       end
       @responses.delete(request.id)
       yield request, response
-    rescue Timeout::Error
+    rescue Timeout::Error => e
+      error = RequestTimeoutError.new(request)
+      error.set_backtrace(e.backtrace)
       @logger.error(RequestTimeoutError.new(request))
-      nil
+      raise error
     end
 
     private
@@ -129,12 +161,10 @@ module Moleculer
       @transporter.publish(request)
     end
 
-
-
     def start_heartbeat
-      Concurrent::TimerTask.new(execution_interval: 1, run_now: true) {
+      Concurrent::TimerTask.new(execution_interval: 1, run_now: true) do
         publish_heartbeat
-      }.execute
+      end.execute
     end
 
     def publish_heartbeat
@@ -203,7 +233,8 @@ module Moleculer
 
     def subscribe_to_events
       logger.debug "setting up EVENT subscription"
-      transporter.subscribe("MOL.EVENT.#{node_id}", Packets::Event) do
+      transporter.subscribe("MOL.EVENT.#{node_id}", Packets::Event) do |packet|
+        @local_service_registry.execute_event(packet)
       end
     end
 
@@ -229,6 +260,7 @@ module Moleculer
     def subscribe_to_requests
       logger.debug "setting up REQ subscription"
       transporter.subscribe("MOL.REQ.#{node_id}", Packets::Request) do |packet|
+        # TODO: should only accept a single packet param
         response = @local_service_registry.execute_action(packet.action, packet)
         publish_response(response)
       end

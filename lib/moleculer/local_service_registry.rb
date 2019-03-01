@@ -9,11 +9,16 @@ module Moleculer
       @broker = broker
       @services = {}
       @actions = {}
+      @events = {}
     end
 
     def register(service)
       @services[service.moleculer_service_name] = service
       service.moleculer_actions.values.each { |a| @actions["#{service.moleculer_service_name}.#{a}"] = { name: a, service: service } }
+      service.moleculer_events.each_pair do |event_name, method|
+        @events[event_name] ||= []
+        @events[event_name] << {method: method , service: service }
+      end
     end
 
     def execute_action(action_name, request)
@@ -45,6 +50,11 @@ module Moleculer
           request
         )
       end
+    end
+
+    def execute_event(packet)
+      services = @events[packet.event]
+      services.each { |s| s[:service].public_send(s[:method], packet) }
     end
 
     def to_info
