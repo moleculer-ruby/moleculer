@@ -7,6 +7,11 @@ require "moleculer/service"
 module Moleculer
   PROTOCOL_VERSION = "3"
   class << self
+    attr_writer :namespace, :node_id, :transporter
+
+    def configure(&block)
+      yield selfk
+    end
 
     def broker
       @broker ||= Broker.new(node_id: self.node_id, transporter: self.transporter, namespace: self.namespace)
