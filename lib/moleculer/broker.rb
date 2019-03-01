@@ -13,7 +13,8 @@ require_relative "./local_service_registry"
 
 module Moleculer
   ##
-  # The Broker is the primary component of Moleculer. It handles actions, events, and communication with remote nodes.
+  # The Broker is the primary component of Moleculer. It handles actions, events, and communication with remote nodes. Only a single broker should
+  # be run for any given process, and it is automatically started when Moleculer::start or Moleculer::run is called.
   class Broker
     include Forwardable
 
@@ -36,7 +37,7 @@ module Moleculer
     def initialize(options)
       @namespace                 = options[:namespace]
       @logger                    = Logger.new(STDOUT)
-      @node_id                   = options[:node_id]
+      @node_id                   = options[:node_id] || "#{Socket.gethostname.downcase}-#{Process.pid}"
       @transporter               = Transporters.for(options[:transporter]).new(self, options[:transporter])
       @started                   = false
       @external_service_registry = ExternalServiceRegistry.new(self)

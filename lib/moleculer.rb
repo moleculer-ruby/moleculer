@@ -36,7 +36,7 @@ module Moleculer
     end
 
     def node_id
-      @node_id || "#{Socket.gethostname.downcase}-#{Process.pid}"
+      @node_id
     end
 
     def services
