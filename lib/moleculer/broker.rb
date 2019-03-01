@@ -228,6 +228,7 @@ module Moleculer
     def subscribe_to_discover
       logger.debug "setting up DISCOVER subscription"
       transporter.subscribe("MOL.DISCOVER", Packets::Discover) do
+        publish_info
       end
     end
 
