@@ -1,26 +1,22 @@
 RSpec.describe Moleculer::Service do
-  service = nil
-  before :each do
-    service = Class.new do
+  subject {
+    Class.new do
       include Moleculer::Service
 
-      self.moleculer_service_name = "test.service"
-
-      moleculer_action :some_action, :some_action
-
-      def some_action; end
+      def test_method
+        return "test_method"
+      end
     end
+  }
+
+  it "is a singleton" do
+    expect { subject.new }.to raise_error(NoMethodError)
   end
 
-  describe "name" do
-    it "allows the name to be set" do
-      expect(service.moleculer_service_name).to eq "test.service"
-    end
+  it "forwards method calls to the singleton instance" do
+    expect(subject.test_method).to eq "test_method"
   end
 
-  describe "actions" do
-    it "allows actions to be added" do
-      expect(service.moleculer_actions[:some_action]).to eq(:some_action)
-    end
-  end
+
+
 end

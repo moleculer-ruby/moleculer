@@ -1,27 +1,43 @@
 # frozen_string_literal: true
 
-require "active_support/concern"
-require "active_support/core_ext/class/attribute"
-require "active_support/hash_with_indifferent_access"
+require "singleton"
+
 
 module Moleculer
+  ##
+  # A Service represents a microservice in the Moleculer framework. You can define actions and subscribe to events. To
+  # create a service, you must include the Moleculer::Service module in a class. Service classes are intended to be
+  # singleton classes, and should not be included in non-microservice classes, but instead a dedicated class for the
+  # microservice.
   module Service
-    extend ActiveSupport::Concern
 
-    included do
-      class_attribute :moleculer_actions, :moleculer_events, :autostart_moleculer_service, :moleculer_settings, :moleculer_metadata
-
-      self.moleculer_actions = ActiveSupport::HashWithIndifferentAccess.new
-      self.moleculer_events = ActiveSupport::HashWithIndifferentAccess.new
-
-      Moleculer.register_service(self)
+    def self.included(base)
+      base.instance_eval do
+        include Singleton
+      end
+      base.extend ClassMethods
     end
+
+    def action(name, method, options={})
+
+    end
+
+    #
+    # included do
+    #   class_attribute :moleculer_actions, :moleculer_events, :autostart_moleculer_service, :moleculer_settings, :moleculer_metadata
+    #
+    #   self.moleculer_actions = ActiveSupport::HashWithIndifferentAccess.new
+    #   self.moleculer_events = ActiveSupport::HashWithIndifferentAccess.new
+    #
+    #   Moleculer.register_service(self)
+    # end
 
     def moleculer_broker
       self.class.moleculer_broker
     end
 
     module ClassMethods
+
       def moleculer_action(name, method)
         moleculer_actions[name] = method
       end
@@ -67,7 +83,13 @@ module Moleculer
 
         end
       end
-      
+
+      private
+
+      def method_missing(method_id, *args)
+        self.instance.public_send(method_id, *args)
+      end
+
     end
   end
 end
