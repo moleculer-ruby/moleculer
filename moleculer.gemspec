@@ -36,12 +36,13 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "concurrent-ruby", "~> 1.0"
-  spec.add_dependency "concurrent-ruby-ext", "~> 1.0"
-  spec.add_dependency "activesupport", ">= 3.0"
+  spec.add_dependency "concurrent-ruby",     "~> 1.1"
+  spec.add_dependency "concurrent-ruby-ext", "~> 1.1"
+  spec.add_dependency "activesupport",       ">= 3.0"
 
   spec.add_development_dependency "bundler", "~> 1.16"
-  spec.add_development_dependency "redis",   "3.0"
+  spec.add_development_dependency "yard",    "~> 0.6yarn"
   spec.add_development_dependency "rake",    "~> 10.0"
+  spec.add_development_dependency "redis",   "~> 4.0"
   spec.add_development_dependency "rspec",   "~> 3.0"
 end
