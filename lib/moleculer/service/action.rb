@@ -6,7 +6,6 @@ module Moleculer
     class Action
       attr_reader :service
 
-
       ##
       # Raised when an action does not return a hash
       class InvalidActionResponse < StandardError

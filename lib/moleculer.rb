@@ -1,15 +1,18 @@
 require "concurrent"
 require "securerandom"
+require "socket"
 
 require "moleculer/context"
+require "moleculer/packet"
 require "moleculer/service"
 require "moleculer/support"
 require "moleculer/version"
 
 
 
-# module Moleculer
-#   PROTOCOL_VERSION = "3"
+module Moleculer
+  extend self
+  PROTOCOL_VERSION = "3".freeze
 #   class << self
 #
 #     def broker
@@ -32,10 +35,10 @@ require "moleculer/version"
 #       @namespace || ""
 #     end
 #
-#     def node_id
-#       @node_id
-#     end
-#
+  def node_id
+    @node_id || "#{Socket.gethostname.downcase}-#{Process.pid}"
+  end
+
 #     def services
 #       @services ||= []
 #     end
@@ -53,4 +56,4 @@ require "moleculer/version"
 #     end
 #
 #   end
-# end
+end
