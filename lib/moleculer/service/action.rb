@@ -1,6 +1,19 @@
 module Moleculer
   module Service
+
+    ##
+    # Represents a declared action on a service
     class Action
+      attr_reader :service
+
+
+      ##
+      # Raised when an action does not return a hash
+      class InvalidActionResponse < StandardError
+        def initialize(response)
+          super "Action must return a Hash, instead it returned a #{response.class.name}"
+        end
+      end
 
       ##
       # @param name [String|String] the name of the action.
@@ -16,6 +29,16 @@ module Moleculer
         @method  = method
         @service = service
         @options = options
+      end
+
+      ##
+      # @param context [Moleculer::Context] the execution context
+      #
+      # @return [Moleculer::Support::Hash] returns a hash which will be converted into json for the response.
+      def execute(context)
+        response = service.new.public_send(@method, context)
+        # rubocop:disable Style/RaiseArgs
+        raise InvalidActionResponse.new(response) unless response.is_a? Hash
       end
 
     end

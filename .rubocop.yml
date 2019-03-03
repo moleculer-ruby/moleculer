@@ -9,3 +9,6 @@ Style/StringLiterals:
 
 Metrics/LineLength:
   Max: 120
+
+Metrics/ParameterLists:
+  Enabled: false
