@@ -4,7 +4,6 @@ require_relative "./event"
 module Moleculer
   module Service
     class Base
-
       class << self
         # @!attribute [rw] service_prefix
         #   @return [string] a prefix to add to the service name. The service_prefix is inherited from the parent class

@@ -4,6 +4,18 @@ Layout/IndentHash:
 #Style/ClassAndModuleChildren:
 #  EnforcedStyle: disabled
 
+Style/ModuleFunction:
+  Enabled: false
+
+Style/TrailingCommaInArguments:
+  EnforcedStyleForMultiline: comma
+
+Style/TrailingCommaInHashLiteral:
+  EnforcedStyleForMultiline: comma
+
+Style/TrailingCommaInArrayLiteral:
+  EnforcedStyleForMultiline: comma
+
 Style/StringLiterals:
     EnforcedStyle: "double_quotes"
 

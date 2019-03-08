@@ -19,5 +19,14 @@ RSpec.describe Moleculer::Support::Hash do
         expect(subject.from_hash({})).to be_a subject
       end
     end
+
+    describe "#fetch" do
+      subject { Moleculer::Support::Hash.from_hash(test: "test") }
+
+      it "fetches by ambiguous key" do
+        expect(subject.fetch(:test)).to eq "test"
+        expect(subject.fetch("test")).to eq "test"
+      end
+    end
   end
 end

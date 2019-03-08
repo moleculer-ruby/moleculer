@@ -23,6 +23,10 @@ module Moleculer
       def []=(key, value)
         super key.to_sym, value
       end
+
+      def fetch(key, default=nil, &block)
+        super key.to_sym, default, &block
+      end
     end
   end
 end

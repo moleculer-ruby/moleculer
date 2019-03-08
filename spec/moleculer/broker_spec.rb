@@ -1,22 +1,25 @@
 require "socket"
 RSpec.describe Moleculer::Broker do
-  subject { Moleculer::Broker.new(namespace: "test", transporter: "redis://localhost") }
+  subject { Moleculer::Broker.new }
 
-  describe "#new" do
-    it "sets the default the node id" do
-      expect(subject.node_id).to eq "#{Socket.gethostname.downcase}-#{Process.pid}"
-    end
+  describe "#start" do
+    describe "with local services" do
+      let(:service_1) { class_double(Moleculer::Service::Base)}
+      let(:service_2) { class_double(Moleculer::Service::Base)}
+      let(:registry)  { subject.instance_variable_get(:@registry)}
 
-    it "selects the correct transporter" do
-      expect(subject.transporter).to be_a(Moleculer::Transporters::Redis)
-    end
+      it "calls register local services with all listed local services" do
+        allow(Moleculer).to receive(:services).and_return([
+          service_1,
+          service_2,
+                                                          ])
 
-    it "sets the logger" do
-      expect(subject.logger).to be_an_instance_of(Logger)
-    end
+        allow(registry).to receive(:register_local_service)
+        subject.start
 
-    it "sets the namespace correctly" do
-      expect(subject.namespace).to eq "test"
+        expect(registry).to have_received(:register_local_service).with(service_1)
+        expect(registry).to have_received(:register_local_service).with(service_2)
+      end
     end
   end
 end

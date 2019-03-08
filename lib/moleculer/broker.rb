@@ -5,19 +5,36 @@ require "logger"
 require "timeout"
 require "forwardable"
 
-require_relative "./packets"
-require_relative "./transporters"
-require_relative "./version"
-require_relative "./external_service_registry"
-require_relative "./local_service_registry"
+require_relative './registry'
 
 module Moleculer
   ##
   # The Broker is the primary component of Moleculer. It handles actions, events, and communication with remote nodes. Only a single broker should
   # be run for any given process, and it is automatically started when Moleculer::start or Moleculer::run is called.
   class Broker
-    def register_service(service_class)
+    attr_reader :logger
 
+    def initialize
+      @registry = Registry.new(self)
+      @logger   = Moleculer.create_logger("BROKER")
+    end
+
+    def start
+      logger.info "starting"
+      register_local_services
+    end
+
+    private
+
+    def register_local_services
+      logger.info "registering #{Moleculer.services.length} local services"
+      Moleculer.services.each do |service|
+        register_service(service)
+      end
+    end
+
+    def register_service(service)
+      @registry.register_local_service(service)
     end
   #   include Forwardable
   #
@@ -296,5 +313,5 @@ module Moleculer
   #       @external_service_registry.process_info_packet(packet)
   #     end
   #   end
-  # end
+  end
 end

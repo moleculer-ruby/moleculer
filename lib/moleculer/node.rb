@@ -1,41 +1,24 @@
 module Moleculer
   class Node
-    attr_reader :broken, :name, :is_self, :actions, :services
+    attr_reader :actions,
+                :id,
+                :services
 
-    def initialize(info_packet, is_self)
-      @is_self = is_self
-      @broken = false
-      @name = info_packet.sender
-      @services, @service_index = parse_services(info_packet)
+    def initialize(options = {})
+      @local    = options[:local] || false
+      @services = Moleculer::Support::Hash.new
+      @actions  = Moleculer::Support::Hash.new
+      @id = options[:nodeId] || options.fetch(:node_id)
+      @register_service_callback = options[:register_service_callback]
     end
 
-    def actions
-      @actions ||= @services.collect { |s| s.actions }.flatten
+    def register_service(service)
+      @services[service.name] = service
+      @register_service_callback.call(self, service) if @register_service_callback
     end
 
-    def events
-      @events ||= @services.collect { |s| s.events }.flatten
-    end
-
-    private
-
-    def parse_services(info_packet)
-      service_index = {}
-      services = []
-      info_packet.services.each_index do |idx|
-        svc = info_packet.services[idx]
-        next if svc["name"] =~ /^\$/
-        service = parse_service(svc)
-        service_index[service.name] = idx
-        services << service
-      end
-      [services, service_index]
-    end
-
-    def parse_service(service)
-      Node::Service.new(service)
+    def local?
+      @local
     end
   end
 end
-
-require_relative "./node/service"
