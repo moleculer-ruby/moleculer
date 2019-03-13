@@ -17,10 +17,12 @@ module Moleculer
     def initialize
       @registry = Registry.new(self)
       @logger   = Moleculer.create_logger("BROKER")
+      @transporter = Transporter.for(Moleculer.transporter, self)
     end
 
     def start
       logger.info "starting"
+      start_subscriptions
       register_local_services
     end
 
@@ -36,6 +38,92 @@ module Moleculer
     def register_service(service)
       @registry.register_local_service(service)
     end
+
+    def start_subscriptions
+      subscribe_to_disconnect
+      subscribe_to_discover
+      subscribe_to_events
+      subscribe_to_info
+      subscribe_to_ping
+      subscribe_to_pong
+      subscribe_to_requests
+      subscribe_to_responses
+      subscribe_to_targeted_discover
+      subscribe_to_targeted_info
+      subscribe_to_targeted_ping
+    end
+
+    def subscribe_to_balanced_requests(action)
+      logger.debug "setting up REQB subscription for action '#{action}'"
+      @transporter.subscribe("MOL.REQB.#{action}") do
+      end
+    end
+
+    def subscribe_to_disconnect
+      logger.debug "setting up DISCONNECT subscription"
+      @transporter.subscribe("MOL.DISCONNECT") do
+      end
+    end
+
+    def subscribe_to_discover
+      logger.debug "setting up DISCOVER subscription"
+      @transporter.subscribe("MOL.DISCOVER") do
+      end
+    end
+
+    def subscribe_to_events
+      logger.debug "setting up EVENT subscription"
+      @transporter.subscribe("MOL.EVENT.#{node_id}") do |packet|
+      end
+    end
+
+    def subscribe_to_info
+      logger.debug "setting up INFO subscription"
+      @transporter.subscribe("MOL.INFO") do |packet|
+      end
+    end
+
+    def subscribe_to_ping
+      logger.debug "setting up PING subscription"
+      @transporter.subscribe("MOL.PING") do
+      end
+    end
+
+    def subscribe_to_pong
+      logger.debug "setting up PONG subscription"
+      @transporter.subscribe("MOL.PONG") do
+      end
+    end
+
+    def subscribe_to_requests
+      logger.debug "setting up REQ subscription"
+      @transporter.subscribe("MOL.REQ.#{node_id}") do |packet|
+      end
+    end
+
+    def subscribe_to_responses
+      logger.debug "setting up RES subscription"
+      @transporter.subscribe("MOL.RES.#{node_id}") do |packet|
+      end
+    end
+
+    def subscribe_to_targeted_discover
+      logger.debug "setting up targeted DISCOVER subscription"
+      @transporter.subscribe("MOL.DISCOVER.#{node_id}") do
+      end
+    end
+
+    def subscribe_to_targeted_ping
+      logger.debug "setting up targeted PING subscription"
+      @transporter.subscribe("MOL.PING.#{node_id}") do
+      end
+    end
+
+    def subscribe_to_targeted_info
+      logger.debug "setting up targeted INFO subscription"
+      @transporter.subscribe("MOL.INFO.#{node_id}") do |packet|
+      end
+    end
   #   include Forwardable
   #
   #   ##
@@ -47,18 +135,18 @@ module Moleculer
   #   end
   #
   #   include Concurrent::Async
-  #   attr_reader :node_id, :transporter, :logger, :namespace, :services
+  #   attr_reader :node_id, :@transporter. :logger, :namespace, :services
   #
   #   ##
   #   # @param options [Hash] broker options
   #   # @option options [string] :namespace Namespace of nodes to segment your nodes on the same network.
   #   # @option options [string] :node_id Unique node identifier. Must be unique in a namespace
-  #   # @option options [string|Moleculer::Transporter] :transporter Transporter settings.
+  #   # @option options [string|Moleculer::@transporter. :@transporter.@transporter.settings.
   #   def initialize(options)
   #     @namespace                 = options[:namespace]
   #     @logger                    = Logger.new(STDOUT)
   #     @node_id                   = options[:node_id] || "#{Socket.gethostname.downcase}-#{Process.pid}"
-  #     @transporter               = Transporters.for(options[:transporter]).new(self, options[:transporter])
+  #     @@transporter.              = @transporter..for(options[:@transporter.).new(self, options[:@transporter.)
   #     @started                   = false
   #     @external_service_registry = ExternalServiceRegistry.new(self)
   #     @local_service_registry    = LocalServiceRegistry.new(self)
@@ -70,9 +158,9 @@ module Moleculer
   #   def start
   #     logger.info "Moleculer Ruby #{Moleculer::VERSION}"
   #     logger.info "Node ID: #{node_id}"
-  #     logger.info "Transporter: #{transporter.name}"
+  #     logger.info "@transporter. #{@transporter.name}"
   #     register_local_services
-  #     transporter.async.connect
+  #     @transporter.async.connect
   #     subscribe_to_all_events
   #     publish_discover
   #     publish_info
@@ -149,7 +237,7 @@ module Moleculer
   #     if nodes
   #       nodes.each do |node|
   #         event.target_node = node.name
-  #         @transporter.publish(event)
+  #         @@transporter.publish(event)
   #       end
   #     end
   #   end
@@ -179,7 +267,7 @@ module Moleculer
   #   def publish_call(request)
   #     node = @external_service_registry.get_node_for_action(request.action)
   #     request.target_node = node
-  #     @transporter.publish(request)
+  #     @@transporter.publish(request)
   #   end
   #
   #   def start_heartbeat
@@ -189,24 +277,24 @@ module Moleculer
   #   end
   #
   #   def publish_heartbeat
-  #     @transporter.publish(Packets::Heartbeat.new(
+  #     @@transporter.publish(Packets::Heartbeat.new(
   #                            sender: @node_id,
   #                            cpu: 0
   #                          ))
   #   end
   #
   #   def publish_discover
-  #     @transporter.publish(Packets::Discover.new(
+  #     @@transporter.publish(Packets::Discover.new(
   #                            sender: @node_id
   #                          ))
   #   end
   #
   #   def publish_info
-  #     @transporter.publish(@local_service_registry.to_info)
+  #     @@transporter.publish(@local_service_registry.to_info)
   #   end
   #
   #   def publish_response(packet)
-  #     @transporter.publish(packet)
+  #     @@transporter.publish(packet)
   #   end
   #
   #   def register_local_services
@@ -230,57 +318,57 @@ module Moleculer
   #
   #   def subscribe_to_balanced_events(event)
   #     logger.debug "setting up EVENTB subscription for '#{event}'"
-  #     transporter.subscribe("MOL.EVENTB.#{event}", Packets::Event) do
+  #     @transporter.subscribe("MOL.EVENTB.#{event}") do
   #     end
   #   end
   #
   #   def subscribe_to_balanced_requests(action)
   #     logger.debug "setting up REQB subscription for action '#{action}'"
-  #     transporter.subscribe("MOL.REQB.#{action}", Packets::Request) do
+  #     @transporter.subscribe("MOL.REQB.#{action}") do
   #     end
   #   end
   #
   #   def subscribe_to_disconnect
   #     logger.debug "setting up DISCONNECT subscription"
-  #     transporter.subscribe("MOL.DISCONNECT", Packets::Disconnect) do
+  #     @transporter.subscribe("MOL.DISCONNECT") do
   #     end
   #   end
   #
   #   def subscribe_to_discover
   #     logger.debug "setting up DISCOVER subscription"
-  #     transporter.subscribe("MOL.DISCOVER", Packets::Discover) do
+  #     @transporter.subscribe("MOL.DISCOVER") do
   #     end
   #   end
   #
   #   def subscribe_to_events
   #     logger.debug "setting up EVENT subscription"
-  #     transporter.subscribe("MOL.EVENT.#{node_id}", Packets::Event) do |packet|
+  #     @transporter.subscribe("MOL.EVENT.#{node_id}") do |packet|
   #       @local_service_registry.execute_event(packet)
   #     end
   #   end
   #
   #   def subscribe_to_info
   #     logger.debug "setting up INFO subscription"
-  #     transporter.subscribe("MOL.INFO", Packets::Info) do |packet|
+  #     @transporter.subscribe("MOL.INFO") do |packet|
   #       @external_service_registry.process_info_packet(packet)
   #     end
   #   end
   #
   #   def subscribe_to_ping
   #     logger.debug "setting up PING subscription"
-  #     transporter.subscribe("MOL.PING", Packets::Ping) do
+  #     @transporter.subscribe("MOL.PING") do
   #     end
   #   end
   #
   #   def subscribe_to_pong
   #     logger.debug "setting up PONG subscription"
-  #     transporter.subscribe("MOL.PONG", Packets::Pong) do
+  #     @transporter.subscribe("MOL.PONG") do
   #     end
   #   end
   #
   #   def subscribe_to_requests
   #     logger.debug "setting up REQ subscription"
-  #     transporter.subscribe("MOL.REQ.#{node_id}", Packets::Request) do |packet|
+  #     @transporter.subscribe("MOL.REQ.#{node_id}") do |packet|
   #       # TODO: should only accept a single packet param
   #       response = @local_service_registry.execute_action(packet.action, packet)
   #       publish_response(response)
@@ -289,27 +377,27 @@ module Moleculer
   #
   #   def subscribe_to_responses
   #     logger.debug "setting up RES subscription"
-  #     transporter.subscribe("MOL.RES.#{node_id}", Packets::Response) do |packet|
+  #     @transporter.subscribe("MOL.RES.#{node_id}") do |packet|
   #       @responses.put_if_absent(packet.id, packet)
   #     end
   #   end
   #
   #   def subscribe_to_targeted_discover
   #     logger.debug "setting up targeted DISCOVER subscription"
-  #     transporter.subscribe("MOL.DISCOVER.#{node_id}", Packets::Discover) do
+  #     @transporter.subscribe("MOL.DISCOVER.#{node_id}") do
   #       publish_info
   #     end
   #   end
   #
   #   def subscribe_to_targeted_ping
   #     logger.debug "setting up targeted PING subscription"
-  #     transporter.subscribe("MOL.PING.#{node_id}", Packets::Ping) do
+  #     @transporter.subscribe("MOL.PING.#{node_id}") do
   #     end
   #   end
   #
   #   def subscribe_to_targeted_info
   #     logger.debug "setting up targeted INFO subscription"
-  #     transporter.subscribe("MOL.INFO.#{node_id}", Packets::Info) do |packet|
+  #     @transporter.subscribe("MOL.INFO.#{node_id}") do |packet|
   #       @external_service_registry.process_info_packet(packet)
   #     end
   #   end

@@ -3,6 +3,8 @@ RSpec.describe Moleculer::Broker do
   subject { Moleculer::Broker.new }
 
   describe "#start" do
+    setup do
+
     describe "with local services" do
       let(:service_1) { class_double(Moleculer::Service::Base)}
       let(:service_2) { class_double(Moleculer::Service::Base)}

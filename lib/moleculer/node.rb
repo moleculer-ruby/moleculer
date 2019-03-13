@@ -6,8 +6,8 @@ module Moleculer
 
     def initialize(options = {})
       @local    = options[:local] || false
-      @services = Moleculer::Support::Hash.new
-      @actions  = Moleculer::Support::Hash.new
+      @services = []
+      @actions  = []
       @id = options[:nodeId] || options.fetch(:node_id)
       @register_service_callback = options[:register_service_callback]
     end

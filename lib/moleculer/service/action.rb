@@ -4,7 +4,8 @@ module Moleculer
     ##
     # Represents a declared action on a service
     class Action
-      attr_reader :service
+      attr_reader :service,
+                  :name
 
       ##
       # Raised when an action does not return a hash
