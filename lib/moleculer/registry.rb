@@ -10,7 +10,7 @@ module Moleculer
       @actions = Moleculer::Support::Hash.new
       @events = Moleculer::Support::Hash.new
       @services = Moleculer::Support::Hash.new
-      @logger = Moleculer.create_logger("BROKER.REGISTRY")
+      @logger = Moleculer.logger
       @local_node = register_node(Node.new(
                                     local: true,
                                     node_id: Moleculer.node_id,

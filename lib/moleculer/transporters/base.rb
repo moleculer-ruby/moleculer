@@ -11,7 +11,9 @@ module Moleculer
       def initialize(uri, broker)
         @broker = broker
         @uri = uri
-        @logger = Moleculer.create_logger("BROKER.TRANSPORTER[#{self.class::NAME}]")
+        @logger = Moleculer.logger
+        @started = Concurrent::AtomicBoolean.new
+        @serializer = Serializers.for(Moleculer.serializer)
       end
 
       ##

@@ -18,6 +18,10 @@ RSpec.describe Moleculer::Support::Hash do
       it "converts to a Moleculer::Support::Hash" do
         expect(subject.from_hash({})).to be_a subject
       end
+
+      it "deep symbolizes keys" do
+        expect(subject.from_hash({"foo" => {"bar" => "baz"}})[:foo][:bar]).to eq "baz"
+      end
     end
 
     describe "#fetch" do
