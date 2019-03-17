@@ -1,42 +1,37 @@
+require_relative "errors/local_node_already_registered"
+
 module Moleculer
   ##
-  # The Registry manages all ofth
+  # The Registry manages the available services on the network
   class Registry
-    attr_reader :logger
-
+    ##
+    # @param [Moleculer::Broker] broker the service broker instance
     def initialize(broker)
-      @broker = broker
-      @nodes = Moleculer::Support::Hash.new
-      @actions = Moleculer::Support::Hash.new
-      @events = Moleculer::Support::Hash.new
-      @services = Moleculer::Support::Hash.new
-      @logger = Moleculer.logger
-      @local_node = register_node(Node.new(
-                                    local: true,
-                                    node_id: Moleculer.node_id,
-                                  ))
+      @broker   = broker
+      @nodes    = {}
+      @actions  = Hash.new([])
+      @events   = {}
+      @services = {}
+      @logger   = Moleculer.logger
     end
 
     ##
     # Registers the node with the registry and updates the action/event handler lists.
     #
     # @param [Moleculer::Node] node the node to register
+    #
+    # @return [Moleculer::Node] the node that has been registered
     def register_node(node)
+      if node.local?
+        raise Errors::LocalNodeAlreadyRegistered, "A LOCAL node has already been registered" if @local_node
+
+        @logger.info "registering LOCAL node '#{node.id}'"
+        @local_node = node
+      end
       logger.info "registering node #{node.id}" unless node.local?
-      logger.info "registering LOCAL node '#{node.id}'" if node.local?
       @nodes[node.id] = node
       update_actions(node)
       node
-    end
-
-    ##
-    # Registers the local service with with the local node, and updates the action/event handler lists
-    #
-    # @param [Moleculer::Service::Base] service the service to register locally
-    def register_local_service(service)
-      logger.info "registering LOCAL service '#{service.service_name}'"
-      @local_node.register_service(service)
-      update_actions(@local_node)
     end
 
     ##
@@ -65,11 +60,14 @@ module Moleculer
     def update_actions(node)
       node.actions.each do |action|
         qualified_action_name = "#{action.service.service_name}.#{action.name}"
-        @actions[qualified_action_name] ||= []
-        @actions[qualified_action_name].reject! { |a| a.id == node.id }
-        @actions[qualified_action_name] << node
+        replace_action(qualified_action_name, node)
       end
       logger.debug "registered #{node.actions.length} action(s) for node '#{node.id}'"
+    end
+
+    def replace_action(action, node)
+      @actions[action].reject! { |a| a.id == node.id }
+      @actions[action] << node
     end
   end
 end

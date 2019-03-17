@@ -1,4 +1,5 @@
-RSpec.describe(Moleculer::Service::Action) do
+RSpec.describe Moleculer::Service::Action::Local do
+  subject { Moleculer::Action::Local }
   let!(:service) {
     Class.new(Moleculer::Service::Base) do
       action :test_broken_response, :test_broken_response
@@ -24,14 +25,13 @@ RSpec.describe(Moleculer::Service::Action) do
     )
   }
 
-
   describe "#execute" do
 
     describe "invalid action" do
       subject { service.actions[:test_broken_response] }
 
       it "raises an InvalidActionResponse when response is not a Hash" do
-        expect { subject.execute(context) }.to raise_error Moleculer::Service::Action::InvalidActionResponse
+        expect { subject.execute(context) }.to raise_error Moleculer::Errors::InvalidActionResponse
       end
     end
 

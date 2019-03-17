@@ -1,9 +1,12 @@
-require_relative "./action"
+require_relative "abstract"
+require_relative "action"
 require_relative "./event"
 
 module Moleculer
   module Service
-    class Base
+    ##
+    # @abstract subclass to define a local service.
+    class Base < Abstract
       class << self
         # @!attribute [rw] service_prefix
         #   @return [string] a prefix to add to the service name. The service_prefix is inherited from the parent class
@@ -11,7 +14,7 @@ module Moleculer
         attr_writer :service_prefix
 
         ##
-        # returns the actions defined by the service.
+        # returns the action defined by the service.
         attr_reader :actions
 
         ##
@@ -46,7 +49,7 @@ module Moleculer
         # @option options [Hash] params list of param and param types. Can be used to coerce specific params to the
         # provided type.
         def action(name, method, options = {})
-          @actions ||= Moleculer::Support::Hash.new
+          @actions     ||= {}
           @actions[name] = Action.new(name, method, self, options)
         end
 
@@ -56,10 +59,23 @@ module Moleculer
         # @param name [String|Symbol] the name of the event.
         # @param method [Symbol] the method to which the event maps.
         def event(name, method)
-          @events ||= Moleculer::Support::Hash.new
+          @events     ||= {}
           @events[name] = Event.new(name, method, self)
         end
+      end
 
+      ##
+      # returns the action defined on the service class
+      # @see action
+      def actions
+        self.class.actions
+      end
+
+      ##
+      # returns the events defined on the service class
+      # @see events
+      def events
+        self.class.events
       end
     end
   end

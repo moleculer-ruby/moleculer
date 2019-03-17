@@ -2,35 +2,22 @@ RSpec.describe Moleculer::Registry do
   let(:broker) { instance_double(Moleculer::Broker) }
   subject { Moleculer::Registry.new(broker) }
 
-  let(:local_node) { subject.instance_variable_get(:@local_node) }
-
-  describe "#local_node" do
-    it "returns the local node" do
-      expect(subject.local_node).to be_a Moleculer::Node
-      expect(subject.local_node.local?).to be_truthy
-    end
-  end
-
-  describe "#register_local_service" do
-    let(:service) { class_double(Moleculer::Service::Base, service_name: "test-service") }
-    let(:actions) { subject.instance_variable_get(:@actions) }
-    let(:action_1) { instance_double(Moleculer::Service::Action, name: "an-action", service: service) }
-
-    it "registers the service with the local node" do
-      allow(local_node).to receive(:register_service)
-      subject.register_local_service(service)
-      expect(subject.local_node).to have_received(:register_service).with(service)
+  describe "::register_node" do
+    let(:local_node) do
+      instance_double(Moleculer::Node::Local,
+                      local?: true,
+                      id:     "local-node",
+                      action: [])
     end
 
-    it "updates the action mapping with the local_node actions" do
-      allow(local_node).to receive(:register_service)
-      allow(local_node).to receive(:actions).and_return([
-        action_1
-                                                        ])
+    it "registered a local_node as the local node" do
+      subject.register_node(local_node)
+      expect(subject.instance_variable_get(:@local_node)).to eq local_node
+    end
 
-      subject.register_local_service(service)
-
-      expect(actions["test-service.an-action"]).to include(local_node)
+    it "throws an error if a local_node is registered more than once" do
+      subject.register_node(local_node)
+      expect { subject.register_node(local_node) }.to raise_error(Moleculer::Errors::LocalNodeAlreadyRegistered)
     end
   end
 end

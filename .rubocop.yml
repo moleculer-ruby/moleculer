@@ -1,8 +1,11 @@
+Layout/ExtraSpacing:
+  ForceEqualSignAlignment: true
+
 Layout/IndentHash:
   EnforcedStyle: consistent
 
-#Style/ClassAndModuleChildren:
-#  EnforcedStyle: disabled
+Style/AlignHash:
+  EnforcedColonStyle: table
 
 Style/ModuleFunction:
   Enabled: false
@@ -24,3 +27,4 @@ Metrics/LineLength:
 
 Metrics/ParameterLists:
   Enabled: false
+
