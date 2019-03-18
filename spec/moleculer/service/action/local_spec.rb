@@ -1,6 +1,6 @@
 RSpec.describe Moleculer::Service::Action::Local do
-  subject { Moleculer::Action::Local }
-  let!(:service) {
+  subject { Moleculer::Service::Action::Local }
+  let!(:service) do
     Class.new(Moleculer::Service::Base) do
       action :test_broken_response, :test_broken_response
       action :test_valid_response, :test_valid_response
@@ -13,9 +13,9 @@ RSpec.describe Moleculer::Service::Action::Local do
         {}
       end
     end
-  }
+  end
 
-  let(:context) {
+  let(:context) do
     Moleculer::Context.new(
       double("broker"),
       subject,
@@ -23,10 +23,9 @@ RSpec.describe Moleculer::Service::Action::Local do
       {},
       {}
     )
-  }
+  end
 
   describe "#execute" do
-
     describe "invalid action" do
       subject { service.actions[:test_broken_response] }
 

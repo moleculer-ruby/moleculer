@@ -1,3 +1,4 @@
+require_relative "abstract"
 require_relative "../../errors/invalid_action_response"
 module Moleculer
   module Service

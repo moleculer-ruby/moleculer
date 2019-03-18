@@ -50,7 +50,7 @@ module Moleculer
         # provided type.
         def action(name, method, options = {})
           @actions     ||= {}
-          @actions[name] = Action.new(name, method, self, options)
+          @actions[name] = Action::Local.new(name, self, method, options)
         end
 
         ##
