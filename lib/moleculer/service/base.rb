@@ -58,9 +58,11 @@ module Moleculer
         #
         # @param name [String|Symbol] the name of the event.
         # @param method [Symbol] the method to which the event maps.
-        def event(name, method)
+        # @param options [Hash] event options.
+        # @option options [Hash] :group the group in which the event should belong, defaults to the service_name
+        def event(name, method, options = {})
           @events     ||= {}
-          @events[name] = Event::Local.new(name, self, method, self)
+          @events[name] = Event::Local.new(name, self, method, options)
         end
       end
 

@@ -4,10 +4,12 @@ RSpec.describe Moleculer::Service::Event::Local do
     Class.new(Moleculer::Service::Base) do
       event :test_valid_event, :test_valid_event
 
-      def test_valid_event(_payload)
-        true
-      end
+      def test_valid_event(_payload, _sender, _event); end
     end
+  end
+
+  describe "#group" do
+
   end
 
   describe "#execute" do
@@ -15,7 +17,7 @@ RSpec.describe Moleculer::Service::Event::Local do
       subject { service.events[:test_valid_event] }
 
       it "does not raise an InvalidEventResponse when a Hash is returned" do
-        expect { subject.execute() }.to_not raise_error
+        expect { subject.execute({}, "test-node", "test_valid_event") }.to_not raise_error
       end
     end
   end

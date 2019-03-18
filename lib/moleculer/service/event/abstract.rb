@@ -2,16 +2,18 @@ module Moleculer
   module Service
     module Event
       ##
-      # @private
-      # @abstract
+      # @abstract Subclass to implement even types (local | remote)
       class Abstract
         ##
-        # The service the action is attached to
+        # The service the event is attached to
         attr_reader :service
 
         ##
-        # The name of the action
+        # The name of the event
         attr_reader :name
+
+        # @!attribute [r] group
+        #   @return [String] the group to which the vents belongs
 
         ##
         # @param name [String|Symbol] the name of the event.
@@ -23,7 +25,13 @@ module Moleculer
 
         ##
         # @abstract
-        def execute(_payload)
+        def group
+          raise NotImplementedError
+        end
+
+        ##
+        # @abstract
+        def execute(*_args)
           raise NotImplementedError
         end
       end
