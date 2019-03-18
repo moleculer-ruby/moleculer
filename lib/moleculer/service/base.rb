@@ -60,7 +60,7 @@ module Moleculer
         # @param method [Symbol] the method to which the event maps.
         def event(name, method)
           @events     ||= {}
-          @events[name] = Event.new(name, method, self)
+          @events[name] = Event::Local.new(name, self, method, self)
         end
       end
 

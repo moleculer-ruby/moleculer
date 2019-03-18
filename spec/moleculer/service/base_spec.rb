@@ -60,14 +60,14 @@ RSpec.describe(Moleculer::Service::Base) do
   describe "::action" do
     it "creates an action object with the given object and parameters" do
       expect(subject.actions.keys.length).to eq 1
-      expect(subject.actions[:test]).to be_an_instance_of Moleculer::Service::Action
+      expect(subject.actions[:test]).to be_an_instance_of Moleculer::Service::Action::Local
     end
   end
 
   describe "::event" do
     it "creates an action object with the given object and parameters" do
       expect(subject.events.keys.length).to eq 1
-      expect(subject.events["test.event"]).to be_an_instance_of Moleculer::Service::Event
+      expect(subject.events["test.event"]).to be_an_instance_of Moleculer::Service::Event::Local
     end
   end
 end

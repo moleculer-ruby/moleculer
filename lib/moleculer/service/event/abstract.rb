@@ -1,6 +1,6 @@
 module Moleculer
   module Service
-    module Action
+    module Event
       ##
       # @private
       # @abstract
@@ -14,7 +14,7 @@ module Moleculer
         attr_reader :name
 
         ##
-        # @param name [String|Symbol] the name of the action.
+        # @param name [String|Symbol] the name of the event.
         # @param service [Moleculer::Service::Base] the moleculer service class
         def initialize(name, service)
           @name    = name.to_s
@@ -23,7 +23,7 @@ module Moleculer
 
         ##
         # @abstract
-        def execute(_context)
+        def execute(_payload)
           raise NotImplementedError
         end
       end
