@@ -4,8 +4,8 @@ require_relative "packets/info"
 module Moleculer
   module Packets
     TYPES = {
-      Discover::NAME => Discover,
-      Info::NAME => Info,
+      Discover.packet_name=> Discover,
+      Info.packet_name => Info,
     }.freeze
 
     def self.for(type)

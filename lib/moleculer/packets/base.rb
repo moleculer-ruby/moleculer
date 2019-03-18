@@ -1,4 +1,4 @@
-require_relative "../support/hash"
+require_relative "../support/hash_util"
 
 module Moleculer
   module Packets
@@ -13,6 +13,9 @@ module Moleculer
       # The sender of the packet
       attr_reader :sender
 
+      def self.packet_name
+        name.split("::").last.upcase
+      end
       ##
       # @param data [Hash] the raw packet data
       # @options data [String] :ver the protocol version, defaults to `'3'`
@@ -28,7 +31,7 @@ module Moleculer
       #
       # @return [String] the pub/sub topic to publish to
       def topic
-        "MOL.#{self.class.name.split('::').last.upcase}"
+        "MOL.#{self.packet_name}"
       end
     end
   end
