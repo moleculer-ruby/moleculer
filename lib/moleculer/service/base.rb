@@ -1,4 +1,3 @@
-require_relative "abstract"
 require_relative "action"
 require_relative "./event"
 
@@ -6,7 +5,7 @@ module Moleculer
   module Service
     ##
     # @abstract subclass to define a local service.
-    class Base < Abstract
+    class Base
       class << self
         # @!attribute [rw] service_prefix
         #   @return [string] a prefix to add to the service name. The service_prefix is inherited from the parent class
@@ -32,8 +31,11 @@ module Moleculer
         #
         # @param name [String] the name to which the service_name should be set
         def service_name(name = nil)
-          @service_name = name if name
-          return "#{service_prefix}.#{@service_name}" if service_prefix
+          if name
+            @service_name = name
+
+            @service_name = "#{service_prefix}.#{@service_name}" if service_prefix
+          end
 
           @service_name
         end
@@ -50,7 +52,7 @@ module Moleculer
         # provided type.
         def action(name, method, options = {})
           @actions     ||= {}
-          @actions[name] = Action::Local.new(name, self, method, options)
+          @actions[name] = Action.new(name, self, method, options)
         end
 
         ##

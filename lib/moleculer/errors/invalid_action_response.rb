@@ -1,4 +1,4 @@
-module Molecule
+module Moleculer
   module Errors
     ##
     # Raised when an action does not return a hash

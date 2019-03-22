@@ -1,5 +1,6 @@
-RSpec.describe Moleculer::Service::Action::Local do
-  subject { Moleculer::Service::Action::Local }
+
+RSpec.describe Moleculer::Service::Action do
+  subject { Moleculer::Service::Action }
   let!(:service) do
     Class.new(Moleculer::Service::Base) do
       action :test_broken_response, :test_broken_response
