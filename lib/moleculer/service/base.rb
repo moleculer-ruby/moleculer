@@ -80,6 +80,16 @@ module Moleculer
       def events
         self.class.events
       end
+
+      def self.as_json
+        {
+          name: name,
+          settings: {},
+          metadata: {},
+          actions: Hash[actions.values.map { |a| [a.name.t_sym, a.as_json]}],
+          events: {}
+        }
+      end
     end
   end
 end

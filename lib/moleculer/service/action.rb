@@ -1,6 +1,8 @@
 require_relative "../errors/invalid_action_response"
+require_relative "../support"
 module Moleculer
   module Service
+    include Support
     ##
     # Represents an action
     class Action
@@ -35,7 +37,18 @@ module Moleculer
         # rubocop:disable Style/RaiseArgs
         raise Errors::InvalidActionResponse.new(response) unless response.is_a? Hash
       end
+
+      def as_json
+        {
+          name:    "#{service.name}.#{name}",
+          rawName: name,
+          cache:   HashUtil.fetch(@options, :cache, false),
+          metrics: {
+            params: false,
+            meta:   true,
+          },
+        }
+      end
     end
   end
 end
-
