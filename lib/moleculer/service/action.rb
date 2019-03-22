@@ -4,6 +4,8 @@ module Moleculer
     ##
     # Represents an action
     class Action
+      attr_reader :name
+
       ##
       # @param name [String|Symbol] the name of the action.
       # @param method [Symbol] the service method to be called.

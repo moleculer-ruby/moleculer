@@ -12,13 +12,6 @@ module Moleculer
         #           if it is not already defined in the current class.
         attr_writer :service_prefix
 
-        ##
-        # returns the action defined by the service.
-        attr_reader :actions
-
-        ##
-        # returns the events defined by the service.
-        attr_reader :events
 
         def service_prefix
           return superclass.service_prefix if !@service_prefix && superclass.respond_to?(:service_prefix)
@@ -51,8 +44,7 @@ module Moleculer
         # @option options [Hash] params list of param and param types. Can be used to coerce specific params to the
         # provided type.
         def action(name, method, options = {})
-          @actions     ||= {}
-          @actions[name] = Action.new(name, self, method, options)
+          actions[name] = Action.new(name, self, method, options)
         end
 
         ##
@@ -63,8 +55,15 @@ module Moleculer
         # @param options [Hash] event options.
         # @option options [Hash] :group the group in which the event should belong, defaults to the service_name
         def event(name, method, options = {})
-          @events     ||= {}
-          @events[name] = Event::Local.new(name, self, method, options)
+          events[name] = Event::Local.new(name, self, method, options)
+        end
+
+        def actions
+          @actions ||= {}
+        end
+
+        def events
+          @events ||= {}
         end
       end
 

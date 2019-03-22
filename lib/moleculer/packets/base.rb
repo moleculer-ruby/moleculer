@@ -1,10 +1,11 @@
-require_relative "../support/hash_util"
+require_relative "../support"
 
 module Moleculer
   module Packets
     ##
     # @abstract Subclass for packet types.
     class Base
+      include Support
       ##
       # The protocol version
       attr_reader :ver
@@ -16,13 +17,14 @@ module Moleculer
       def self.packet_name
         name.split("::").last.upcase
       end
+
       ##
       # @param data [Hash] the raw packet data
       # @options data [String] :ver the protocol version, defaults to `'3'`
       # @options  data [String] :sender the packet sender, defaults to `Moleculer#node_id`
       def initialize(data = {})
-        @ver    = data.fetch(:ver, "3")
-        @sender = data.fetch(:sender, Moleculer.node_id)
+        @ver    = HashUtil.fetch(data, :ver, "3")
+        @sender = HashUtil.fetch(data, :sender, Moleculer.node_id)
       end
 
       ##
@@ -31,7 +33,14 @@ module Moleculer
       #
       # @return [String] the pub/sub topic to publish to
       def topic
-        "MOL.#{self.packet_name}"
+        "MOL.#{self.class.packet_name}"
+      end
+
+      def as_json
+        {
+          ver:    ver,
+          sender: sender,
+        }
       end
     end
   end

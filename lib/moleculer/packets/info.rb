@@ -65,23 +65,12 @@ module Moleculer
       # @options data [String] hostname the hostname  of the node
       # @options data [Hash] client the client data for the node
       def initialize(data)
-        @services = deserialize_services(HashUtil.fetch(data, :services))
+        super(data)
+        @services = HashUtil.fetch(data, :services)
         @config   = OpenStruct.new(Hash[HashUtil.fetch(data, :config).map { |i| [StringUtil.underscore(i[0]), i[1]] }])
         @ip_list  = HashUtil.fetch(data, :ip_list)
         @hostname = HashUtil.fetch(data, :hostname)
         @client   = Client.new(HashUtil.fetch(data, :client))
-      end
-
-      private
-
-      def deserialize_services(services)
-        services.map do |s|
-          if s.is_a? Hash
-            Service.from_remote_info(s)
-          else
-            s
-          end
-        end
       end
 
     end

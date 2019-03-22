@@ -2,22 +2,21 @@ require "json"
 
 module Moleculer
   module Serializers
+    ##
+    # Serializes data packets to and from JSON
     class Json
-
       def initialize
         @logger = Moleculer.logger
       end
 
       def serialize(message)
-        message.to_json
+        message.as_json.to_json
       end
 
       def deserialize(message)
-        begin
-          Support::Hash.from_hash(JSON.parse(message))
-        rescue => e
-          @logger.error e
-        end
+        JSON.parse(message)
+      rescue StandardError => e
+        @logger.error e
       end
     end
   end

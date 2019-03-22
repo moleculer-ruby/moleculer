@@ -4,6 +4,9 @@ module Moleculer
   ##
   # The Registry manages the available services on the network
   class Registry
+
+
+
     ##
     # @param [Moleculer::Broker] broker the service broker instance
     def initialize(broker)
@@ -28,7 +31,7 @@ module Moleculer
         @logger.info "registering LOCAL node '#{node.id}'"
         @local_node = node
       end
-      logger.info "registering node #{node.id}" unless node.local?
+      @logger.info "registering node #{node.id}" unless node.local?
       @nodes[node.id] = node
       update_actions(node)
       node
@@ -59,10 +62,10 @@ module Moleculer
 
     def update_actions(node)
       node.actions.each do |action|
-        qualified_action_name = "#{action.service.service_name}.#{action.name}"
+        qualified_action_name = "#{node.id}.#{action.name}"
         replace_action(qualified_action_name, node)
       end
-      logger.debug "registered #{node.actions.length} action(s) for node '#{node.id}'"
+      @logger.debug "registered #{node.actions.length} action(s) for node '#{node.id}'"
     end
 
     def replace_action(action, node)

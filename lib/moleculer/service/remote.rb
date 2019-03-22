@@ -22,6 +22,7 @@ module Moleculer
         def fetch_actions(service_info)
           seq = 0
           Support::HashUtil.fetch(service_info, :actions).values.each do |a|
+            next if Support::HashUtil.fetch(a, :name) =~ /^\$/
             define_method("action_#{seq}".to_sym) do |ctx|
               Moleculer.broker.publish_req(ctx)
             end

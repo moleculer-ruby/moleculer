@@ -14,7 +14,7 @@ module Moleculer
       NAME = "REDIS".freeze
 
       def publish(packet)
-        @logger.trace "publishing packet to '#{packet.topic}'", packet
+        @logger.trace "publishing packet to '#{packet.topic}'", packet.as_json
         @publisher.publish(packet.topic, @serializer.serialize(packet))
       end
 
@@ -33,7 +33,14 @@ module Moleculer
             end
 
             subscription.pmessage do |_, channel, message|
-              parsed = @serializer.deserialize(message)
+              begin
+                parsed = @serializer.deserialize(message)
+              rescue StandardError => e
+                @logger.error e
+              rescue Exception => e
+                @logger.fatal e
+                exit 1
+              end
               @logger.trace "received message '#{channel}'", parsed
               @broker.process_message(channel, parsed)
             end
