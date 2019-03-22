@@ -4,6 +4,9 @@ module Moleculer
     ##
     # Represents an action
     class Action
+      # @!attribute [r] name
+      #   @return [String] the name of the action
+
       attr_reader :name
 
       ##
