@@ -18,6 +18,11 @@ module Moleculer
         @publisher.publish(packet.topic, @serializer.serialize(packet))
       end
 
+      def publish_to_node(packet, node)
+        @logger.trace "publishing packet to '#{packet.topic}' on '#{node.id}'", packet.as_json
+        @publisher.publish(packet.topic, @serializer.serialize(packet))
+      end
+
       def start
         raise Errors::TransporterAlreadyStarted, "the transporter is already started" if @started.true?
 
@@ -37,9 +42,6 @@ module Moleculer
                 parsed = @serializer.deserialize(message)
               rescue StandardError => e
                 @logger.error e
-              rescue Exception => e
-                @logger.fatal e
-                exit 1
               end
               @logger.trace "received message '#{channel}'", parsed
               @broker.process_message(channel, parsed)

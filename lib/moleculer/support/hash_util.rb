@@ -17,9 +17,9 @@ module Moleculer
       #        key cannot be found
       #
       # @return [Object] the value at the given key
-      def fetch(hash, key, default = nil)
+      def fetch(hash, key, default = :__no_default__)
         return fetch_with_string(hash, key, default) if key.is_a?(String) || key.is_a?(Symbol)
-        return hash.fetch(key, default) if default
+        return hash.fetch(key, default) if default != :__no_default__
 
         hash.fetch(key)
       end
@@ -28,7 +28,7 @@ module Moleculer
 
       def fetch_with_string(hash, key, default)
         ret = get_camel(hash, key) || get_underscore(hash, key)
-        return default if default && !ret
+        return default if default != :__no_default__ && !ret
         raise KeyError, %(key not found: "#{key}") unless ret
 
         ret

@@ -8,7 +8,6 @@ module Moleculer
     class Action
       # @!attribute [r] name
       #   @return [String] the name of the action
-
       attr_reader :name
 
       ##
@@ -36,6 +35,10 @@ module Moleculer
         response = @service.new.public_send(@method, context)
         # rubocop:disable Style/RaiseArgs
         raise Errors::InvalidActionResponse.new(response) unless response.is_a? Hash
+      end
+
+      def node
+        @service.node
       end
 
       def as_json

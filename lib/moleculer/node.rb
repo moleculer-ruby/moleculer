@@ -4,9 +4,8 @@ module Moleculer
   class Node
     class << self
       def from_remote_info(info_packet)
-        services = info_packet.services.map { |service| Service.from_remote_info(service) }
         new(
-          services: services,
+          services: info_packet.services,
           node_id:  info_packet.sender,
         )
       end
@@ -16,10 +15,15 @@ module Moleculer
                 :services
 
     def initialize(options = {})
-      @services = options.fetch(:services)
       @id       = options.fetch(:node_id)
       @local    = options.fetch(:local, false)
       @hostname = options.fetch(:hostname, Socket.gethostname)
+
+      svcs = options.fetch(:services)
+      if svcs.first.is_a? Hash
+        svcs.map! { |service| Service.from_remote_info(service, self) }
+      end
+      @services = Hash[svcs.map { |s| [s.service_name, s] }]
     end
 
     def register_service(service)
@@ -27,7 +31,11 @@ module Moleculer
     end
 
     def actions
-      @services.map { |s| s.actions.values }.flatten
+      unless @actions
+        map      = @services.values.map { |s| s.actions.keys.map { |key| [key, s.actions[key]] } }.reject(&:empty?)
+        @actions = Hash[*map]
+      end
+      @actions
     end
 
     def local?

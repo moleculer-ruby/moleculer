@@ -19,16 +19,25 @@ module Moleculer
         publish(:discover)
       end
 
+      def publish_req(request_data)
+        publish_to_node(:req, request_data.delete(:node), request_data)
+      end
+
       private
 
       def publish(packet_type, message = {})
         packet = Packets.for(packet_type).new(message)
         @transporter.publish(packet)
       end
+
+      def publish_to_node(packet_type, node,  message = {})
+        packet = Packets.for(packet_type).new(message.merge(node: node))
+        @transporter.publish_to_node(packet, node)
+      end
     end
 
     ##
-    # Subscriber functions
+    # Subscriber methods
     module Subscribers
       ##
       # @private
@@ -42,6 +51,10 @@ module Moleculer
           @logger   = Moleculer.logger
         end
 
+        ##
+        # Pushes a packet onto the queue by queuing the action in the thread pool
+        #
+        # @param [Moleculer::Packet::Base] packet the packet to queue into the pool
         def <<(packet)
           @pool.post do
             begin
@@ -54,9 +67,11 @@ module Moleculer
       end
 
       ##
-      # @private
+      # Processes an incoming message and passes it to the appropriate channel for handling
+      #
+      # @param [String] channel the channel in which the message came in on
+      # @param [Hash] message the raw deserialized message
       def process_message(channel, message)
-        @logger.trace "no such channel '#{channel}'" unless @subscribers[channel]
         @subscribers[channel] << Packets.for(channel.split(".")[1]).new(message) if @subscribers[channel]
       rescue StandardError => e
         @logger.error e
@@ -64,9 +79,20 @@ module Moleculer
 
       private
 
+      def process_response(packet)
+        context = @contexts.delete(packet.id)
+        context[:future].fulfill(packet.data)
+      end
+
       def subscribe_to_info
         subscribe("MOL.INFO.#{Moleculer.node_id}") do |packet|
           register_or_update_remote_node(packet)
+        end
+      end
+
+      def subscribe_to_res
+        subscribe("MOL.RES.#{Moleculer.node_id}") do |packet|
+          process_response(packet)
         end
       end
 
@@ -83,9 +109,42 @@ module Moleculer
     attr_reader :logger
 
     def initialize
-      @registry    = Registry.new(self)
-      @logger      = Moleculer.logger
-      @transporter = Transporters.for(Moleculer.transporter, self)
+      @registry         = Registry.new(self)
+      @logger           = Moleculer.logger
+      @transporter      = Transporters.for(Moleculer.transporter, self)
+      @contexts         = Concurrent::Map.new
+    end
+
+    ##
+    # Call the provided action.
+    #
+    # @param action_name [String] the action to call.
+    # @param params [Hash] the params with which to call the action
+    # @param meta [Hash] the metadata of the request
+    #
+    # @return [Hash] the return result of the action call
+    def call(action_name, params, meta: {}, node_id: nil, timeout: Moleculer.timeout)
+      action = node_id ? @registry.fetch_action_for_node_id(action_name, node_id) : @registry.fetch_action(action_name)
+
+      context = Context.new(
+        broker:  self,
+        action:  action,
+        params:  params,
+        meta:    meta,
+        timeout: timeout,
+      )
+
+      future = Concurrent::Promises.resolvable_future
+
+      @contexts[context.id] = {
+        context:   context,
+        called_at: Time.now,
+        future:    future,
+      }
+
+      action.execute(context)
+
+      future.value!(context.timeout)
     end
 
     def run
@@ -98,6 +157,7 @@ module Moleculer
       logger.info "starting"
       @transporter.start
       subscribe_to_info
+      subscribe_to_res
       publish_discover
       # start_subscriptions
       register_local_node
@@ -106,6 +166,17 @@ module Moleculer
     def stop
       @logger.info "stopping"
       @transporter.stop
+    end
+
+    def wait_for_services(*services)
+      until @registry.has_services(*services)
+        @logger.info "waiting for services '#{services.join(", ")}'"
+        sleep 0.1
+      end
+    end
+
+    def local_node
+      @registry.local_node
     end
 
     private

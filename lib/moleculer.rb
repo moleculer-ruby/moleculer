@@ -20,9 +20,17 @@ module Moleculer
               :logger,
               :log_level,
               :log,
-              :serializer
+              :serializer,
+              :timeout
 
-  def config(&block)
+  def call(action, params = {}, **kwargs)
+    if params.empty?
+      return broker.call(action, kwargs)
+    end
+    broker.call(action, params, kwargs)
+  end
+
+  def config
     yield self
   end
 
@@ -71,12 +79,16 @@ module Moleculer
     @serializer ||= :json
   end
 
-  #     def timeout
-  #       @timeout = 5
-  #     end
-  #
+  def timeout
+    @timeout = 5
+  end
+
   def transporter
     @transporter || "redis://localhost"
+  end
+
+  def wait_for_services(*services)
+    @broker.wait_for_services(*services)
   end
   #
   #     def register_service(klass)

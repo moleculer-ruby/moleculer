@@ -12,11 +12,14 @@ module Moleculer
         #           if it is not already defined in the current class.
         attr_writer :service_prefix
 
-
         def service_prefix
           return superclass.service_prefix if !@service_prefix && superclass.respond_to?(:service_prefix)
 
           @service_prefix
+        end
+
+        def node
+          Moleculer.broker.local_node
         end
 
         ##
