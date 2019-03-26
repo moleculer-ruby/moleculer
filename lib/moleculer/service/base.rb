@@ -86,10 +86,10 @@ module Moleculer
 
       def self.as_json
         {
-          name: name,
+          name: service_name,
           settings: {},
           metadata: {},
-          actions: Hash[actions.values.map { |a| [a.name.t_sym, a.as_json]}],
+          actions: Hash[actions.values.map { |a| [a.name.to_sym, a.as_json]}],
           events: {}
         }
       end

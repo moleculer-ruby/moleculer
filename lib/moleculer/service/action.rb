@@ -2,10 +2,11 @@ require_relative "../errors/invalid_action_response"
 require_relative "../support"
 module Moleculer
   module Service
-    include Support
     ##
     # Represents an action
     class Action
+      include Support
+
       # @!attribute [r] name
       #   @return [String] the name of the action
       attr_reader :name
@@ -28,7 +29,7 @@ module Moleculer
       end
 
       ##
-      # @param context [Moleculer::Context] the execution context
+      # @param context [Moleculer::Context] the execution contextd
       #
       # @return [Moleculer::Support::Hash] returns a hash which will be converted into json for the response.
       def execute(context)
@@ -43,7 +44,7 @@ module Moleculer
 
       def as_json
         {
-          name:    "#{service.name}.#{name}",
+          name:    "#{@service.service_name}.#{name}",
           rawName: name,
           cache:   HashUtil.fetch(@options, :cache, false),
           metrics: {

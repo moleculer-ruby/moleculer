@@ -73,6 +73,16 @@ module Moleculer
         @client   = Client.new(HashUtil.fetch(data, :client))
       end
 
+      def as_json
+        super.merge({
+          services: @services,
+          config: @config.to_h,
+          ipList: @ip_list,
+          hostname: @hostname,
+          client: @client.as_json
+        })
+      end
+
     end
   end
 end

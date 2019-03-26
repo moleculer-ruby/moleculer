@@ -1,4 +1,5 @@
 require_relative "errors/local_node_already_registered"
+require_relative "errors/action_not_found"
 require_relative "support"
 
 module Moleculer
@@ -13,10 +14,10 @@ module Moleculer
     # @param [Moleculer::Broker] broker the service broker instance
     def initialize(broker)
       @broker   = broker
-      @nodes    = {}
-      @actions  = Hash.new([])
-      @events   = {}
-      @services = {}
+      @nodes    = Concurrent::Hash.new
+      @actions  = Concurrent::Hash.new
+      @events   = Concurrent::Hash.new
+      @services = Concurrent::Hash.new
       @logger   = Moleculer.logger
     end
 
@@ -27,6 +28,8 @@ module Moleculer
     #
     # @return [Moleculer::Node] the node that has been registered
     def register_node(node)
+      return local_node if @local_node && node.id == @local_node.id
+
       if node.local?
         raise Errors::LocalNodeAlreadyRegistered, "A LOCAL node has already been registered" if @local_node
 
@@ -69,7 +72,7 @@ module Moleculer
     end
 
     def has_services(*services)
-      !@services.values.collect { |s| services.include?(s) }.empty?
+      services - @services.values == []
     end
 
     private
@@ -85,8 +88,7 @@ module Moleculer
     def fetch_action_from_node(action_name, node)
       node.actions.fetch(action_name)
     rescue KeyError
-      raise(Errors::ActionNotFound, "The action '#{action_name}' was" \
-        "found on the node with id '#{node_id}'")
+      raise(Errors::ActionNotFound, "The action '#{action_name}' was found on the node with id '#{node.id}'")
     end
 
     def fetch_next_node_for_action(action_name)
@@ -108,8 +110,7 @@ module Moleculer
 
     def update_actions(node)
       node.actions.values.each do |action|
-        qualified_action_name = "#{node.id}.#{action.name}"
-        replace_action(qualified_action_name, node)
+        replace_action(action, node)
       end
       @logger.debug "registered #{node.actions.length} action(s) for node '#{node.id}'"
     end
@@ -122,15 +123,15 @@ module Moleculer
 
     def replace_service(service, node)
       @services[service.service_name] ||= []
-      nodes = @services[service.service_name].reject! { |a| a.id == node.id }
+      nodes                             = @services[service.service_name].reject! { |a| a.id == node.id }
       @logger.info "registered new service '#{service.service_name}'" unless nodes
       @services[service.service_name] << node.id
     end
 
     def replace_action(action, node)
-      @actions[action] ||= []
-      @actions[action].reject! { |a| a.id == node.id }
-      @actions[action] << node.id
+      @actions[action.name] ||= []
+      @actions[action.name].reject! { |a| a == node.id }
+      @actions[action.name] << node.id
     end
   end
 end

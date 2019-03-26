@@ -48,7 +48,12 @@ module Moleculer
         seq:      1,
         ipList:   [],
         hostname: @hostname,
-        services: @services.map(&:as_json),
+        services: @services.values.map(&:as_json),
+        client: {
+          type: "Ruby",
+          version: Moleculer::VERSION,
+          lang_version: RUBY_VERSION,
+        }
       }
     end
   end

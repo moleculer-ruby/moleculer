@@ -10,7 +10,6 @@ module Moleculer
                   :meta,
                   :timeout,
                   :level,
-                  :metrics,
                   :parent_id,
                   :request_id,
                   :stream,

@@ -19,8 +19,16 @@ module Moleculer
         publish(:discover)
       end
 
+      def publish_info
+        publish(:info, @registry.local_node.as_json)
+      end
+
       def publish_req(request_data)
         publish_to_node(:req, request_data.delete(:node), request_data)
+      end
+
+      def publish_res(response_data)
+        publish_to_node(:res, response_data.delete(:node), response_data)
       end
 
       private
@@ -84,8 +92,36 @@ module Moleculer
         context[:future].fulfill(packet.data)
       end
 
+      def process_request(packet)
+        action = @registry.fetch_action_for_node_id(packet.action, Moleculer.node_id)
+
+        context = Context.new(
+          id:      packet.id,
+          broker:  self,
+          action:  action,
+          params:  packet.params,
+          meta:    packet.meta,
+          timeout: Moleculer.timeout,
+        )
+
+        response = action.execute(context)
+
+        publish_res(
+          id:      context.id,
+          success: true,
+          data:    response,
+          error:   {},
+          meta:    context.meta,
+          stream:  false,
+          node:    packet.sender,
+        )
+      end
+
       def subscribe_to_info
         subscribe("MOL.INFO.#{Moleculer.node_id}") do |packet|
+          register_or_update_remote_node(packet)
+        end
+        subscribe("MOL.INFO") do |packet|
           register_or_update_remote_node(packet)
         end
       end
@@ -93,6 +129,12 @@ module Moleculer
       def subscribe_to_res
         subscribe("MOL.RES.#{Moleculer.node_id}") do |packet|
           process_response(packet)
+        end
+      end
+
+      def subscribe_to_req
+        subscribe("MOL.REQ.#{Moleculer.node_id}") do |packet|
+          process_request(packet)
         end
       end
 
@@ -161,6 +203,7 @@ module Moleculer
       publish_discover
       # start_subscriptions
       register_local_node
+      publish_info
     end
 
     def stop
@@ -170,7 +213,7 @@ module Moleculer
 
     def wait_for_services(*services)
       until @registry.has_services(*services)
-        @logger.info "waiting for services '#{services.join(", ")}'"
+        @logger.info "waiting for services '#{services.join(', ')}'"
         sleep 0.1
       end
     end
@@ -192,8 +235,6 @@ module Moleculer
     end
 
     def register_or_update_remote_node(info_packet)
-      @logger.info "registering remote node '#{info_packet.sender}'" \
-                   " on '#{info_packet.hostname}'"
       node = Node.from_remote_info(info_packet)
       @registry.register_node(node)
     end

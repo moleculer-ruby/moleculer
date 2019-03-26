@@ -8,8 +8,8 @@ module Moleculer
                 :timeout,
                 :id
 
-    def initialize(broker:, action:, params:, meta:, parent_id: nil, level: 1, timeout:)
-      @id         = SecureRandom.uuid
+    def initialize(broker:, action:, params:, meta:, parent_id: nil, level: 1, timeout:, id: nil)
+      @id         = id ? id : SecureRandom.uuid
       @broker     = broker
       @action     = action
       @request_id = SecureRandom.uuid
