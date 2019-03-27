@@ -19,8 +19,11 @@ module Moleculer
         publish(:discover)
       end
 
-      def publish_info
-        publish(:info, @registry.local_node.as_json)
+      def publish_info(node_id = nil)
+        return publish(:info, @registry.local_node.as_json) unless node_id
+
+        node = @registry.safe_fetch_node(node_id) || node_id
+        publish_to_node(:info, node, @registry.local_node.as_json)
       end
 
       def publish_req(request_data)
@@ -94,6 +97,7 @@ module Moleculer
 
       def process_request(packet)
         action = @registry.fetch_action_for_node_id(packet.action, Moleculer.node_id)
+        node   = @registry.fetch_node(packet.sender)
 
         context = Context.new(
           id:      packet.id,
@@ -113,7 +117,7 @@ module Moleculer
           error:   {},
           meta:    context.meta,
           stream:  false,
-          node:    packet.sender,
+          node:    node,
         )
       end
 
@@ -122,7 +126,7 @@ module Moleculer
           register_or_update_remote_node(packet)
         end
         subscribe("MOL.INFO") do |packet|
-          register_or_update_remote_node(packet)
+          register_or_update_remote_node(packet) unless packet.sender == Moleculer.node_id
         end
       end
 
@@ -135,6 +139,15 @@ module Moleculer
       def subscribe_to_req
         subscribe("MOL.REQ.#{Moleculer.node_id}") do |packet|
           process_request(packet)
+        end
+      end
+
+      def subscribe_to_discover
+        subscribe("MOL.DISCOVER") do |packet|
+          publish_info(packet.sender) unless packet.sender == Moleculer.node_id
+        end
+        subscribe("MOL.DISCOVER.#{Moleculer.node_id}") do |packet|
+          publish_info(packet.sender)
         end
       end
 
@@ -200,9 +213,10 @@ module Moleculer
       @transporter.start
       subscribe_to_info
       subscribe_to_res
-      publish_discover
-      # start_subscriptions
+      subscribe_to_req
+      subscribe_to_discover
       register_local_node
+      publish_discover
       publish_info
     end
 
@@ -212,7 +226,7 @@ module Moleculer
     end
 
     def wait_for_services(*services)
-      until @registry.has_services(*services)
+      until (services = @registry.missing_services(*services)) && services.empty?
         @logger.info "waiting for services '#{services.join(', ')}'"
         sleep 0.1
       end

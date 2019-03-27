@@ -14,7 +14,9 @@ module Moleculer
                   :request_id,
                   :stream,
                   :metrics,
-                  :stream
+                  :stream,
+                  :id,
+                  :node
 
       def initialize(data)
         super(data)
@@ -29,7 +31,7 @@ module Moleculer
         @parent_id  = HashUtil.fetch(data, :parent_id, nil)
         @request_id = HashUtil.fetch(data, :request_id)
         @stream     = false
-        @node       = HashUtil.fetch(data, :node)
+        @node       = HashUtil.fetch(data, :node, nil)
       end
 
       def as_json # rubocop:disable Metrics/MethodLength

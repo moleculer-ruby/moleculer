@@ -5,7 +5,7 @@ class Server < Moleculer::Service::Base
   action "echo", :echo
   # moleculer_event "reply.event", :handle_event
 
-  def self.echo(context)
+  def echo(context)
     {message: "You said #{context.params["message"]}"}
   end
 

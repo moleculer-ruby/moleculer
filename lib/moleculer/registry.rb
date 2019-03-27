@@ -1,5 +1,6 @@
 require_relative "errors/local_node_already_registered"
 require_relative "errors/action_not_found"
+require_relative "errors/node_not_found"
 require_relative "support"
 
 module Moleculer
@@ -56,6 +57,18 @@ module Moleculer
       fetch_action_from_node(action_name, node)
     end
 
+    def fetch_node(node_id)
+      @nodes.fetch(node_id)[:node]
+    rescue KeyError
+      raise Errors::NodeNotFound, "The node with the id '#{node_id}' was not found."
+    end
+
+    def safe_fetch_node(node_id)
+      fetch_node(node_id)
+    rescue Errors::NodeNotFound
+      nil
+    end
+
     ##
     # Gets the named action from the registry for the given node. Raises an error if the node does not exist or the node
     # does not have the specified action.
@@ -71,8 +84,8 @@ module Moleculer
       fetch_action_from_node(action_name, node)
     end
 
-    def has_services(*services)
-      services - @services.values == []
+    def missing_services(*services)
+      services - @services.keys
     end
 
     private
@@ -93,12 +106,6 @@ module Moleculer
 
     def fetch_next_node_for_action(action_name)
       fetch_node_list_for(action_name).min_by { |a| a[:last_called_at] }[:node]
-    end
-
-    def fetch_node(node_id)
-      @nodes.fetch(node_id)[:node]
-    rescue KeyError
-      raise Errors::NodeNotFound, "The node with the id '#{node_id}' was not found."
     end
 
     def fetch_node_list_for(action_name)
@@ -129,7 +136,7 @@ module Moleculer
     end
 
     def replace_action(action, node)
-      @actions[action.name] ||= []
+      @actions[action.name] ||= Concurrent::Array.new
       @actions[action.name].reject! { |a| a == node.id }
       @actions[action.name] << node.id
     end

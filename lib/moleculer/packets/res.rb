@@ -21,6 +21,11 @@ module Moleculer
         @error   = HashUtil.fetch(data, :error, nil)
         @meta    = HashUtil.fetch(data, :meta)
         @stream  = HashUtil.fetch(data, :stream, false)
+        @node    = HashUtil.fetch(data, :node, nil)
+      end
+
+      def topic
+        "#{super}.#{@node.id}"
       end
     end
   end

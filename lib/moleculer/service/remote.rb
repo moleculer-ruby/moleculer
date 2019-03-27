@@ -25,6 +25,10 @@ module Moleculer
 
         private
 
+        def action_name_for(name)
+          name
+        end
+
         def fetch_actions(service_info)
           seq = 0
           Support::HashUtil.fetch(service_info, :actions).values.each do |a|

@@ -19,7 +19,8 @@ module Moleculer
       end
 
       def publish_to_node(packet, node)
-        @logger.trace "publishing packet to '#{packet.topic}' on '#{node.id}'", packet.as_json
+        @logger.trace "publishing packet to '#{packet.topic}' on" \
+                      "'#{node.is_a?(Moleculer::Node) ? node.id : node}'", packet.as_json
         @publisher.publish(packet.topic, @serializer.serialize(packet))
       end
 
@@ -50,7 +51,6 @@ module Moleculer
         end
       end
 
-
       def started?
         @started.value
       end
@@ -59,7 +59,6 @@ module Moleculer
         disconnect
         @started.make_false
       end
-
 
       private
 

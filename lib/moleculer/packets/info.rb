@@ -71,18 +71,27 @@ module Moleculer
         @ip_list  = HashUtil.fetch(data, :ip_list)
         @hostname = HashUtil.fetch(data, :hostname)
         @client   = Client.new(HashUtil.fetch(data, :client))
+        @node     = HashUtil.fetch(data, :node, nil)
+      end
+
+      def topic
+        if @node
+          return "#{super}.#{@node.id}" if @node.is_a? Moleculer::Node
+
+          return "#{super}.#{@node}"
+        end
+        super
       end
 
       def as_json
-        super.merge({
+        super.merge(
           services: @services,
-          config: @config.to_h,
-          ipList: @ip_list,
+          config:   @config.to_h,
+          ipList:   @ip_list,
           hostname: @hostname,
-          client: @client.as_json
-        })
+          client:   @client.as_json,
+        )
       end
-
     end
   end
 end

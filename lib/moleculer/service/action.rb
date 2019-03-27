@@ -36,6 +36,8 @@ module Moleculer
         response = @service.new.public_send(@method, context)
         # rubocop:disable Style/RaiseArgs
         raise Errors::InvalidActionResponse.new(response) unless response.is_a? Hash
+
+        response
       end
 
       def node
