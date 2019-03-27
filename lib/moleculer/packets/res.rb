@@ -27,6 +27,17 @@ module Moleculer
       def topic
         "#{super}.#{@node.id}"
       end
+
+      def as_json
+        super.merge(
+          id:      @id,
+          success: @success,
+          data:    @data,
+          error:   @error,
+          meta:    @meta,
+          stream:  @stream,
+        )
+      end
     end
   end
 end
