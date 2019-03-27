@@ -1,3 +1,4 @@
+require "benchmark"
 require_relative "../../lib/moleculer"
 Moleculer.start
 
@@ -7,7 +8,5 @@ Moleculer.wait_for_services("ruby-server")
 #
 # puts result
 
+puts Benchmark.measure { 1000.times { Moleculer.call("ruby-server.echo", {message: "echo"}) } }
 
-result = Moleculer.call("ruby-server.echo", {message: "echo"})
-
-puts result
