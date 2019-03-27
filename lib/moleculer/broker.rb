@@ -55,7 +55,7 @@ module Moleculer
       # A queue is a subscriber thread pool manager allowing Moleculer to handle requests asynchronously
       class Queue
         def initialize(name, options, &block)
-          opts      = { max_threads: 1, min_threads: 1, max_queue: 1, fallback_policy: :abort }.merge(options)
+          opts      = { max_threads: 1, min_threads: 1, max_queue: 0, fallback_policy: :abort }.merge(options)
           @executor = block
           @pool     = Concurrent::ThreadPoolExecutor.new(opts)
           @name     = name

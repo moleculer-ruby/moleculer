@@ -25,11 +25,11 @@ module Moleculer
         @action     = HashUtil.fetch(data, :action)
         @params     = HashUtil.fetch(data, :params)
         @meta       = HashUtil.fetch(data, :meta)
-        @timeout    = HashUtil.fetch(data, :timeout)
+        @timeout    = HashUtil.fetch(data, :timeout, nil)
         @level      = HashUtil.fetch(data, :level, 1)
         @metrics    = HashUtil.fetch(data, :metrics, false)
         @parent_id  = HashUtil.fetch(data, :parent_id, nil)
-        @request_id = HashUtil.fetch(data, :request_id)
+        @request_id = HashUtil.fetch(data, :request_id, nil)
         @stream     = false
         @node       = HashUtil.fetch(data, :node, nil)
       end

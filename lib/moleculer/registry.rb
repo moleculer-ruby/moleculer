@@ -130,7 +130,7 @@ module Moleculer
 
     def replace_service(service, node)
       @services[service.service_name] ||= []
-      nodes                             = @services[service.service_name].reject! { |a| a.id == node.id }
+      nodes                             = @services[service.service_name].reject! { |a| a == node.id }
       @logger.info "registered new service '#{service.service_name}'" unless nodes
       @services[service.service_name] << node.id
     end
