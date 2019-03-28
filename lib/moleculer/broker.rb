@@ -96,6 +96,7 @@ module Moleculer
       end
 
       def process_request(packet)
+        @logger.debug "processing request #{packet.id}"
         action = @registry.fetch_action_for_node_id(packet.action, Moleculer.node_id)
         node   = @registry.fetch_node(packet.sender)
 
@@ -137,7 +138,7 @@ module Moleculer
       end
 
       def subscribe_to_req
-        subscribe("MOL.REQ.#{Moleculer.node_id}") do |packet|
+        subscribe("MOL.REQ.#{Moleculer.node_id}", min_threads: 10, max_threads: 100) do |packet|
           process_request(packet)
         end
       end

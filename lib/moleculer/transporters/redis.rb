@@ -64,9 +64,9 @@ module Moleculer
 
       def connect
         @logger.debug "connecting subscriber client on '#{@uri}'"
-        @subscriber = ::Redis.new(url: @uri)
+        @subscriber = ::Redis.new(url: @uri, driver: :hiredis)
         @logger.debug "connecting publisher client on '#{@uri}'"
-        @publisher = ::Redis.new(url: @uri)
+        @publisher = ::Redis.new(url: @uri, driver: :hiredis)
       end
 
       def disconnect
