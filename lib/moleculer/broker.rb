@@ -81,9 +81,24 @@ module Moleculer
     end
 
     def run
-      start
-      trap(:INT) { stop }
-      sleep 0.1 while @transporter.started?
+      self_read, self_write = IO.pipe
+
+      %w[INT TERM].each do |sig|
+        trap sig do
+          self_write.puts(sig)
+        end
+      end
+
+      begin
+        start
+
+        while (readable_io = IO.select([self_read]))
+          signal           = readable_io.first[0].gets.strip
+          handle_signal(signal)
+        end
+      rescue Interrupt
+        stop
+      end
     end
 
     def start
@@ -114,6 +129,13 @@ module Moleculer
     end
 
     private
+
+    def handle_signal(sig)
+      case sig
+      when "INT", "TERM"
+        raise Interrupt
+      end
+    end
 
     ##
     # Processes an incoming message and passes it to the appropriate channel for handling
