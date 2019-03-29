@@ -19,7 +19,7 @@ module Moleculer
         @options = options
       end
 
-      def execute(data, options)
+      def execute(data, options={})
         @service.new.public_send(@method, data, options)
       end
 
@@ -29,13 +29,7 @@ module Moleculer
 
       def as_json
         {
-          name:    "#{@service.service_name}.#{name}",
-          rawName: name,
-          cache:   HashUtil.fetch(@options, :cache, false),
-          metrics: {
-            params: false,
-            meta:   true,
-          },
+          name:    name,
         }
       end
     end

@@ -94,7 +94,7 @@ module Moleculer
           settings: {},
           metadata: {},
           actions: Hash[actions.values.map { |a| [a.name.to_sym, a.as_json]}],
-          events: {}
+          events: Hash[events.values.map { |e| [e.name.to_sym, e.as_json]}]
         }
       end
     end

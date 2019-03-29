@@ -9,8 +9,8 @@ class Server < Moleculer::Service::Base
     {message: "You said #{context.params["message"]}"}
   end
 
-  def self.handle_event(request)
-    puts "\n\n\n\n\n\n\n#{request.data["counter"]}"
+  def handle_event(data, options={})
+    puts "\n\n\n\n\n\n\n#{data["counter"]}"
   end
 
 end

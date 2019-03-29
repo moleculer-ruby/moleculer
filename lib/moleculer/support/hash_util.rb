@@ -27,7 +27,7 @@ module Moleculer
       private
 
       def fetch_with_string(hash, key, default)
-        ret = get_camel(hash, key) || get_underscore(hash, key)
+        ret = get_camel(hash, key).nil? ? get_underscore(hash, key) : get_camel(hash, key)
         return default if default != :__no_default__ && ret.nil?
         raise KeyError, %(key not found: "#{key}") if ret.nil?
 
@@ -36,12 +36,12 @@ module Moleculer
 
       def get_camel(hash, key)
         camelized = StringUtil.camelize(key.to_s)
-        hash[camelized] || hash[camelized.to_sym]
+        hash[camelized].nil? ? hash[camelized.to_sym] : hash[camelized]
       end
 
       def get_underscore(hash, key)
         underscored = StringUtil.underscore(key.to_s)
-        hash[underscored] || hash[underscored.to_sym]
+        hash[underscored].nil? ? hash[underscored.to_sym] : hash[underscored]
       end
     end
   end
