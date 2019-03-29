@@ -36,8 +36,7 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "concurrent-ruby",     "~> 1.1"
-  spec.add_dependency "concurrent-ruby-ext", "~> 1.1"
+  spec.add_dependency "concurrent-ruby",     "~> 1.0"
   spec.add_dependency "ougai",               "~> 1.7"
   spec.add_dependency "awesome_print",       "~> 1.8"
 
