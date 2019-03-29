@@ -21,7 +21,8 @@ module Moleculer
               :log_level,
               :log,
               :serializer,
-              :timeout
+              :timeout,
+              :transporter
 
   def call(action, params = {}, **kwargs)
     if params.empty?
@@ -37,10 +38,6 @@ module Moleculer
   def broker
     @broker ||= Broker.new
   end
-  #
-  #     def emit(event_name, payload)
-  #       broker.emit(event_name, payload)
-  #     end
 
   def start
     broker.start
@@ -62,10 +59,6 @@ module Moleculer
     @heartbeat_interval ||= 5
   end
 
-  #     def namespace
-  #       @namespace || ""
-  #     end
-  #
   def node_id
     @node_id ? "#{@node_id}-#{Process.pid}" : "#{Socket.gethostname.downcase}-#{Process.pid}"
   end
