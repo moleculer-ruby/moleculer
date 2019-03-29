@@ -154,9 +154,9 @@ module Moleculer
 
     def process_event(packet)
       @logger.debug("processing event '#{packet.event}'")
-      event = @registry.fetch_events_for_node_id(packet.event, Moleculer.node_id)
+      events = @registry.fetch_events_for_node_id(packet.event, Moleculer.node_id)
 
-      event.execute(packet.data)
+      events.each { |e| e.execute(packet.data) }
     end
 
     def process_request(packet)
@@ -269,6 +269,7 @@ module Moleculer
       subscribe_to_info
       subscribe_to_res
       subscribe_to_req
+      subscribe_to_events
       subscribe_to_discover
     end
 

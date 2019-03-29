@@ -64,8 +64,8 @@ module Moleculer
     end
 
     def fetch_events_for_node_id(event_name, node_id)
-      node = @node.fetch(node_id)
-      node.services.map(&:events).select { |e| e.name == event_name}
+      node = @nodes.fetch(node_id)[:node]
+      node.services.values.map { |s| s.events.values }.flatten.select { |e| e.name == event_name }
     end
 
     def fetch_node(node_id)
