@@ -13,9 +13,7 @@ module Moleculer
         attr_writer :service_prefix
 
         def service_prefix
-          return superclass.service_prefix if !@service_prefix && superclass.respond_to?(:service_prefix)
-
-          @service_prefix
+          Moleculer.service_prefix
         end
 
         def node

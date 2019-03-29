@@ -22,7 +22,8 @@ module Moleculer
               :log,
               :serializer,
               :timeout,
-              :transporter
+              :transporter,
+              :service_prefix
 
   def call(action, params = {}, **kwargs)
     broker.ensure_running
@@ -76,6 +77,10 @@ module Moleculer
       @logger.level = @log_level || :trace
     end
     @logger
+  end
+
+  def service_prefix
+    @service_prefix
   end
 
   def serializer
