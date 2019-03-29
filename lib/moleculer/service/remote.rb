@@ -24,6 +24,14 @@ module Moleculer
           @node
         end
 
+        def service_name(name = nil)
+          if name
+            @service_name = name
+          end
+
+          @service_name
+        end
+
         private
 
         def action_name_for(name)
