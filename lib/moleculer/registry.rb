@@ -152,6 +152,7 @@ module Moleculer
           replace_event(event, service, node)
         end
       end
+      @logger.debug "registered #{node.events.length} event(s) for node '#{node.id}'"
     end
 
     def update_services(node)
