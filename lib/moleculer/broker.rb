@@ -186,6 +186,12 @@ module Moleculer
         )
     end
 
+    def ensure_running
+      unless @transporter.started?
+        start
+      end
+    end
+
     private
 
     def handle_signal(sig)

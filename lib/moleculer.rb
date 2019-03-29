@@ -25,6 +25,7 @@ module Moleculer
               :transporter
 
   def call(action, params = {}, **kwargs)
+    broker.ensure_running
     if params.empty?
       return broker.call(action, kwargs)
     end
@@ -52,6 +53,7 @@ module Moleculer
   end
 
   def emit(event, data)
+    broker.ensure_running
     broker.emit(event, data)
   end
 
