@@ -82,7 +82,7 @@ module Moleculer
     end
 
     def emit(event_name, payload, options={})
-      @logger.debug("emitting event '#{event}'")
+      @logger.debug("emitting event '#{event_name}'")
       events = @registry.fetch_events(event_name)
 
       events.each { |e| e.execute(payload, options) }
