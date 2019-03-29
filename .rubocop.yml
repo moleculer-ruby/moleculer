@@ -9,6 +9,7 @@ Layout/IndentationWidth:
 
 Style/AlignHash:
   EnforcedColonStyle: table
+  EnforcedHashRocketStyle: table
 
 Style/ModuleFunction:
   Enabled: false

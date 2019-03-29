@@ -89,10 +89,6 @@ module Moleculer
     def start
       logger.info "starting"
       @transporter.start
-      subscribe_to_info
-      subscribe_to_res
-      subscribe_to_req
-      subscribe_to_discover
       register_local_node
       publish_discover
       publish_info
@@ -102,6 +98,7 @@ module Moleculer
 
     def stop
       @logger.info "stopping"
+      publish(:disconnect)
       @transporter.stop
     end
 
@@ -225,6 +222,13 @@ module Moleculer
       Concurrent::TimerTask.new(execution_interval: Moleculer.heartbeat_interval) do
         publish_heartbeat
       end.execute
+    end
+
+    def start_subscribers
+      subscribe_to_info
+      subscribe_to_res
+      subscribe_to_req
+      subscribe_to_discover
     end
 
     def subscribe_to_info
