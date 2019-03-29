@@ -63,6 +63,11 @@ module Moleculer
       nodes.map { |node| fetch_event_from_node(event_name, node) }
     end
 
+    def fetch_events_for_node_id(event_name, node_id)
+      node = @node.fetch(node_id)
+      node.services.map(&:events).select { |e| e.name == event_name}
+    end
+
     def fetch_node(node_id)
       @nodes.fetch(node_id)[:node]
     rescue KeyError

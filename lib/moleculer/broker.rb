@@ -152,6 +152,13 @@ module Moleculer
       context[:future].fulfill(packet.data)
     end
 
+    def process_event(packet)
+      @logger.debug("processing event '#{packet.event}'")
+      event = @registry.fetch_events_for_node_id(packet.event, Moleculer.node_id)
+
+      event.execute(packet.data)
+    end
+
     def process_request(packet)
       @logger.debug "processing request #{packet.id}"
       action = @registry.fetch_action_for_node_id(packet.action, Moleculer.node_id)
@@ -263,6 +270,12 @@ module Moleculer
       subscribe_to_res
       subscribe_to_req
       subscribe_to_discover
+    end
+
+    def subscribe_to_events
+      subscribe("MOL.EVENT.#{Moleculer.node_id}") do |packet|
+        process_event(packet)
+      end
     end
 
     def subscribe_to_info
