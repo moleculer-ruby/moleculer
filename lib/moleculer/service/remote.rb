@@ -10,6 +10,7 @@ module Moleculer
       Class.new(Remote) do
         service_name Support::HashUtil.fetch(service_info, :name)
         fetch_actions(service_info)
+        fetch_events(service_info)
         node service_node
       end
     end
@@ -54,15 +55,16 @@ module Moleculer
         def fetch_events(service_info)
           seq = 0
           Support::HashUtil.fetch(service_info, :events).values.each do |a|
-            next if Support::HashUtil.fetch(a, :name) =~ /^\$/
-
+            name = Support::HashUtil.fetch(a, :name)
             define_method("event_#{seq}".to_sym) do |data, options|
               Moleculer.broker.send(:publish_event,
+                                    event:     name,
                                     data:      data,
                                     broadcast: options[:broadcast] || false,
-                                    groups:    [])
+                                    groups:    [],
+                                    node:      self.class.node)
             end
-            event(Support::HashUtil.fetch(a, :name), "event_#{seq}".to_sym)
+            event(name, "event_#{seq}".to_sym)
             seq += 1
           end
         end

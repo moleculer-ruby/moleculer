@@ -60,7 +60,7 @@ module Moleculer
 
     def fetch_events(event_name)
       nodes = fetch_next_nodes_for_event(event_name)
-      fetch_event_from_node(event_name, node)
+      nodes.map { |node| fetch_event_from_node(event_name, node) }
     end
 
     def fetch_node(node_id)
@@ -121,12 +121,10 @@ module Moleculer
     end
 
     def fetch_next_nodes_for_event(event_name)
-      services = fetch_service_list_for_event(event_name)
-      services.map { |s| s.min_by { |a| a[:last_called_at] }[:node] }.flatten
-    end
-
-    def fetch_service_list_for_event(event_name)
-      HashUtil.fetch(@events, event_name, {}).values
+      service_names = HashUtil.fetch(@events, event_name, {}).keys
+      node_names    = service_names.map { |s| @services[s] }
+      nodes         = node_names.map { |names| names.map { |name| @nodes[name] } }
+      nodes.map { |node_list| node_list.min_by { |a| a[:last_called_at] }[:node] }
     end
 
     def fetch_node_list_for_action(action_name)
@@ -170,9 +168,9 @@ module Moleculer
     end
 
     def replace_event(event, service, node) # rubocop:disable Metric/AbcSize
-      @events[event.name]               ||= Concurrent::Hash.new
-      @events[event.name][service.name] ||= Concurrent::Array.new
-      @events[event.name][service.name] << node.id unless @events[event.name][service.name].include?(node.id)
+      @events[event.name]                       ||= Concurrent::Hash.new
+      @events[event.name][service.service_name] ||= Concurrent::Array.new
+      @events[event.name][service.service_name] << node.id unless @events[event.name][service.service_name].include?(node.id)
     end
   end
 end

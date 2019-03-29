@@ -84,7 +84,7 @@ module Moleculer
     def emit(event_name, payload, options={})
       events = @registry.fetch_events(event_name)
 
-      events.each { |e| e.execute(payload, options)}
+      events.each { |e| e.execute(payload, options) }
     end
 
     def run # rubocop:disable Metric/MethodLength
@@ -112,6 +112,7 @@ module Moleculer
       logger.info "starting"
       @transporter.start
       register_local_node
+      start_subscribers
       publish_discover
       publish_info
       start_heartbeat
@@ -192,8 +193,8 @@ module Moleculer
       @transporter.publish(packet)
     end
 
-    def publish_event(event_name, payload)
-
+    def publish_event(event_data)
+      publish_to_node(:event, event_data.delete(:node), event_data)
     end
 
     def publish_heartbeat

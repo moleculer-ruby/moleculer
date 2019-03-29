@@ -28,8 +28,8 @@ module Moleculer
 
       def fetch_with_string(hash, key, default)
         ret = get_camel(hash, key) || get_underscore(hash, key)
-        return default if default != :__no_default__ && !ret
-        raise KeyError, %(key not found: "#{key}") unless ret
+        return default if default != :__no_default__ && ret.nil?
+        raise KeyError, %(key not found: "#{key}") if ret.nil?
 
         ret
       end

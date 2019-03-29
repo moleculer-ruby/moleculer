@@ -54,6 +54,10 @@ module Moleculer
     broker.stop
   end
 
+  def emit(event, data)
+    broker.emit(event, data)
+  end
+
   def heartbeat_interval
     @heartbeat_interval ||= 5
   end

@@ -39,7 +39,7 @@ module Moleculer
 
     def events
       unless @events
-        map = @services.values.map { |s| s.events.keys.map { |key| [key, s.actions[key]] } }.reject(&:empty?)
+        map = @services.values.map { |s| s.events.keys.map { |key| [key, s.events[key]] } }.reject(&:empty?)
         @events = Hash[*map]
       end
       @events
