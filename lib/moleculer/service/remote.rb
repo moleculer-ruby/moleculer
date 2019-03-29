@@ -35,19 +35,34 @@ module Moleculer
             next if Support::HashUtil.fetch(a, :name) =~ /^\$/
 
             define_method("action_#{seq}".to_sym) do |ctx|
-              Moleculer.broker.publish_req(
-                id:         ctx.id,
-                action:     ctx.action.name,
-                params:     ctx.params,
-                meta:       ctx.meta,
-                timeout:    ctx.timeout,
-                node:       self.class.node,
-                request_id: ctx.request_id,
-                stream:     false,
-              )
+              Moleculer.broker.send(:publish_req,
+                                    id:         ctx.id,
+                                    action:     ctx.action.name,
+                                    params:     ctx.params,
+                                    meta:       ctx.meta,
+                                    timeout:    ctx.timeout,
+                                    node:       self.class.node,
+                                    request_id: ctx.request_id,
+                                    stream:     false)
               {}
             end
             action(Support::HashUtil.fetch(a, :name), "action_#{seq}".to_sym)
+            seq += 1
+          end
+        end
+
+        def fetch_events(service_info)
+          seq = 0
+          Support::HashUtil.fetch(service_info, :events).values.each do |a|
+            next if Support::HashUtil.fetch(a, :name) =~ /^\$/
+
+            define_method("event_#{seq}".to_sym) do |data, options|
+              Moleculer.broker.send(:publish_event,
+                                    data:      data,
+                                    broadcast: options[:broadcast] || false,
+                                    groups:    [])
+            end
+            event(Support::HashUtil.fetch(a, :name), "event_#{seq}".to_sym)
             seq += 1
           end
         end

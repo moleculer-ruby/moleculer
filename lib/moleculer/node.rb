@@ -20,9 +20,8 @@ module Moleculer
       @hostname = options.fetch(:hostname, Socket.gethostname)
 
       svcs = options.fetch(:services)
-      if svcs.first.is_a? Hash
-        svcs.map! { |service| Service.from_remote_info(service, self) }
-      end
+      # TODO: move this up to from_remote_info
+      svcs.map! { |service| Service.from_remote_info(service, self) } if svcs.first.is_a? Hash
       @services = Hash[svcs.map { |s| [s.service_name, s] }]
     end
 
@@ -40,7 +39,7 @@ module Moleculer
 
     def events
       unless @events
-        map = @services.values.map { |s| s.actions.keys.map { |key| [key, s.actions[key]] } }.reject(&:empty?)
+        map = @services.values.map { |s| s.events.keys.map { |key| [key, s.actions[key]] } }.reject(&:empty?)
         @events = Hash[*map]
       end
       @events

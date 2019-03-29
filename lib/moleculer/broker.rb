@@ -6,8 +6,9 @@ require_relative "support"
 
 module Moleculer
   ##
-  # The Broker is the primary component of Moleculer. It handles action, events, and communication with remote nodes. Only a single broker should
-  # be run for any given process, and it is automatically started when Moleculer::start or Moleculer::run is called.
+  # The Broker is the primary component of Moleculer. It handles action, events, and communication with remote nodes.
+  # Only a single broker should be run for any given process, and it is automatically started when Moleculer::start or
+  # Moleculer::run is called.
   class Broker
     include Moleculer::Support
 
@@ -80,7 +81,13 @@ module Moleculer
       future.value!(context.timeout)
     end
 
-    def run
+    def emit(event_name, payload, options={})
+      events = @registry.fetch_events(event_name)
+
+      events.each { |e| e.execute(payload, options)}
+    end
+
+    def run # rubocop:disable Metric/MethodLength
       self_read, self_write = IO.pipe
 
       %w[INT TERM].each do |sig|
@@ -128,22 +135,13 @@ module Moleculer
       @registry.local_node
     end
 
-    private
-
-    def handle_signal(sig)
-      case sig
-      when "INT", "TERM"
-        raise Interrupt
-      end
-    end
-
     ##
     # Processes an incoming message and passes it to the appropriate channel for handling
     #
     # @param [String] channel the channel in which the message came in on
     # @param [Hash] message the raw deserialized message
     def process_message(channel, message)
-      @subscribers[channel] << Packets.for(channel.split(".")[1]).new(message) if @subscribers[channel]
+      subscribers[channel] << Packets.for(channel.split(".")[1]).new(message) if subscribers[channel]
     rescue StandardError => e
       @logger.error e
     end
@@ -165,7 +163,7 @@ module Moleculer
         params:  packet.params,
         meta:    packet.meta,
         timeout: Moleculer.timeout,
-      )
+        )
 
       response = action.execute(context)
 
@@ -177,12 +175,25 @@ module Moleculer
         meta:    context.meta,
         stream:  false,
         node:    node,
-      )
+        )
+    end
+
+    private
+
+    def handle_signal(sig)
+      case sig
+      when "INT", "TERM"
+        raise Interrupt
+      end
     end
 
     def publish(packet_type, message = {})
       packet = Packets.for(packet_type).new(message)
       @transporter.publish(packet)
+    end
+
+    def publish_event(event_name, payload)
+
     end
 
     def publish_heartbeat
@@ -285,8 +296,11 @@ module Moleculer
 
     def subscribe(channel, options = {}, &block)
       @logger.trace "subscribing to channel '#{channel}' with options:", options
-      @subscribers        ||= {}
-      @subscribers[channel] = Queue.new(channel, options, &block)
+      subscribers[channel] = Queue.new(channel, options, &block)
+    end
+
+    def subscribers
+      @subscribers ||= Concurrent::Hash.new([])
     end
   end
 end

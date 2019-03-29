@@ -19,12 +19,8 @@ module Moleculer
         @options = options
       end
 
-      ##
-      # @param context [Moleculer::Context] the execution contextd
-      #
-      # @return [Moleculer::Support::Hash] returns a hash which will be converted into json for the response.
-      def execute(context)
-        @service.new.public_send(@method, context)
+      def execute(data, options)
+        @service.new.public_send(@method, data, options)
       end
 
       def node

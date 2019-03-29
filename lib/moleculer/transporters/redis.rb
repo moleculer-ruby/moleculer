@@ -16,6 +16,8 @@ module Moleculer
       def publish(packet)
         @logger.trace "publishing packet to '#{packet.topic}'", packet.as_json
         @publisher.publish(packet.topic, @serializer.serialize(packet))
+      rescue StandardError => e
+        @logger.error e
       end
 
       def publish_to_node(packet, node)
@@ -41,11 +43,11 @@ module Moleculer
             subscription.pmessage do |_, channel, message|
               begin
                 parsed = @serializer.deserialize(message)
+                @logger.trace "received message '#{channel}'", parsed
+                @broker.process_message(channel, parsed)
               rescue StandardError => e
                 @logger.error e
               end
-              @logger.trace "received message '#{channel}'", parsed
-              @broker.process_message(channel, parsed)
             end
           end
         end

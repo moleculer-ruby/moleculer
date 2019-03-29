@@ -42,6 +42,7 @@ module Moleculer
       update_node_for_load_balancer(node)
       update_services(node)
       update_actions(node)
+      update_events(node)
       node
     end
 
@@ -55,6 +56,11 @@ module Moleculer
     def fetch_action(action_name)
       node = fetch_next_node_for_action(action_name)
       fetch_action_from_node(action_name, node)
+    end
+
+    def fetch_events(event_name)
+      nodes = fetch_next_nodes_for_event(event_name)
+      fetch_event_from_node(event_name, node)
     end
 
     def fetch_node(node_id)
@@ -104,11 +110,26 @@ module Moleculer
       raise(Errors::ActionNotFound, "The action '#{action_name}' was found on the node with id '#{node.id}'")
     end
 
-    def fetch_next_node_for_action(action_name)
-      fetch_node_list_for(action_name).min_by { |a| a[:last_called_at] }[:node]
+    def fetch_event_from_node(event_name, node)
+      node.events.fetch(event_name)
+    rescue KeyError
+      raise Errors::EventNotFound, "The event '#{event_name}' was not found on the node id with id '#{node.id}'"
     end
 
-    def fetch_node_list_for(action_name)
+    def fetch_next_node_for_action(action_name)
+      fetch_node_list_for_action(action_name).min_by { |a| a[:last_called_at] }[:node]
+    end
+
+    def fetch_next_nodes_for_event(event_name)
+      services = fetch_service_list_for_event(event_name)
+      services.map { |s| s.min_by { |a| a[:last_called_at] }[:node] }.flatten
+    end
+
+    def fetch_service_list_for_event(event_name)
+      HashUtil.fetch(@events, event_name, {}).values
+    end
+
+    def fetch_node_list_for_action(action_name)
       node_list = HashUtil.fetch(@actions, action_name)
       node_list.collect { |name| @nodes[name] }
     rescue KeyError
@@ -120,6 +141,14 @@ module Moleculer
         replace_action(action, node)
       end
       @logger.debug "registered #{node.actions.length} action(s) for node '#{node.id}'"
+    end
+
+    def update_events(node)
+      node.services.values.each do |service|
+        service.events.values.each do |event|
+          replace_event(event, service, node)
+        end
+      end
     end
 
     def update_services(node)
@@ -137,8 +166,13 @@ module Moleculer
 
     def replace_action(action, node)
       @actions[action.name] ||= Concurrent::Array.new
-      @actions[action.name].reject! { |a| a == node.id }
-      @actions[action.name] << node.id
+      @actions[action.name] << node.id unless @actions[action.name].include?(node.id)
+    end
+
+    def replace_event(event, service, node) # rubocop:disable Metric/AbcSize
+      @events[event.name]               ||= Concurrent::Hash.new
+      @events[event.name][service.name] ||= Concurrent::Array.new
+      @events[event.name][service.name] << node.id unless @events[event.name][service.name].include?(node.id)
     end
   end
 end
