@@ -58,7 +58,7 @@ module Moleculer
         # @param options [Hash] event options.
         # @option options [Hash] :group the group in which the event should belong, defaults to the service_name
         def event(name, method, options = {})
-          events[name] = Event::Local.new(name, self, method, options)
+          events[name] = Event.new(name, self, method, options)
         end
 
         def actions

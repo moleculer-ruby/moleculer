@@ -38,6 +38,14 @@ module Moleculer
       @actions
     end
 
+    def events
+      unless @events
+        map = @services.values.map { |s| s.actions.keys.map { |key| [key, s.actions[key]] } }.reject(&:empty?)
+        @events = Hash[*map]
+      end
+      @events
+    end
+
     def local?
       @local
     end

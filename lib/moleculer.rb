@@ -54,6 +54,10 @@ module Moleculer
     broker.stop
   end
 
+  def heartbeat_interval
+    @heartbeat_interval ||= 5
+  end
+
   #     def namespace
   #       @namespace || ""
   #     end

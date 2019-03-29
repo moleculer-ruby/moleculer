@@ -1,7 +1,10 @@
 require_relative "packets/discover"
+require_relative "packets/event"
+require_relative "packets/heartbeat"
 require_relative "packets/info"
 require_relative "packets/req"
 require_relative "packets/res"
+
 
 module Moleculer
   module Packets
@@ -9,7 +12,9 @@ module Moleculer
       Discover.packet_name => Discover,
       Info.packet_name => Info,
       Req.packet_name => Req,
-      Res.packet_name => Res
+      Res.packet_name => Res,
+      Heartbeat.packet_name => Heartbeat,
+      Event.packet_name => Event,
     }.freeze
 
     def self.for(type)

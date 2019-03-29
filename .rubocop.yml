@@ -4,6 +4,9 @@ Layout/ExtraSpacing:
 Layout/IndentHash:
   EnforcedStyle: consistent
 
+Layout/IndentationWidth:
+  IgnoredPatterns: []
+
 Style/AlignHash:
   EnforcedColonStyle: table
 
@@ -24,6 +27,10 @@ Style/StringLiterals:
 
 Metrics/LineLength:
   Max: 120
+  IgnoreCopDirectives: true
+
+Metrics/ModuleLength:
+  Enabled: false
 
 Metrics/ParameterLists:
   Enabled: false
