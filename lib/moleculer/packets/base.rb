@@ -1,59 +1,46 @@
-# frozen_string_literal: true
-
-require "forwardable"
-require "ostruct"
-require "json"
+require_relative "../support"
 
 module Moleculer
   module Packets
-    # @private
+    ##
+    # @abstract Subclass for packet types.
     class Base
-      extend Forwardable
+      include Support
+      ##
+      # The protocol version
+      attr_reader :ver
 
-      attr_reader :node_id, :broadcast, :namespace, :target
+      ##
+      # The sender of the packet
+      attr_reader :sender
 
-      def self.field(name)
-        @fields ||= {}
-        @fields[name] = {
-          name: name
-        }
-        define_getter(name)
+      def self.packet_name
+        name.split("::").last.upcase
       end
 
-      def self.define_getter(name)
-        class_eval <<-DEFINITION
-          def #{name}
-            @data[:#{name}] || @data["#{name}"]
-          end
-        DEFINITION
+      ##
+      # @param data [Hash] the raw packet data
+      # @options data [String] :ver the protocol version, defaults to `'3'`
+      # @options  data [String] :sender the packet sender, defaults to `Moleculer#node_id`
+      def initialize(data = {})
+        @ver    = HashUtil.fetch(data, :ver, "3")
+        @sender = HashUtil.fetch(data, :sender, Moleculer.node_id)
       end
 
-      class << self
-        attr_reader :fields
-      end
-
+      ##
+      # The publishing topic for the packet. This is used to publish packets to the moleculer network. Override as
+      # needed.
+      #
+      # @return [String] the pub/sub topic to publish to
       def topic
-        "MOL.#{name}"
+        "MOL.#{self.class.packet_name}"
       end
 
-      def self.from(string)
-        new JSON.parse(string)
-      end
-
-      def initialize(options)
-        @data = options.merge(ver: Moleculer::PROTOCOL_VERSION)
-      end
-
-      def name
-        self.class::NAME
-      end
-
-      def serialize
-        @data.to_json
-      end
-
-      def to_h
-        @data
+      def as_json
+        {
+          ver:    ver,
+          sender: sender,
+        }
       end
     end
   end

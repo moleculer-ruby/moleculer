@@ -1,41 +1,67 @@
+require "socket"
+
 module Moleculer
   class Node
-    attr_reader :broken, :name, :is_self, :actions, :services
+    class << self
+      def from_remote_info(info_packet)
+        new(
+          services: info_packet.services,
+          node_id:  info_packet.sender,
+        )
+      end
+    end
 
-    def initialize(info_packet, is_self)
-      @is_self = is_self
-      @broken = false
-      @name = info_packet.sender
-      @services, @service_index = parse_services(info_packet)
+    attr_reader :id,
+                :services
+
+    def initialize(options = {})
+      @id       = options.fetch(:node_id)
+      @local    = options.fetch(:local, false)
+      @hostname = options.fetch(:hostname, Socket.gethostname)
+
+      svcs = options.fetch(:services)
+      # TODO: move this up to from_remote_info
+      svcs.map! { |service| Service.from_remote_info(service, self) } if svcs.first.is_a? Hash
+      @services = Hash[svcs.map { |s| [s.service_name, s] }]
+    end
+
+    def register_service(service)
+      @services[service.name] = service
     end
 
     def actions
-      @actions ||= @services.collect { |s| s.actions }.flatten
+      unless @actions
+        map      = @services.values.map { |s| s.actions.keys.map { |key| [key, s.actions[key]] } }.reject(&:empty?)
+        @actions = Hash[*map]
+      end
+      @actions
     end
 
     def events
-      @events ||= @services.collect { |s| s.events }.flatten
-    end
-
-    private
-
-    def parse_services(info_packet)
-      service_index = {}
-      services = []
-      info_packet.services.each_index do |idx|
-        svc = info_packet.services[idx]
-        next if svc["name"] =~ /^\$/
-        service = parse_service(svc)
-        service_index[service.name] = idx
-        services << service
+      unless @events
+        map = @services.values.map { |s| s.events.keys.map { |key| [key, s.events[key]] } }.reject(&:empty?)
+        @events = Hash[*map]
       end
-      [services, service_index]
+      @events
     end
 
-    def parse_service(service)
-      Node::Service.new(service)
+    def local?
+      @local
+    end
+
+    def as_json
+      {
+        config:   {},
+        seq:      1,
+        ipList:   [],
+        hostname: @hostname,
+        services: @services.values.map(&:as_json),
+        client: {
+          type: "Ruby",
+          version: Moleculer::VERSION,
+          lang_version: RUBY_VERSION,
+        }
+      }
     end
   end
 end
-
-require_relative "./node/service"

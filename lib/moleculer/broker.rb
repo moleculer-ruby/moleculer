@@ -1,297 +1,320 @@
 # frozen_string_literal: true
 
-require "uri"
-require "logger"
-require "timeout"
-require "forwardable"
-
-require_relative "./packets"
-require_relative "./transporters"
-require_relative "./version"
-require_relative "./external_service_registry"
-require_relative "./local_service_registry"
+require_relative "registry"
+require_relative "transporters"
+require_relative "support"
 
 module Moleculer
   ##
-  # The Broker is the primary component of Moleculer. It handles actions, events, and communication with remote nodes.
+  # The Broker is the primary component of Moleculer. It handles action, events, and communication with remote nodes.
+  # Only a single broker should be run for any given process, and it is automatically started when Moleculer::start or
+  # Moleculer::run is called.
   class Broker
-    include Forwardable
+    include Moleculer::Support
 
     ##
-    # Thrown when a request times out.
-    class RequestTimeoutError < Timeout::Error
-      def initialize(request)
-        super("An error occurred executing action '#{request.action}', no response was received within #{Moleculer.timeout} seconds")
+    # @private
+    # A queue is a subscriber thread pool manager allowing Moleculer to handle requests asynchronously
+    class Queue
+      def initialize(name, options, &block)
+        opts      = { max_threads: 1, min_threads: 1, max_queue: 0, fallback_policy: :abort }.merge(options)
+        @executor = block
+        # noinspection RubyArgCount
+        @pool   = Concurrent::ThreadPoolExecutor.new(opts)
+        @name   = name
+        @logger = Moleculer.logger
       end
-    end
 
-    include Concurrent::Async
-    attr_reader :node_id, :transporter, :logger, :namespace, :services
-
-    ##
-    # @param options [Hash] broker options
-    # @option options [string] :namespace Namespace of nodes to segment your nodes on the same network.
-    # @option options [string] :node_id Unique node identifier. Must be unique in a namespace
-    # @option options [string|Moleculer::Transporter] :transporter Transporter settings.
-    def initialize(options)
-      @namespace                 = options[:namespace]
-      @logger                    = Logger.new(STDOUT)
-      @node_id                   = options[:node_id]
-      @transporter               = Transporters.for(options[:transporter]).new(self, options[:transporter])
-      @started                   = false
-      @external_service_registry = ExternalServiceRegistry.new(self)
-      @local_service_registry    = LocalServiceRegistry.new(self)
-      @responses                 = Concurrent::Map.new
-    end
-
-    ##
-    # Starts the broker asynchronously. The broker will run until #stop is called.
-    def start
-      logger.info "Moleculer Ruby #{Moleculer::VERSION}"
-      logger.info "Node ID: #{node_id}"
-      logger.info "Transporter: #{transporter.name}"
-      register_local_services
-      transporter.async.connect
-      subscribe_to_all_events
-      publish_discover
-      publish_info
-      start_heartbeat
-      @started = true
-      self
-    end
-
-    ##
-    # Runs the broker synchronously. Blocks until the broker is stopped.
-    def run
-      start
-      sleep 1 while @started
-    end
-
-    # Stops the broker
-    def stop
-      @started = false
-    end
-
-    ##
-    # Blocks until the named service starts
-    #
-    # @param name [String] the name of the service to wait for
-    # @param timeout [Integer] the maximum amount of time to wait. Defaults to Moleculer#timeout
-    #
-    # @raise [Moleculer::RequestTimeoutError] if the service is not registered within the timeout period
-    #
-    # @return [Moleculer::Broker] self
-    def wait_for_service(name, timeout = Moleculer.timeout)
-      @external_service_registry.wait_for_service(name, timeout)
-      self
-    end
-
-    ##
-    # Creates a service from a class that includes the {Noleculer::Service} module.
-    #
-    # @param service [Moleculer::Service] creates and registers the service with the broker.
-    def create_service(service)
-      @local_service_registry.register(service)
-      @local_service_registry
-    end
-
-    def destroy_service(name); end
-
-    ##
-    # Calls an action on a remote service. This is load balanced, and will dispatch the action call in rotation to
-    # any node has the service registered.
-    def call(action_name, params, options = {}, &block)
-      request = Packets::Request.new(
-        action: action_name,
-        params: params,
-        meta: options[:meta] || {},
-        metrics: false,
-        timeout: Moleculer.timeout,
-        level: 1,
-        stream: false
-      )
-      publish_call(request)
-      return async.handle_response(request, &block) if block_given?
-
-      handle_response(request) { |_, response| response }
-    end
-
-    def mcall; end
-
-    def emit(event_name, payload, groups=[])
-      event = Packets::Event.new(
-        event: event_name,
-        data: payload,
-        groups: [],
-      )
-      nodes = @external_service_registry.events[event_name]
-      if nodes
-        nodes.each do |node|
-          event.target_node = node.name
-          @transporter.publish(event)
+      ##
+      # Pushes a packet onto the queue by queuing the action in the thread pool
+      #
+      # @param [Moleculer::Packet::Base] packet the packet to queue into the pool
+      def <<(packet)
+        @pool.post do
+          begin
+            @executor.call(packet)
+          rescue StandardError => e
+            @logger.error e
+          end
         end
       end
     end
 
-    def broadcast(event_name, payload, groups); end
+    attr_reader :logger
 
-    def broadcast_local(event_name, payload, groups); end
+    def initialize
+      @registry    = Registry.new(self)
+      @logger      = Moleculer.logger
+      @transporter = Transporters.for(Moleculer.transporter, self)
+      @contexts    = Concurrent::Map.new
+    end
 
-    def ping(node_id, timeout); end
+    ##
+    # Call the provided action.
+    #
+    # @param action_name [String] the action to call.
+    # @param params [Hash] the params with which to call the action
+    # @param meta [Hash] the metadata of the request
+    #
+    # @return [Hash] the return result of the action call
+    def call(action_name, params, meta: {}, node_id: nil, timeout: Moleculer.timeout) # rubocop:disable Metrics/MethodLength
+      action = node_id ? @registry.fetch_action_for_node_id(action_name, node_id) : @registry.fetch_action(action_name)
 
-    def handle_response(request)
-      response = nil
-      Timeout.timeout(Moleculer.timeout) do
-        sleep 0.01 until response = @responses.fetch(request.id, nil)
+      context = Context.new(
+        broker:  self,
+        action:  action,
+        params:  params,
+        meta:    meta,
+        timeout: timeout,
+      )
+
+      future = Concurrent::Promises.resolvable_future
+
+      @contexts[context.id] = {
+        context:   context,
+        called_at: Time.now,
+        future:    future,
+      }
+
+      action.execute(context)
+
+      future.value!(context.timeout)
+    end
+
+    def emit(event_name, payload, options={})
+      events = @registry.fetch_events(event_name)
+
+      events.each { |e| e.execute(payload, options) }
+    end
+
+    def run # rubocop:disable Metric/MethodLength
+      self_read, self_write = IO.pipe
+
+      %w[INT TERM].each do |sig|
+        trap sig do
+          self_write.puts(sig)
+        end
       end
-      @responses.delete(request.id)
-      yield request, response
-    rescue Timeout::Error => e
-      error = RequestTimeoutError.new(request)
-      error.set_backtrace(e.backtrace)
-      @logger.error(RequestTimeoutError.new(request))
-      raise error
+
+      begin
+        start
+
+        while (readable_io = IO.select([self_read]))
+          signal           = readable_io.first[0].gets.strip
+          handle_signal(signal)
+        end
+      rescue Interrupt
+        stop
+      end
+    end
+
+    def start
+      logger.info "starting"
+      @transporter.start
+      register_local_node
+      start_subscribers
+      publish_discover
+      publish_info
+      start_heartbeat
+      self
+    end
+
+    def stop
+      @logger.info "stopping"
+      publish(:disconnect)
+      @transporter.stop
+    end
+
+    def wait_for_services(*services)
+      until (services = @registry.missing_services(*services)) && services.empty?
+        @logger.info "waiting for services '#{services.join(', ')}'"
+        sleep 0.1
+      end
+    end
+
+    def local_node
+      @registry.local_node
+    end
+
+    ##
+    # Processes an incoming message and passes it to the appropriate channel for handling
+    #
+    # @param [String] channel the channel in which the message came in on
+    # @param [Hash] message the raw deserialized message
+    def process_message(channel, message)
+      subscribers[channel] << Packets.for(channel.split(".")[1]).new(message) if subscribers[channel]
+    rescue StandardError => e
+      @logger.error e
+    end
+
+    def process_response(packet)
+      context = @contexts.delete(packet.id)
+      context[:future].fulfill(packet.data)
+    end
+
+    def process_event(packet)
+      @logger.debug("processing event '#{packet.event}'")
+      event = @registry.fetch_events_for_node_id(packet.event, Moleculer.node_id)
+
+      event.execute(packet.data)
+    end
+
+    def process_request(packet)
+      @logger.debug "processing request #{packet.id}"
+      action = @registry.fetch_action_for_node_id(packet.action, Moleculer.node_id)
+      node   = @registry.fetch_node(packet.sender)
+
+      context = Context.new(
+        id:      packet.id,
+        broker:  self,
+        action:  action,
+        params:  packet.params,
+        meta:    packet.meta,
+        timeout: Moleculer.timeout,
+        )
+
+      response = action.execute(context)
+
+      publish_res(
+        id:      context.id,
+        success: true,
+        data:    response,
+        error:   {},
+        meta:    context.meta,
+        stream:  false,
+        node:    node,
+        )
     end
 
     private
 
-    def publish_call(request)
-      node = @external_service_registry.get_node_for_action(request.action)
-      request.target_node = node
-      @transporter.publish(request)
+    def handle_signal(sig)
+      case sig
+      when "INT", "TERM"
+        raise Interrupt
+      end
+    end
+
+    def publish(packet_type, message = {})
+      packet = Packets.for(packet_type).new(message)
+      @transporter.publish(packet)
+    end
+
+    def publish_event(event_data)
+      publish_to_node(:event, event_data.delete(:node), event_data)
+    end
+
+    def publish_heartbeat
+      publish(:heartbeat)
+    end
+
+    ##
+    # Publishes the discover packet
+    def publish_discover
+      publish(:discover)
+    end
+
+    def publish_info(node_id = nil)
+      return publish(:info, @registry.local_node.as_json) unless node_id
+
+      node = @registry.safe_fetch_node(node_id) || node_id
+      publish_to_node(:info, node, @registry.local_node.as_json)
+    end
+
+    def publish_req(request_data)
+      publish_to_node(:req, request_data.delete(:node), request_data)
+    end
+
+    def publish_res(response_data)
+      publish_to_node(:res, response_data.delete(:node), response_data)
+    end
+
+    def publish_to_node(packet_type, node, message = {})
+      packet = Packets.for(packet_type).new(message.merge(node: node))
+      @transporter.publish_to_node(packet, node)
+    end
+
+    def register_local_node
+      logger.info "registering #{Moleculer.services.length} local services"
+      node = Node.new(
+        node_id:  Moleculer.node_id,
+        services: Moleculer.services,
+        local:    true,
+      )
+      @registry.register_node(node)
+    end
+
+    def register_or_update_remote_node(info_packet)
+      node = Node.from_remote_info(info_packet)
+      @registry.register_node(node)
+    end
+
+    def register_local_services
+      Moleculer.services.each do |service|
+        register_service(service)
+      end
+    end
+
+    def register_service(service)
+      @registry.register_local_service(service)
     end
 
     def start_heartbeat
-      Concurrent::TimerTask.new(execution_interval: 1, run_now: true) do
+      Concurrent::TimerTask.new(execution_interval: Moleculer.heartbeat_interval) do
         publish_heartbeat
       end.execute
     end
 
-    def publish_heartbeat
-      @transporter.publish(Packets::Heartbeat.new(
-                             sender: @node_id,
-                             cpu: 0
-                           ))
-    end
-
-    def publish_discover
-      @transporter.publish(Packets::Discover.new(
-                             sender: @node_id
-                           ))
-    end
-
-    def publish_info
-      @transporter.publish(@local_service_registry.to_info)
-    end
-
-    def publish_response(packet)
-      @transporter.publish(packet)
-    end
-
-    def register_local_services
-      logger.info "Registering #{Moleculer.services.length} services"
-      Moleculer.services.each { |service| create_service(service) }
-    end
-
-    def subscribe_to_all_events
-      subscribe_to_disconnect
-      subscribe_to_discover
-      subscribe_to_events
+    def start_subscribers
       subscribe_to_info
-      subscribe_to_ping
-      subscribe_to_pong
-      subscribe_to_requests
-      subscribe_to_responses
-      subscribe_to_targeted_discover
-      subscribe_to_targeted_info
-      subscribe_to_targeted_ping
-    end
-
-    def subscribe_to_balanced_events(event)
-      logger.debug "setting up EVENTB subscription for '#{event}'"
-      transporter.subscribe("MOL.EVENTB.#{event}", Packets::Event) do
-      end
-    end
-
-    def subscribe_to_balanced_requests(action)
-      logger.debug "setting up REQB subscription for action '#{action}'"
-      transporter.subscribe("MOL.REQB.#{action}", Packets::Request) do
-      end
-    end
-
-    def subscribe_to_disconnect
-      logger.debug "setting up DISCONNECT subscription"
-      transporter.subscribe("MOL.DISCONNECT", Packets::Disconnect) do
-      end
-    end
-
-    def subscribe_to_discover
-      logger.debug "setting up DISCOVER subscription"
-      transporter.subscribe("MOL.DISCOVER", Packets::Discover) do
-        publish_info
-      end
+      subscribe_to_res
+      subscribe_to_req
+      subscribe_to_discover
     end
 
     def subscribe_to_events
-      logger.debug "setting up EVENT subscription"
-      transporter.subscribe("MOL.EVENT.#{node_id}", Packets::Event) do |packet|
-        @local_service_registry.execute_event(packet)
+      subscribe("MOL.EVENT.#{Moleculer.node_id}") do |packet|
+        process_event(packet)
       end
     end
 
     def subscribe_to_info
-      logger.debug "setting up INFO subscription"
-      transporter.subscribe("MOL.INFO", Packets::Info) do |packet|
-        @external_service_registry.process_info_packet(packet)
+      subscribe("MOL.INFO.#{Moleculer.node_id}") do |packet|
+        register_or_update_remote_node(packet)
+      end
+      subscribe("MOL.INFO") do |packet|
+        register_or_update_remote_node(packet) unless packet.sender == Moleculer.node_id
       end
     end
 
-    def subscribe_to_ping
-      logger.debug "setting up PING subscription"
-      transporter.subscribe("MOL.PING", Packets::Ping) do
+    def subscribe_to_res
+      subscribe("MOL.RES.#{Moleculer.node_id}") do |packet|
+        process_response(packet)
       end
     end
 
-    def subscribe_to_pong
-      logger.debug "setting up PONG subscription"
-      transporter.subscribe("MOL.PONG", Packets::Pong) do
+    def subscribe_to_req
+      subscribe("MOL.REQ.#{Moleculer.node_id}", min_threads: 10, max_threads: 100) do |packet|
+        process_request(packet)
       end
     end
 
-    def subscribe_to_requests
-      logger.debug "setting up REQ subscription"
-      transporter.subscribe("MOL.REQ.#{node_id}", Packets::Request) do |packet|
-        # TODO: should only accept a single packet param
-        response = @local_service_registry.execute_action(packet.action, packet)
-        publish_response(response)
+    def subscribe_to_discover
+      subscribe("MOL.DISCOVER") do |packet|
+        publish_info(packet.sender) unless packet.sender == Moleculer.node_id
+      end
+      subscribe("MOL.DISCOVER.#{Moleculer.node_id}") do |packet|
+        publish_info(packet.sender)
       end
     end
 
-    def subscribe_to_responses
-      logger.debug "setting up RES subscription"
-      transporter.subscribe("MOL.RES.#{node_id}", Packets::Response) do |packet|
-        @responses.put_if_absent(packet.id, packet)
-      end
+    def subscribe(channel, options = {}, &block)
+      @logger.trace "subscribing to channel '#{channel}' with options:", options
+      subscribers[channel] = Queue.new(channel, options, &block)
     end
 
-    def subscribe_to_targeted_discover
-      logger.debug "setting up targeted DISCOVER subscription"
-      transporter.subscribe("MOL.DISCOVER.#{node_id}", Packets::Discover) do
-        publish_info
-      end
-    end
-
-    def subscribe_to_targeted_ping
-      logger.debug "setting up targeted PING subscription"
-      transporter.subscribe("MOL.PING.#{node_id}", Packets::Ping) do
-      end
-    end
-
-    def subscribe_to_targeted_info
-      logger.debug "setting up targeted INFO subscription"
-      transporter.subscribe("MOL.INFO.#{node_id}", Packets::Info) do |packet|
-        @external_service_registry.process_info_packet(packet)
-      end
+    def subscribers
+      @subscribers ||= Concurrent::Hash.new([])
     end
   end
 end

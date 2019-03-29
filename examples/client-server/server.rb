@@ -1,13 +1,12 @@
 require_relative "../../lib/moleculer"
 
-class Server
-  include Moleculer::Service
-  moleculer_service_name "ruby-server"
-  moleculer_action "echo", :echo
-  moleculer_event "reply.event", :handle_event
+class Server < Moleculer::Service::Base
+  service_name "ruby-server"
+  action "echo", :echo
+  event "reply.event", :handle_event
 
-  def self.echo(request)
-    {message: "You said #{request.params["message"]}"}
+  def echo(context)
+    {message: "You said #{context.params["message"]}"}
   end
 
   def self.handle_event(request)
@@ -16,6 +15,10 @@ class Server
 
 end
 
-Moleculer.broker.run
+Moleculer.config do |c|
+  c.services << Server
+end
+
+Moleculer.run
 
 

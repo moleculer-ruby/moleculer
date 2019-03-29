@@ -1,11 +1,38 @@
+Layout/ExtraSpacing:
+  ForceEqualSignAlignment: true
+
 Layout/IndentHash:
   EnforcedStyle: consistent
 
-#Style/ClassAndModuleChildren:
-#  EnforcedStyle: disabled
+Layout/IndentationWidth:
+  IgnoredPatterns: []
+
+Style/AlignHash:
+  EnforcedColonStyle: table
+  EnforcedHashRocketStyle: table
+
+Style/ModuleFunction:
+  Enabled: false
+
+Style/TrailingCommaInArguments:
+  EnforcedStyleForMultiline: comma
+
+Style/TrailingCommaInHashLiteral:
+  EnforcedStyleForMultiline: comma
+
+Style/TrailingCommaInArrayLiteral:
+  EnforcedStyleForMultiline: comma
 
 Style/StringLiterals:
     EnforcedStyle: "double_quotes"
 
 Metrics/LineLength:
   Max: 120
+  IgnoreCopDirectives: true
+
+Metrics/ModuleLength:
+  Enabled: false
+
+Metrics/ParameterLists:
+  Enabled: false
+

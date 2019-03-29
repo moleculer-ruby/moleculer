@@ -1,27 +1,36 @@
-# frozen_string_literal: true
-
-require_relative "./base"
+require_relative "base"
 
 module Moleculer
   module Packets
+    ##
+    # Represents a EVENT packet
     class Event < Base
-      attr_writer :target_node
+      attr_reader :event,
+                  :data,
+                  :broadcast,
+                  :groups
 
-      NAME = "EVENT"
+      def initialize(data)
+        super(data)
 
-      field :ver
-      field :sender
-      field :event
-      field :data
-      field :groups
-      field :broadcast
-
-      def topic
-        "MOL.EVENT.#{@target_node}"
+        @event     = HashUtil.fetch(data, :event)
+        @data      = HashUtil.fetch(data, :data)
+        @broadcast = HashUtil.fetch(data, :broadcast)
+        @groups    = HashUtil.fetch(data, :groups, [])
+        @node      = HashUtil.fetch(data, :node, nil)
       end
 
-      def sender
-        Moleculer.node_id
+      def as_json
+        super.merge(
+          event:     @event,
+          data:      @data,
+          broadcast: @broadcast,
+          groups:    @groups,
+        )
+      end
+
+      def topic
+        "#{super}.#{@node.id}"
       end
     end
   end
