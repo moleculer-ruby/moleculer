@@ -12,6 +12,9 @@ require "moleculer/node"
 require "moleculer/serializers"
 require "moleculer/packets"
 
+# Moleculer is a fast, modern and powerful microservices framework for originally written for [Node.js](). It helps you
+# to build efficient, reliable & scalable services. Moleculer provides many features for building and managing your
+# microservices.
 module Moleculer
   extend self
   PROTOCOL_VERSION = "3".freeze
@@ -25,20 +28,33 @@ module Moleculer
               :transporter,
               :service_prefix
 
+  # @!attribute broker [r]
+  #   @return [Moleculer::Broker] the moleculer broker instance
+
+
+  def broker
+    @broker ||= Broker.new
+  end
+
+  ##
+  # Calls the given action. This method will block until the timeout is hit (default 5 seconds) or the action returns
+  # a response
+  #
+  # @param action [Symbol] the name of the action to call
+  # @param params [Hash] params to pass to the action
+  # @param kwargs [Hash] call options (see Moleculer::Broker#call)
+  #
+  # @return [Hash] the request response
   def call(action, params = {}, **kwargs)
     broker.ensure_running
     if params.empty?
-      return broker.call(action, kwargs)
+      return broker.call(action.to_s, kwargs)
     end
-    broker.call(action, params, kwargs)
+    broker.call(action.to_s, params, kwargs)
   end
 
   def config
     yield self
-  end
-
-  def broker
-    @broker ||= Broker.new
   end
 
   def start
