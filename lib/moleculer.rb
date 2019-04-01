@@ -75,7 +75,6 @@ module Moleculer
     broker.emit(event, data)
   end
 
-
   # @!attribute log_level [w]
   #   @return [Symbol] the Moleculer log_level. Defaults to `:debug`
 
@@ -102,7 +101,6 @@ module Moleculer
     broker.start
   end
 
-
   ##
   # Stops the moleculer broker.
   def stop
@@ -117,7 +115,7 @@ module Moleculer
   # @example
   #   Moleculer.wait_for_services("some.service", "someother.service")
   def wait_for_services(*services)
-    @broker.wait_for_services(*services)
+    broker.wait_for_services(*services)
   end
 
   # CONFIGURATION
@@ -139,8 +137,8 @@ module Moleculer
     @node_id
   end
 
-  def node_id=(_id)
-    @node_id = "#{@node_id}-#{Process.pid}"
+  def node_id=(id)
+    @node_id = "#{id}-#{Process.pid}"
   end
 
   # @!attribute serializer [r|w]
