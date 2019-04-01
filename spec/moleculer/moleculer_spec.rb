@@ -50,7 +50,7 @@ RSpec.describe Moleculer do
     end
 
     after :each do
-      %w[node_id log_level serializer timeout transporter service_prefix logger].each do |v|
+      %w[node_id log_level serializer heartbeat_interval services timeout transporter service_prefix logger].each do |v|
         if Moleculer.send(:instance_variable_get, "@#{v}".to_sym)
           Moleculer.send(:remove_instance_variable, "@#{v}".to_sym)
         end
@@ -65,6 +65,8 @@ RSpec.describe Moleculer do
         c.timeout        = 100
         c.transporter    = "some_transporter"
         c.service_prefix = "service"
+        c.heartbeat_interval = 10
+        c.services << Moleculer::Service::Base
       end
 
       expect(subject.node_id).to include("test")
@@ -73,6 +75,8 @@ RSpec.describe Moleculer do
       expect(subject.timeout).to eq 100
       expect(subject.transporter).to eq "some_transporter"
       expect(subject.service_prefix).to eq "service"
+      expect(subject.heartbeat_interval).to eq 10
+      expect(subject.services).to include(Moleculer::Service::Base)
     end
 
     it "should have the correct defaults" do
@@ -82,6 +86,8 @@ RSpec.describe Moleculer do
       expect(subject.timeout).to eq 5
       expect(subject.transporter).to eq "redis://localhost"
       expect(subject.service_prefix).to be_nil
+      expect(subject.heartbeat_interval).to eq 5
+      expect(subject.services).to eq []
     end
   end
 
