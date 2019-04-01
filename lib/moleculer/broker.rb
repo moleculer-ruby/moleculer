@@ -158,6 +158,8 @@ module Moleculer
       events = @registry.fetch_events_for_node_id(packet.event, Moleculer.node_id)
 
       events.each { |e| e.execute(packet.data) }
+    rescue StandardError => e
+      @logger.error e
     end
 
     def process_request(packet)
