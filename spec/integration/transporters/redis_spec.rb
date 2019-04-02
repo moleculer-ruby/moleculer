@@ -15,15 +15,15 @@ RSpec.describe Moleculer::Transporters::Redis do
       instance_double(Moleculer::Packets::Info,
                       topic:   "MOL.INFO.test-321",
                       as_json: { sender:   "test-123",
-                                 ver: "3",
+                                 ver:      "3",
                                  services: [],
                                  ipList:   [],
                                  config:   {},
                                  hostname: "thehost",
                                  client:   {
-                                   type:         1,
-                                   version:      1,
-                                   langVersion:  1,
+                                   type:        1,
+                                   version:     1,
+                                   langVersion: 1,
                                  } })
     end
     before :each do
