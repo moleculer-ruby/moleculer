@@ -99,6 +99,12 @@ module Moleculer
       services - @services.keys
     end
 
+    def remove_node(node_id)
+      @logger.info "removing node '#{node_id}'"
+      @nodes.delete(node_id)
+      remove_node_from_actions(node_id)
+    end
+
     private
 
     def get_local_action(name)
@@ -137,6 +143,20 @@ module Moleculer
       node_list.collect { |name| @nodes[name] }
     rescue KeyError
       raise Errors::ActionNotFound, "The action '#{action_name}' was not found"
+    end
+
+    def remove_node_from_actions(node_id)
+      @actions.values.each do |action|
+        action.reject! { |id| id == node_id }
+      end
+    end
+
+    def remove_node_from_events(node_id)
+      @events.values.each do |event|
+        event.values.each do |list|
+          list.reject! { |id| id == node_id }
+        end
+      end
     end
 
     def update_actions(node)
