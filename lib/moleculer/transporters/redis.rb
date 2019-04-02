@@ -128,7 +128,7 @@ module Moleculer
 
         def disconnect
           @logger.debug "disconnecting subscriptions"
-          @subscriptions.each(&:stop)
+          @subscriptions.each(&:disconnect)
         end
       end
 
