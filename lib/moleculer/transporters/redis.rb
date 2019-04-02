@@ -16,16 +16,22 @@ module Moleculer
           @serializer = Serializers.for(Moleculer.serializer)
         end
 
+        ##
+        # Publishes the packet to the packet's topic
         def publish(packet)
           @logger.trace "publishing packet to '#{packet.topic}'", packet.as_json
           connection.publish(packet.topic, @serializer.serialize(packet))
         end
 
+        ##
+        # Connects to redis
         def connect
           @logger.debug "connecting publisher client on '#{@uri}'"
           connection
         end
 
+        ##
+        # Disconnects from redis
         def disconnect
           @logger.debug "disconnecting publisher client"
           connection.disconnect!
@@ -56,7 +62,9 @@ module Moleculer
             set_disconnect
           end
 
-          def start
+          ##
+          # Starts the subscriber
+          def connect
             @thread = Thread.new do
               begin
                 @logger.debug "starting subscription to '#{@channel}'"
@@ -92,7 +100,7 @@ module Moleculer
             self
           end
 
-          def stop
+          def disconnect
             @logger.debug "unsubscribing from '#{@channel}'"
             redis = ::Redis.new(url: @uri)
             redis.publish(@channel, @disconnect_hash.value)
@@ -115,21 +123,13 @@ module Moleculer
 
         def subscribe(channel, &block)
           @logger.debug "subscribing to channel '#{channel}'"
-          @subscriptions << Subscription.new(channel, block).start
+          @subscriptions << Subscription.new(channel, block).connect
         end
 
         def disconnect
           @logger.debug "disconnecting subscriptions"
           @subscriptions.each(&:stop)
         end
-      end
-
-      def publisher
-        @publisher ||= Publisher.new
-      end
-
-      def subscriber
-        @subscriber ||= Subscriber.new
       end
 
       def subscribe(channel, &block)
@@ -147,6 +147,16 @@ module Moleculer
       def disconnect
         publisher.disconnect
         subscriber.disconnect
+      end
+
+      private
+
+      def publisher
+        @publisher ||= Publisher.new
+      end
+
+      def subscriber
+        @subscriber ||= Subscriber.new
       end
     end
   end
