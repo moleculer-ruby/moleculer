@@ -103,6 +103,7 @@ module Moleculer
       @logger.info "removing node '#{node_id}'"
       @nodes.delete(node_id)
       remove_node_from_actions(node_id)
+      remove_node_from_events(node_id)
     end
 
     private
