@@ -2,84 +2,151 @@ require "redis"
 
 # frozen_string_literal: true
 
-require_relative "./base"
-require_relative "../errors/transporter_already_started"
-
 module Moleculer
   module Transporters
     ##
     # The Moleculer Redis transporter
-    class Redis < Base
-      include Concurrent::Async
-      NAME = "REDIS".freeze
+    class Redis
+      ##
+      # Represents the publisher connection
+      class Publisher
+        def initialize
+          @uri        = Moleculer.transporter
+          @logger     = Moleculer.logger
+          @serializer = Serializers.for(Moleculer.serializer)
+        end
 
-      def publish(packet)
-        @logger.trace "publishing packet to '#{packet.topic}'", packet.as_json
-        @publisher.publish(packet.topic, @serializer.serialize(packet))
-      rescue StandardError => e
-        @logger.error e
-      end
+        def publish(packet)
+          @logger.trace "publishing packet to '#{packet.topic}'", packet.as_json
+          connection.publish(packet.topic, @serializer.serialize(packet))
+        end
 
-      def publish_to_node(packet, node)
-        @logger.trace "publishing packet to '#{packet.topic}' on" \
-                      "'#{node.is_a?(Moleculer::Node) ? node.id : node}'", packet.as_json
-        @publisher.publish(packet.topic, @serializer.serialize(packet))
-      end
+        def connect
+          @logger.debug "connecting publisher client on '#{@uri}'"
+          connection
+        end
 
-      def start
-        raise Errors::TransporterAlreadyStarted, "the transporter is already started" if @started.true?
+        def disconnect
+          @logger.debug "disconnecting publisher client"
+          connection.disconnect!
+        end
 
-        @started.make_true
+        private
 
-        connect
-        started_event = Concurrent::Promises.resolvable_event
-
-        @main = Thread.new do
-          @subscriber.psubscribe("MOL*") do |subscription|
-            subscription.psubscribe do
-              started_event.resolve
-            end
-
-            subscription.pmessage do |_, channel, message|
-              begin
-                parsed = @serializer.deserialize(message)
-                @logger.trace "received message '#{channel}'", parsed
-                @broker.process_message(channel, parsed)
-              rescue StandardError => e
-                @logger.error e
-              end
-            end
-          end
+        def connection
+          @connection ||= ::Redis.new(url: @uri)
         end
       end
 
-      def started?
-        @started.value
-      end
+      ##
+      # Represents the subscriber connection
+      class Subscriber
+        ##
+        # Represents a subscription
+        class Subscription
+          def initialize(channel, block)
+            @connection  = ::Redis.new(url: @uri)
+            @channel     = channel
+            @block       = block
+            @logger      = Moleculer.logger
+            @serializer  = Serializers.for(Moleculer.serializer)
+            @packet_type = Packets.for(@channel.split(".")[1])
+            # it is necessary to send some sort of message to signal the subscriber to disconnect and shutdown
+            # this is an internal message
+            set_disconnect
+          end
 
-      def stop
-        disconnect
-        @started.make_false
-      end
+          def start
+            @thread = Thread.new do
+              begin
+                @logger.debug "starting subscription to '#{@channel}'"
+                @connection.subscribe(@channel) do |on|
+                  on.unsubscribe do
+                    @logger.debug "disconnecting channel '#{@channel}'"
+                    @connection.disconnect!
+                  end
 
-      private
+                  on.message do |_, message|
+                    if message == @disconnect_hash.value
+                      @connection.unsubscribe
+                    elsif message.split(".")[-1] != "disconnect"
+                      begin
+                        set_disconnect
+                        parsed = @serializer.deserialize(message)
+                        if parsed && parsed["sender"] != Moleculer.node_id
+                          @logger.trace "received message '#{@channel}'", parsed
+                          packet = @packet_type.new(parsed)
+                          @block.call(packet)
+                        end
+                      rescue StandardError => e
+                        @logger.error e
+                      end
+                    end
+                  end
+                end
+              rescue StandardError => e
+                @logger.fatal e
+                exit 1
+              end
+            end
+            self
+          end
 
-      def connect
-        @logger.debug "connecting subscriber client on '#{@uri}'"
-        @subscriber = ::Redis.new(url: @uri, driver: :hiredis)
-        @logger.debug "connecting publisher client on '#{@uri}'"
-        @publisher = ::Redis.new(url: @uri, driver: :hiredis)
-      end
+          def stop
+            @logger.debug "unsubscribing from '#{@channel}'"
+            redis = ::Redis.new(url: @uri)
+            redis.publish(@channel, @disconnect_hash.value)
+            redis.disconnect!
+          end
 
-      def disconnect
-        @logger.debug "disconnecting subscriber"
-        @subscriber.disconnect!
-        @logger.debug "disconnecting publisher"
-        @publisher.disconnect!
+          private
+
+          def set_disconnect
+            @disconnect_hash ||= Concurrent::AtomicReference.new
+            @disconnect_hash.set("#{Moleculer.node_id}.#{SecureRandom.hex}.disconnect")
+          end
+        end
+
+        def initialize
+          @uri           = Moleculer.transporter
+          @logger        = Moleculer.logger
+          @subscriptions = Concurrent::Array.new
+        end
+
+        def subscribe(channel, &block)
+          @logger.debug "subscribing to channel '#{channel}'"
+          @subscriptions << Subscription.new(channel, block).start
+        end
+
+        def disconnect
+          @logger.debug "disconnecting subscriptions"
+          @subscriptions.each(&:stop)
+        end
       end
 
       def publisher
-        @publisher ||= ::Redis.new(url: @uri, logger: @broker.logger)
+        @publisher ||= Publisher.new
+      end
+
+      def subscriber
+        @subscriber ||= Subscriber.new
+      end
+
+      def subscribe(channel, &block)
+        subscriber.subscribe(channel, &block)
+      end
+
+      def publish(packet)
+        publisher.publish(packet)
+      end
+
+      def connect
+        publisher.connect
+      end
+
+      def disconnect
+        publisher.disconnect
+        subscriber.disconnect
       end
     end
   end

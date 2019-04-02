@@ -11,41 +11,12 @@ module Moleculer
   # Moleculer::run is called.
   class Broker
     include Moleculer::Support
-
-    ##
-    # @private
-    # A queue is a subscriber thread pool manager allowing Moleculer to handle requests asynchronously
-    class Queue
-      def initialize(name, options, &block)
-        opts      = { max_threads: 1, min_threads: 1, max_queue: 0, fallback_policy: :abort }.merge(options)
-        @executor = block
-        # noinspection RubyArgCount
-        @pool   = Concurrent::ThreadPoolExecutor.new(opts)
-        @name   = name
-        @logger = Moleculer.logger
-      end
-
-      ##
-      # Pushes a packet onto the queue by queuing the action in the thread pool
-      #
-      # @param [Moleculer::Packet::Base] packet the packet to queue into the pool
-      def <<(packet)
-        @pool.post do
-          begin
-            @executor.call(packet)
-          rescue StandardError => e
-            @logger.error e
-          end
-        end
-      end
-    end
-
     attr_reader :logger
 
     def initialize
       @registry    = Registry.new(self)
       @logger      = Moleculer.logger
-      @transporter = Transporters.for(Moleculer.transporter, self)
+      @transporter = Transporters.for(Moleculer.transporter)
       @contexts    = Concurrent::Map.new
     end
 
@@ -111,19 +82,20 @@ module Moleculer
 
     def start
       logger.info "starting"
-      @transporter.start
+      @transporter.connect
       register_local_node
       start_subscribers
       publish_discover
       publish_info
-      start_heartbeat
+      # start_heartbeat
       self
     end
 
     def stop
       @logger.info "stopping"
       publish(:disconnect)
-      @transporter.stop
+      @transporter.disconnect
+      exit 0
     end
 
     def wait_for_services(*services)
@@ -240,7 +212,7 @@ module Moleculer
 
     def publish_to_node(packet_type, node, message = {})
       packet = Packets.for(packet_type).new(message.merge(node: node))
-      @transporter.publish_to_node(packet, node)
+      @transporter.publish(packet)
     end
 
     def register_local_node
@@ -294,7 +266,7 @@ module Moleculer
         register_or_update_remote_node(packet)
       end
       subscribe("MOL.INFO") do |packet|
-        register_or_update_remote_node(packet) unless packet.sender == Moleculer.node_id
+        register_or_update_remote_node(packet)
       end
     end
 
@@ -305,7 +277,7 @@ module Moleculer
     end
 
     def subscribe_to_req
-      subscribe("MOL.REQ.#{Moleculer.node_id}", min_threads: 10, max_threads: 100) do |packet|
+      subscribe("MOL.REQ.#{Moleculer.node_id}") do |packet|
         process_request(packet)
       end
     end
@@ -325,13 +297,9 @@ module Moleculer
       end
     end
 
-    def subscribe(channel, options = {}, &block)
-      @logger.trace "subscribing to channel '#{channel}' with options:", options
-      subscribers[channel] = Queue.new(channel, options, &block)
-    end
 
-    def subscribers
-      @subscribers ||= Concurrent::Hash.new([])
+    def subscribe(channel, &block)
+      @transporter.subscribe(channel, &block)
     end
   end
 end
