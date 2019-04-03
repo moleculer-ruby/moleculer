@@ -55,7 +55,6 @@ module Moleculer
           ##
           # handles processing of messages from redis
           class MessageProcessor
-
             def initialize(subscription)
               @subscription = subscription
               @serializer   = Serializers.for(Moleculer.serializer)
