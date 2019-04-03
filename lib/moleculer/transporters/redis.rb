@@ -50,16 +50,40 @@ module Moleculer
         ##
         # Represents a subscription
         class Subscription
+          attr_reader :disconnect_hash, :channel
+          ##
+          # handles processing of messages from redis
+          class MessageProcessor
+            def initialize(subscription)
+              @subscription = subscription
+              @serializer   = Serializers.for(Moleculer.serializer)
+              @packet_type  = Packets.for(@subscription.channel.split(".")[1])
+              @logger       = Moleculer.logger
+            end
+
+            def process(message)
+              return :disconnect if message == @subscription.disconnect_hash
+
+              return nil if message.split(".")[-1] == "disconnect"
+
+              parsed = @serializer.deserialize(message)
+              return nil if parsed["sender"] == Moleculer.node_id
+
+              @packet_type.new(parsed)
+            rescue StandardError => e
+              @logger.error e
+            end
+          end
+
           def initialize(channel, block)
             @connection  = ::Redis.new(url: @uri)
             @channel     = channel
             @block       = block
             @logger      = Moleculer.logger
-            @serializer  = Serializers.for(Moleculer.serializer)
-            @packet_type = Packets.for(@channel.split(".")[1])
+
             # it is necessary to send some sort of message to signal the subscriber to disconnect and shutdown
             # this is an internal message
-            set_disconnect
+            reset_disconnect
           end
 
           ##
@@ -70,26 +94,14 @@ module Moleculer
                 @logger.debug "starting subscription to '#{@channel}'"
                 @connection.subscribe(@channel) do |on|
                   on.unsubscribe do
-                    @logger.debug "disconnecting channel '#{@channel}'"
-                    @connection.disconnect!
+                    unsubscribe
                   end
 
                   on.message do |_, message|
-                    if message == @disconnect_hash.value
-                      @connection.unsubscribe
-                    elsif message.split(".")[-1] != "disconnect"
-                      begin
-                        set_disconnect
-                        parsed = @serializer.deserialize(message)
-                        if parsed && parsed["sender"] != Moleculer.node_id
-                          @logger.trace "received message '#{@channel}'", parsed
-                          packet = @packet_type.new(parsed)
-                          @block.call(packet)
-                        end
-                      rescue StandardError => e
-                        @logger.error e
-                      end
-                    end
+                    packet = MessageProcessor.new(self).process(message)
+                    next unless packet
+
+                    process_packet(packet)
                   end
                 end
               rescue StandardError => e
@@ -107,11 +119,24 @@ module Moleculer
             redis.disconnect!
           end
 
-          private
-
-          def set_disconnect
+          def reset_disconnect
             @disconnect_hash ||= Concurrent::AtomicReference.new
             @disconnect_hash.set("#{Moleculer.node_id}.#{SecureRandom.hex}.disconnect")
+          end
+
+          def process_packet(packet)
+            return @connection.unsubscribe if packet == :disconnect
+
+            @block.call(packet)
+          rescue StandardError => e
+            @logger.error e
+          end
+
+          private
+
+          def unsubscribe
+            @logger.debug "disconnecting channel '#{@channel}'"
+            @connection.disconnect!
           end
         end
 
