@@ -54,6 +54,7 @@ module Moleculer
           ##
           # handles processing of messages from redis
           class MessageProcessor
+
             def initialize(subscription)
               @subscription = subscription
               @serializer   = Serializers.for(Moleculer.serializer)
@@ -66,13 +67,20 @@ module Moleculer
 
               return nil if message.split(".")[-1] == "disconnect"
 
-              parsed = @serializer.deserialize(message)
-              return nil if parsed["sender"] == Moleculer.node_id
+              parsed = deserialize(message)
 
               @packet_type.new(parsed)
             rescue StandardError => e
               @logger.error e
             end
+
+            def deserialize(message)
+              parsed = @serializer.deserialize(message)
+              return nil if parsed["sender"] == Moleculer.node_id
+
+              parsed
+            end
+
           end
 
           def initialize(channel, block)
