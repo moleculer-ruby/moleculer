@@ -60,6 +60,11 @@ module Moleculer
       end
     end
 
+    ##
+    # @private
+    class EventList
+    end
+
     include Support
 
     attr_reader :local_node
