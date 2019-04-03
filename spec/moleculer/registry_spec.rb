@@ -20,6 +20,7 @@ RSpec.describe Moleculer::Registry do
 
   describe "#fetch_action" do
     before :each do
+      allow(action_1).to receive(:node).and_return(node_1)
       subject.register_node(node_1)
     end
 
