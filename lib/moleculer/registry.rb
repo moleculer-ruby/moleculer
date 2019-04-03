@@ -7,6 +7,38 @@ module Moleculer
   ##
   # The Registry manages the available services on the network
   class Registry
+    ##
+    # @private
+    class ActionList
+      ##
+      # @private
+      class ActionListItem
+        def initialize
+          @nodes = Concurrent::Hash.new
+        end
+
+        def add_node(node)
+          @nodes[node.id] = node
+        end
+
+        def remove_node(node_id)
+          @nodes.delete(node_id)
+        end
+      end
+
+      def initialize
+        @actions = Concurrent::Hash.new
+      end
+
+      def add(event)
+
+      end
+
+      def remove(event)
+      end
+
+    end
+
     include Support
 
     attr_reader :local_node
@@ -119,7 +151,7 @@ module Moleculer
     def fetch_action_from_node(action_name, node)
       node.actions.fetch(action_name)
     rescue KeyError
-      raise(Errors::ActionNotFound, "The action '#{action_name}' was found on the node with id '#{node.id}'")
+      raise(Errors::ActionNotFound, "The action '#{action_name}' was not found on the node with id '#{node.id}'")
     end
 
     def fetch_event_from_node(event_name, node)
