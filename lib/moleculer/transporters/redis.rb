@@ -81,7 +81,6 @@ module Moleculer
 
               parsed
             end
-
           end
 
           def initialize(channel, block)
