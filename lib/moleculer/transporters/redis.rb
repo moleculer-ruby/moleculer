@@ -19,8 +19,9 @@ module Moleculer
         ##
         # Publishes the packet to the packet's topic
         def publish(packet)
-          @logger.trace "publishing packet to '#{packet.topic}'", packet.as_json
-          connection.publish(packet.topic, @serializer.serialize(packet))
+          topic = packet.topic
+          @logger.trace "publishing packet to '#{topic}'", packet.as_json
+          connection.publish(topic, @serializer.serialize(packet))
         end
 
         ##
