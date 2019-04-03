@@ -70,8 +70,8 @@ module Moleculer
               parsed = deserialize(message)
 
               @packet_type.new(parsed)
-            rescue StandardError => e
-              @logger.error e
+            rescue StandardError => error
+              @logger.error error
             end
 
             def deserialize(message)
@@ -112,8 +112,8 @@ module Moleculer
                     process_packet(packet)
                   end
                 end
-              rescue StandardError => e
-                @logger.fatal e
+              rescue StandardError => error
+                @logger.fatal error
                 exit 1
               end
             end
@@ -136,8 +136,8 @@ module Moleculer
             return @connection.unsubscribe if packet == :disconnect
 
             @block.call(packet)
-          rescue StandardError => e
-            @logger.error e
+          rescue StandardError => error
+            @logger.error error
           end
 
           private
