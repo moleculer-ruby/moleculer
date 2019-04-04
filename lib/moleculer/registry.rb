@@ -7,6 +7,126 @@ module Moleculer
   ##
   # The Registry manages the available services on the network
   class Registry
+    ##
+    # @private
+    class NodeList
+      def initialize
+        @nodes = Concurrent::Hash.new
+      end
+
+      def add_node(node)
+        if @nodes[node.id]
+          @nodes[node.id][:node] = node
+        else
+          @nodes[node.id] = { node: node, last_requested_at: Time.now }
+        end
+      end
+
+      def remove_node(node_id)
+        @nodes.delete(node_id)
+      end
+
+      def fetch_next_node
+        node                                = @nodes.values.min_by { |a| a[:last_requested_at] }[:node]
+        @nodes[node.id][:last_requested_at] = Time.now
+        node
+      end
+
+      def fetch_node(node_id)
+        @nodes.fetch(node_id)[:node]
+      end
+
+      def length
+        @nodes.length
+      end
+    end
+
+    ##
+    # @private
+    class ActionList
+      def initialize
+        @actions = Concurrent::Hash.new
+      end
+
+      def add(action)
+        name             = "#{action.service.service_name}.#{action.name}"
+        @actions[name] ||= NodeList.new
+        @actions[name].add_node(action.node)
+      end
+
+      def remove_node(node_id)
+        @actions.each do |k, a|
+          a.remove_node(node_id)
+          @actions.delete(k) if a.length.zero?
+        end
+      end
+
+      def fetch_action(action_name)
+        raise Errors::ActionNotFound, "The action '#{action_name}' was not found." unless @actions[action_name]
+
+        @actions[action_name].fetch_next_node.actions[action_name]
+      end
+    end
+
+    ##
+    # @private
+    class EventList
+      ##
+      # @private
+      class Item
+        def initialize
+          @services = Concurrent::Hash.new
+        end
+
+        def add_service(service)
+          @services[service.service_name] ||= NodeList.new
+          @services[service.service_name].add_node(service.node)
+        end
+
+        def fetch_nodes
+          @services.values.map(&:fetch_next_node)
+        end
+
+        def remove_node(node_id)
+          @services.each do |k, list|
+            list.remove_node(node_id)
+            @services.delete(k) if list.length.zero?
+          end
+        end
+
+        def length
+          @services.map(&:length).inject(0) { |s, a| s + a }
+        end
+      end
+
+      def initialize
+        @events = Concurrent::Hash.new
+      end
+
+      def add(event)
+        name            = event.name
+        @events[name] ||= Item.new
+        @events[name].add_service(event.service)
+      end
+
+      def remove_node(node_id)
+        @events.each do |k, item|
+          item.remove_node(node_id)
+          @events.delete(k) if item.length.zero?
+        end
+      end
+
+      def fetch_events(event_name)
+        return [] unless @events[event_name]
+
+        @events[event_name].fetch_nodes.map { |n| n.events[event_name] }.flatten
+      end
+    end
+
+    private_constant :ActionList
+    private_constant :EventList
+    private_constant :NodeList
+
     include Support
 
     attr_reader :local_node
@@ -14,12 +134,13 @@ module Moleculer
     ##
     # @param [Moleculer::Broker] broker the service broker instance
     def initialize(broker)
-      @broker   = broker
-      @nodes    = Concurrent::Hash.new
-      @actions  = Concurrent::Hash.new
-      @events   = Concurrent::Hash.new
-      @services = Concurrent::Hash.new
-      @logger   = Moleculer.logger
+      @broker           = broker
+      @nodes            = NodeList.new
+      @actions          = ActionList.new
+      @events           = EventList.new
+      @services         = Concurrent::Hash.new
+      @logger           = Moleculer.logger
+      @remove_semaphore = Concurrent::Semaphore.new(1)
     end
 
     ##
@@ -38,8 +159,7 @@ module Moleculer
         @local_node = node
       end
       @logger.info "registering node #{node.id}" unless node.local?
-      @nodes[node.id] = { node: node }
-      update_node_for_load_balancer(node)
+      @nodes.add_node(node)
       update_services(node)
       update_actions(node)
       update_events(node)
@@ -54,26 +174,32 @@ module Moleculer
     #
     # @return [Moleculer::Service::Action|Moleculer::RemoteService::Action]
     def fetch_action(action_name)
-      node = fetch_next_node_for_action(action_name)
-      fetch_action_from_node(action_name, node)
+      @actions.fetch_action(action_name)
     end
 
-    def fetch_events(event_name)
-      nodes = fetch_next_nodes_for_event(event_name)
-      nodes.map { |node| fetch_event_from_node(event_name, node) }
+    def fetch_events_for_emit(event_name)
+      @events.fetch_events(event_name)
     end
 
-    def fetch_events_for_node_id(event_name, node_id)
-      node = @nodes.fetch(node_id)[:node]
-      node.services.values.map { |s| s.events.values }.flatten.select { |e| e.name == event_name }
-    end
-
+    ##
+    # It fetches the given node, and raises an exception if the node does not exist
+    #
+    # @param node_id [String] the id of the node to fetch
+    #
+    # @return [Moleculer::Node] the moleculer node with the given id
+    # @raise [Moleculer::Errors::NodeNotFound] if the node was not found
     def fetch_node(node_id)
-      @nodes.fetch(node_id)[:node]
+      @nodes.fetch_node(node_id)
     rescue KeyError
       raise Errors::NodeNotFound, "The node with the id '#{node_id}' was not found."
     end
 
+    ##
+    # Fetches the given node, and returns nil if the node was not found
+    #
+    # @param node_id [String] the id of the node to fetch
+    #
+    # @return [Moleculer::Node] the moleculer node with the given id
     def safe_fetch_node(node_id)
       fetch_node(node_id)
     rescue Errors::NodeNotFound
@@ -99,6 +225,20 @@ module Moleculer
       services - @services.keys
     end
 
+    ##
+    # Removes the node with the given id. Because this must act across multiple indexes this action uses a semaphore to
+    # reduce the chance of race conditions.
+    #
+    # @param node_id [String] the node to remove
+    def remove_node(node_id)
+      @remove_semaphore.acquire
+      @logger.info "removing node '#{node_id}'"
+      @nodes.remove_node(node_id)
+      @actions.remove_node(node_id)
+      @events.remove_node(node_id)
+      @remove_semaphore.release
+    end
+
     private
 
     def get_local_action(name)
@@ -109,20 +249,10 @@ module Moleculer
       @nodes[node.id][:last_called_at] = Time.now
     end
 
-    def fetch_action_from_node(action_name, node)
-      node.actions.fetch(action_name)
-    rescue KeyError
-      raise(Errors::ActionNotFound, "The action '#{action_name}' was found on the node with id '#{node.id}'")
-    end
-
     def fetch_event_from_node(event_name, node)
       node.events.fetch(event_name)
     rescue KeyError
       raise Errors::EventNotFound, "The event '#{event_name}' was not found on the node id with id '#{node.id}'"
-    end
-
-    def fetch_next_node_for_action(action_name)
-      fetch_node_list_for_action(action_name).min_by { |a| a[:last_called_at] }[:node]
     end
 
     def fetch_next_nodes_for_event(event_name)
@@ -132,51 +262,33 @@ module Moleculer
       nodes.map { |node_list| node_list.min_by { |a| a[:last_called_at] }[:node] }
     end
 
-    def fetch_node_list_for_action(action_name)
-      node_list = HashUtil.fetch(@actions, action_name)
-      node_list.collect { |name| @nodes[name] }
-    rescue KeyError
-      raise Errors::ActionNotFound, "The action '#{action_name}' was not found"
+    def remove_node_from_events(node_id)
+      @events.values.each do |event|
+        event.values.each do |list|
+          list.reject! { |id| id == node_id }
+        end
+      end
     end
 
     def update_actions(node)
       node.actions.values.each do |action|
-        replace_action(action, node)
+        @actions.add(action)
       end
       @logger.debug "registered #{node.actions.length} action(s) for node '#{node.id}'"
     end
 
     def update_events(node)
-      node.services.values.each do |service|
-        service.events.values.each do |event|
-          replace_event(event, service, node)
-        end
+      node.events.values.each do |events|
+        events.each { |e| @events.add(e) }
       end
       @logger.debug "registered #{node.events.length} event(s) for node '#{node.id}'"
     end
 
     def update_services(node)
       node.services.values.each do |service|
-        replace_service(service, node)
+        @services[service.service_name] ||= NodeList.new
+        @services[service.service_name].add_node(node)
       end
-    end
-
-    def replace_service(service, node)
-      @services[service.service_name] ||= []
-      nodes                             = @services[service.service_name].reject! { |a| a == node.id }
-      @logger.info "registered new service '#{service.service_name}'" unless nodes
-      @services[service.service_name] << node.id
-    end
-
-    def replace_action(action, node)
-      @actions[action.name] ||= Concurrent::Array.new
-      @actions[action.name] << node.id unless @actions[action.name].include?(node.id)
-    end
-
-    def replace_event(event, service, node) # rubocop:disable Metric/AbcSize
-      @events[event.name]                       ||= Concurrent::Hash.new
-      @events[event.name][service.service_name] ||= Concurrent::Array.new
-      @events[event.name][service.service_name] << node.id unless @events[event.name][service.service_name].include?(node.id)
     end
   end
 end
