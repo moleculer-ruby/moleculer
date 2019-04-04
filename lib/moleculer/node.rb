@@ -29,18 +29,30 @@ module Moleculer
       @services[service.name] = service
     end
 
+    ##
+    # @return [Hash] returns a key, value mapping of available actions on this node
+    # TODO: refactor this into a list object
     def actions
       unless @actions
-        map      = @services.values.map { |s| s.actions.keys.map { |key| [key, s.actions[key]] } }.reject(&:empty?)
-        @actions = Hash[*map]
+        @actions = {}
+
+        @services.values.each { |s| s.actions.each { |key, value| @actions[key] = value } }
       end
       @actions
     end
 
+    ##
+    # @return [Hash] returns a key value mapping of events on this node
+    # TODO: refactor this into a list object
     def events
       unless @events
-        map = @services.values.map { |s| s.events.keys.map { |key| [key, s.events[key]] } }.reject(&:empty?)
-        @events = Hash[*map]
+        @events = {}
+        @services.values.map do |s|
+          s.events.each do |key, value|
+            @events[key] ||= []
+            @events[key] << value
+          end
+        end
       end
       @events
     end
@@ -56,11 +68,11 @@ module Moleculer
         ipList:   [],
         hostname: @hostname,
         services: @services.values.map(&:as_json),
-        client: {
-          type: "Ruby",
-          version: Moleculer::VERSION,
+        client:   {
+          type:         "Ruby",
+          version:      Moleculer::VERSION,
           lang_version: RUBY_VERSION,
-        }
+        },
       }
     end
   end
