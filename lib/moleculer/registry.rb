@@ -177,6 +177,13 @@ module Moleculer
       @actions.fetch_action(action_name)
     end
 
+    ##
+    # Fetches all the events for the given event name that should be used to emit an event. This is load balanced, and
+    # will fetch a different node for nodes that duplicate the service/event
+    #
+    # @param event_name [String] the name of the even to fetch
+    #
+    # @return [Array<Moleculer::Service::Event>] the events that that should be emitted to
     def fetch_events_for_emit(event_name)
       @events.fetch_events(event_name)
     end
