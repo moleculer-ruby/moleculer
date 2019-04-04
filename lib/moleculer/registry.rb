@@ -57,26 +57,22 @@ module Moleculer
       ##
       # @private
       class Item
-        ##
-        # @private
-        class ServiceList
-          def initialize
-            @services = Concurrent::Hash.new
-          end
+        def initialize
+          @services = Concurrent::Hash.new
+        end
 
-          def add_service(service)
-            @services[service.service_name] ||= NodeList.new
-            @services[service.service_name].add_node(service.node)
-          end
+        def add_service(service)
+          @services[service.service_name] ||= NodeList.new
+          @services[service.service_name].add_node(service.node)
+        end
 
-          def select_nodes
-            @services.values.map(&:select_node)
-          end
+        def select_nodes
+          @services.values.map(&:select_node)
         end
       end
 
       def initialize
-        @events = Concurrent::Hash
+        @events = Concurrent::Hash.new
       end
 
       def add(event)
@@ -106,7 +102,7 @@ module Moleculer
       @broker   = broker
       @nodes    = Concurrent::Hash.new
       @actions  = ActionList.new
-      @events   = Concurrent::Hash.new
+      @events   = EventList.new
       @services = Concurrent::Hash.new
       @logger   = Moleculer.logger
     end
@@ -128,7 +124,6 @@ module Moleculer
       end
       @logger.info "registering node #{node.id}" unless node.local?
       @nodes[node.id] = { node: node }
-      update_node_for_load_balancer(node)
       update_services(node)
       update_actions(node)
       update_events(node)
@@ -146,14 +141,8 @@ module Moleculer
       @actions.select_action(action_name)
     end
 
-    def fetch_events(event_name)
-      nodes = fetch_next_nodes_for_event(event_name)
-      nodes.map { |node| fetch_event_from_node(event_name, node) }
-    end
-
-    def fetch_events_for_node_id(event_name, node_id)
-      node = @nodes.fetch(node_id)[:node]
-      node.services.values.map { |s| s.events.values }.flatten.select { |e| e.name == event_name }
+    def fetch_events_for_emit(event_name)
+      @events.select_events(event_name)
     end
 
     def fetch_node(node_id)
@@ -233,8 +222,8 @@ module Moleculer
     end
 
     def update_events(node)
-      node.events.values.each do |event|
-        @events.add(event)
+      node.events.values.each do |events|
+        events.each { |e| @events.add(e) }
       end
       @logger.debug "registered #{node.events.length} event(s) for node '#{node.id}'"
     end
