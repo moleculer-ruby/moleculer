@@ -36,7 +36,7 @@ module Moleculer
       unless @actions
         @actions = {}
 
-        @services.values.each { |s| s.actions.each { |key, value| @actions[key] = value } }
+        @services.each_value { |s| s.actions.each { |key, value| @actions[key] = value } }
       end
       @actions
     end
@@ -47,7 +47,7 @@ module Moleculer
     def events
       unless @events
         @events = {}
-        @services.values.map do |s|
+        @services.each_value do |s|
           s.events.each do |key, value|
             @events[key] ||= []
             @events[key] << value
