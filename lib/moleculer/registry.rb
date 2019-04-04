@@ -9,61 +9,92 @@ module Moleculer
   class Registry
     ##
     # @private
-    class ActionList
-      ##
-      # @private
-      class ActionListItem
-        def initialize(name)
-          @action_name = name
-          @nodes       = Concurrent::Hash.new
-        end
-
-        def add_node(node)
-          @nodes[node.id] = { node: node, last_requested_at: Time.now }
-        end
-
-        def remove_node(node_id)
-          @nodes.delete(node_id)
-        end
-
-        def select_action
-          select_node.actions[@action_name]
-        end
-
-        private
-
-        def select_node
-          node                                = @nodes.values.min_by { |a| a[:last_requested_at] }[:node]
-          @nodes[node.id][:last_requested_at] = Time.now
-          node
-        end
+    class NodeList
+      def initialize
+        @nodes = Concurrent::Hash.new
       end
 
+      def add_node(node)
+        @nodes[node.id] = { node: node, last_requested_at: Time.now }
+      end
+
+      def remove_node(node_id)
+        nodes.delete(node_id)
+      end
+
+      def select_node
+        node                                = @nodes.values.min_by { |a| a[:last_requested_at] }[:node]
+        @nodes[node.id][:last_requested_at] = Time.now
+        node
+      end
+    end
+
+    ##
+    # @private
+    class ActionList
       def initialize
         @actions = Concurrent::Hash.new
       end
 
       def add(action)
-        name             = action.name
-        @actions[name] ||= ActionListItem.new(name)
+        name             = "#{action.service.service_name}.#{action.name}"
+        @actions[name] ||= NodeList.new
         @actions[name].add_node(action.node)
       end
 
       def remove(action); end
 
       def select_action(action_name)
-        unless @actions[action_name]
-          raise Errors::ActionNotFound, "The action '#{action_name}' was not found on the node with id '#{node.id}'"
-        end
+        raise Errors::ActionNotFound, "The action '#{action_name}' was not found." unless @actions[action_name]
 
-        @actions[action_name].select_action
+        @actions[action_name].select_node.actions[action_name]
       end
     end
 
     ##
     # @private
     class EventList
+      ##
+      # @private
+      class Item
+        ##
+        # @private
+        class ServiceList
+          def initialize
+            @services = Concurrent::Hash.new
+          end
+
+          def add_service(service)
+            @services[service.service_name] ||= NodeList.new
+            @services[service.service_name].add_node(service.node)
+          end
+
+          def select_nodes
+            @services.values.map(&:select_node)
+          end
+        end
+      end
+
+      def initialize
+        @events = Concurrent::Hash
+      end
+
+      def add(event)
+        name            = event.name
+        @events[name] ||= Item.new
+        @events[name].add_service(event.service)
+      end
+
+      def select_events(event_name)
+        return [] unless @events[event_name]
+
+        @events[event_name].select_nodes.map { |n| n.events[event_name] }.flatten
+      end
     end
+
+    private_constant :ActionList
+    private_constant :EventList
+    private_constant :NodeList
 
     include Support
 
@@ -186,12 +217,6 @@ module Moleculer
       nodes.map { |node_list| node_list.min_by { |a| a[:last_called_at] }[:node] }
     end
 
-    def remove_node_from_actions(node_id)
-      @actions.values.each do |action|
-        action.reject! { |id| id == node_id }
-      end
-    end
-
     def remove_node_from_events(node_id)
       @events.values.each do |event|
         event.values.each do |list|
@@ -208,10 +233,8 @@ module Moleculer
     end
 
     def update_events(node)
-      node.services.values.each do |service|
-        service.events.values.each do |event|
-          replace_event(event, service, node)
-        end
+      node.events.values.each do |event|
+        @events.add(event)
       end
       @logger.debug "registered #{node.events.length} event(s) for node '#{node.id}'"
     end
