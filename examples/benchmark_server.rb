@@ -2,6 +2,7 @@
 
 require_relative "../lib/moleculer"
 
+##
 # Users is a class for benmarking speed vs Moleculer Node apps
 class Users < Moleculer::Service::Base
   service_name "users"
