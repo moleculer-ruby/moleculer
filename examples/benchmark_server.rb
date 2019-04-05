@@ -1,5 +1,8 @@
+# frozen_string_literal: true
+
 require_relative "../lib/moleculer"
 
+# Users is a class for benmarking speed vs Moleculer Node apps
 class Users < Moleculer::Service::Base
   service_name "users"
   action "empty", :empty
@@ -8,7 +11,6 @@ class Users < Moleculer::Service::Base
     {}
   end
 end
-
 
 Moleculer.config do |c|
   c.services << Users
