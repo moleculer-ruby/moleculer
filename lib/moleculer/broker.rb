@@ -280,6 +280,7 @@ module Moleculer
       subscribe_to_req
       subscribe_to_events
       subscribe_to_discover
+      subscribe_to_disconnect
     end
 
     def subscribe_to_events
@@ -315,6 +316,12 @@ module Moleculer
       end
       subscribe("MOL.DISCOVER.#{Moleculer.node_id}") do |packet|
         publish_info(packet.sender)
+      end
+    end
+
+    def subscribe_to_disconnect
+      subscribe("MOL.DISCONNECT") do |packet|
+        @registry.remove_node(packet.sender)
       end
     end
 
