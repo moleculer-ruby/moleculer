@@ -3,6 +3,7 @@
 require "socket"
 
 module Moleculer
+  ##
   # Nodes are a representation of communicating apps within the same event bus.
   # A node is something that emits/listens to events within the bus and
   # communicates accordingly.
