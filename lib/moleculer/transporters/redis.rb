@@ -54,28 +54,26 @@ module Moleculer
           attr_reader :disconnect_hash, :channel
           ##
           # handles processing of messages from redis
-          class MessageProcessor
-            def initialize(subscription)
-              @subscription = subscription
-              @serializer   = Serializers.for(Moleculer.serializer)
-              @packet_type  = Packets.for(@subscription.channel.split(".")[1])
-              @logger       = Moleculer.logger
-            end
+          module MessageProcessor
+            extend self
 
-            def process(message)
-              return :disconnect if message == @subscription.disconnect_hash
+            def process(subscription, message)
+              logger = Moleculer.logger
+              return :disconnect if message == subscription.disconnect_hash
 
               return nil if message.split(".")[-1] == "disconnect"
 
+              packet_type = Packets.for(subscription.channel.split(".")[1])
+
               parsed = deserialize(message)
 
-              @packet_type.new(parsed)
+              packet_type.new(parsed)
             rescue StandardError => error
-              @logger.error error
+              logger.error error
             end
 
             def deserialize(message)
-              parsed = @serializer.deserialize(message)
+              parsed = Serializers.for(Moleculer.serializer).deserialize(message)
               return nil if parsed["sender"] == Moleculer.node_id
 
               parsed
@@ -105,7 +103,7 @@ module Moleculer
                   end
 
                   on.message do |_, message|
-                    packet = MessageProcessor.new(self).process(message)
+                    packet = MessageProcessor.process(self, message)
                     next unless packet
 
                     process_packet(packet)
