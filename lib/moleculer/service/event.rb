@@ -7,9 +7,7 @@ module Moleculer
     class Event
       # @!attribute [r] name
       #   @return [String] the name of the action
-      # @!attribute [r] service
-      #   @return [Moleculer::Service] the service that this event is tied to
-      attr_reader :name, :service
+      attr_reader :name
 
       ##
       # @param name [String] the name of the action

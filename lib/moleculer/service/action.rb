@@ -9,7 +9,7 @@ module Moleculer
 
       # @!attribute [r] name
       #   @return [String] the name of the action
-      attr_reader :name, :service
+      attr_reader :name
 
       ##
       # @param name [String|Symbol] the name of the action.
