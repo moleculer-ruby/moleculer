@@ -61,7 +61,7 @@ module Moleculer
               logger = Moleculer.logger
               return :disconnect if message == subscription.disconnect_hash
 
-              return nil if message.split(".")[-1] == "disconnect"
+              return nil if message_is_disconnect?(message)
 
               packet_type = Packets.for(subscription.channel.split(".")[1])
 
@@ -77,6 +77,10 @@ module Moleculer
               return nil if parsed["sender"] == Moleculer.node_id
 
               parsed
+            end
+
+            def message_is_disconnect?(message)
+              message.split(".")[-1] == "disconnect"
             end
           end
 
