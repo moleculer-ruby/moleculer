@@ -125,4 +125,15 @@ RSpec.describe Moleculer::Registry do
       subject.fetch_events_for_emit("test.update")
     end
   end
+
+  describe "#expire_nodes" do
+    before :each do
+      node_2.send(:instance_variable_set, :@last_heartbeat_at, (Date.today - 90).to_time)
+    end
+
+    it "removes all expired nodes" do
+      subject.expire_nodes
+      expect(subject.safe_fetch_node("node-2")).to be_nil
+    end
+  end
 end

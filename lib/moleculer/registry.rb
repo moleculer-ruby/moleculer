@@ -43,6 +43,10 @@ module Moleculer
       def active_nodes
         @nodes.values.select { |node| (Time.now - node[:node].last_heartbeat_at) < Moleculer.heartbeat_interval * 3 }
       end
+
+      def expired_nodes
+        @nodes.values.select { |node| (Time.now - node[:node].last_heartbeat_at) > 600 }
+      end
     end
 
     ##
@@ -241,13 +245,20 @@ module Moleculer
     # reduce the chance of race conditions.
     #
     # @param node_id [String] the node to remove
-    def remove_node(node_id)
+    def remove_node(node_id, reason = nil)
       @remove_semaphore.acquire
-      @logger.info "removing node '#{node_id}'"
+      @logger.info "removing node '#{node_id}'" unless reason
+      @logger.info "removing node '#{node_id}' because #{reason}"
       @nodes.remove_node(node_id)
       @actions.remove_node(node_id)
       @events.remove_node(node_id)
       @remove_semaphore.release
+    end
+
+    ##
+    # Looks for nodes that have stopped reporting heartbeats and removes them from the registry
+    def expire_nodes
+      @nodes.expired_nodes.each { |node| remove_node(node[:node].id, "it expired after 10 minutes") }
     end
 
     private

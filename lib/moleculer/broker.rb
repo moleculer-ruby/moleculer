@@ -87,7 +87,7 @@ module Moleculer
       start_subscribers
       publish_discover
       publish_info
-      # start_heartbeat
+      start_heartbeat
       self
     end
 
@@ -243,6 +243,7 @@ module Moleculer
     def start_heartbeat
       Concurrent::TimerTask.new(execution_interval: Moleculer.heartbeat_interval) do
         publish_heartbeat
+        @registry.expire_nodes
       end.execute
     end
 
