@@ -1,6 +1,12 @@
+# frozen_string_literal: true
+
 require "socket"
 
 module Moleculer
+  ##
+  # Nodes are a representation of communicating apps within the same event bus.
+  # A node is something that emits/listens to events within the bus and
+  # communicates accordingly.
   class Node
     class << self
       def from_remote_info(info_packet)
@@ -82,11 +88,17 @@ module Moleculer
         ipList:   [],
         hostname: @hostname,
         services: @services.values.map(&:as_json),
-        client:   {
-          type:         "Ruby",
-          version:      Moleculer::VERSION,
-          lang_version: RUBY_VERSION,
-        },
+        client:   client_attrubutes
+      }
+    end
+
+    private
+
+    def client_attrubutes
+      {
+        type:         "Ruby",
+        version:      Moleculer::VERSION,
+        lang_version: RUBY_VERSION
       }
     end
   end
