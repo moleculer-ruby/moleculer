@@ -74,6 +74,18 @@ RSpec.describe Moleculer::Registry do
       expect(subject.fetch_action("service-1.test")).to eq(action_2_1)
       expect(subject.fetch_action("service-1.test")).to eq(action_1_1)
     end
+
+    describe "heartbeat is expired" do
+      before :each do
+        node_2.send(:instance_variable_set, :@last_heartbeat_at, (Date.today - 90).to_time)
+      end
+
+      it "skips missing nodes" do
+        expect(subject.fetch_action("service-1.test")).to eq(action_1_1)
+        expect(subject.fetch_action("service-1.test")).to eq(action_1_1)
+        expect(subject.fetch_action("service-1.test")).to eq(action_1_1)
+      end
+    end
   end
 
   describe "#fetch_events_for_emit" do

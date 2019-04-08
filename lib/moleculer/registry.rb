@@ -27,7 +27,7 @@ module Moleculer
       end
 
       def fetch_next_node
-        node                                = @nodes.values.min_by { |a| a[:last_requested_at] }[:node]
+        node                                = active_nodes.min_by { |a| a[:last_requested_at] }[:node]
         @nodes[node.id][:last_requested_at] = Time.now
         node
       end
@@ -38,6 +38,10 @@ module Moleculer
 
       def length
         @nodes.length
+      end
+
+      def active_nodes
+        @nodes.values.select { |node| (Time.now - node[:node].last_heartbeat_at) < Moleculer.heartbeat_interval * 3 }
       end
     end
 
