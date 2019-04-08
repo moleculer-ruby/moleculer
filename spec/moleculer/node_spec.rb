@@ -62,4 +62,46 @@ RSpec.describe Moleculer::Node do
       )
     end
   end
+
+
+  describe "#beat" do
+    let!(:time) { Time.now }
+
+    it "updates the last time a heartbeat was received" do
+      subject.beat
+      expect(subject.instance_variable_get(:@last_heartbeat_at) > time).to be_truthy
+    end
+  end
+
+  describe "#last_heartbeat_at" do
+    describe "not local" do
+      it "returns the current_time if a heartbeat has not been set" do
+        Timecop.freeze do
+          expect(subject.last_heartbeat_at).to eq Time.now
+        end
+      end
+
+
+      it "returns the heartbeat when it has been set" do
+        Timecop.freeze(Date.today - 1) do
+          time = Time.now
+          subject.beat
+        end
+        expect(subject.last_heartbeat_at).to eq time
+      end
+    end
+
+    describe "local" do
+      subject { Moleculer::Node.new(node_id: "local", local: true, services: {})}
+      it "always returns the current time" do
+        Timecop.freeze(Date.today - 1) do
+          subject.beat
+        end
+        Timecop.freeze do
+          expect(subject.last_heartbeat_at).to eq(Time.now)
+        end
+      end
+    end
+  end
+
 end
