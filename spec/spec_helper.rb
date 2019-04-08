@@ -1,6 +1,7 @@
 require "bundler/setup"
 require "moleculer"
-require 'simplecov'
+require "simplecov"
+require "timecop"
 
 
 RSpec.configure do |config|
