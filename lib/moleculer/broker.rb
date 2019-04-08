@@ -87,7 +87,7 @@ module Moleculer
       start_subscribers
       publish_discover
       publish_info
-      # start_heartbeat
+      start_heartbeat
       self
     end
 
@@ -243,6 +243,7 @@ module Moleculer
     def start_heartbeat
       Concurrent::TimerTask.new(execution_interval: Moleculer.heartbeat_interval) do
         publish_heartbeat
+        @registry.expire_nodes
       end.execute
     end
 
@@ -253,6 +254,7 @@ module Moleculer
       subscribe_to_events
       subscribe_to_discover
       subscribe_to_disconnect
+      subscribe_to_heartbeat
     end
 
     def subscribe_to_events
@@ -288,6 +290,13 @@ module Moleculer
       end
       subscribe("MOL.DISCOVER.#{Moleculer.node_id}") do |packet|
         publish_info(packet.sender)
+      end
+    end
+
+    def subscribe_to_heartbeat
+      subscribe("MOL.HEARTBEAT") do |packet|
+        node = @registry.safe_fetch_node(packet.sender)
+        node.touch
       end
     end
 
