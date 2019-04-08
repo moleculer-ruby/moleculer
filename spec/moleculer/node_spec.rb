@@ -63,7 +63,6 @@ RSpec.describe Moleculer::Node do
     end
   end
 
-
   describe "#beat" do
     let!(:time) { Time.now }
 
@@ -81,8 +80,8 @@ RSpec.describe Moleculer::Node do
         end
       end
 
-
       it "returns the heartbeat when it has been set" do
+        time = nil
         Timecop.freeze(Date.today - 1) do
           time = Time.now
           subject.beat
@@ -92,7 +91,7 @@ RSpec.describe Moleculer::Node do
     end
 
     describe "local" do
-      subject { Moleculer::Node.new(node_id: "local", local: true, services: {})}
+      subject { Moleculer::Node.new(node_id: "local", local: true, services: {}) }
       it "always returns the current time" do
         Timecop.freeze(Date.today - 1) do
           subject.beat
@@ -103,5 +102,4 @@ RSpec.describe Moleculer::Node do
       end
     end
   end
-
 end
