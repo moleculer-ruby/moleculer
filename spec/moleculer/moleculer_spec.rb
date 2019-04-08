@@ -104,7 +104,7 @@ RSpec.describe Moleculer do
 
   describe "#logger" do
     it "returns an instance of the logger" do
-      expect(subject.logger).to be_a(Ougai::Logger)
+      expect(subject.logger).to be_a(Moleculer::Support::LogProxy)
     end
 
     it "sets the default log level correctly" do
