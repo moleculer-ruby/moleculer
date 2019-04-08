@@ -63,6 +63,20 @@ module Moleculer
       @events
     end
 
+    ##
+    # @return [Time] the time of the last heartbeat, or Time#now if the node is local.
+    def last_heartbeat_at
+      return Time.now if local?
+
+      @last_heartbeat_at || Time.now
+    end
+
+    ##
+    # Updates the last heartbeat to Time#now
+    def beat
+      @last_heartbeat_at = Time.now
+    end
+
     def local?
       @local
     end
