@@ -12,6 +12,10 @@ module Moleculer
         #           if it is not already defined in the current class.
         attr_writer :service_prefix
 
+        ##
+        # The broker this service is attached to
+        attr_accessor :broker
+
         def service_prefix
           Moleculer.service_prefix
         end
@@ -88,6 +92,12 @@ module Moleculer
       # @see events
       def events
         self.class.events
+      end
+
+      ##
+      # @return [Moleculer::Broker] the moleculer broker the service is attached to
+      def broker
+        self.class.broker
       end
 
       def self.as_json

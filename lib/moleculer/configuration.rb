@@ -3,6 +3,34 @@ module Moleculer
   # Handles Moleculer configuration
   # @private
   class Configuration
+    ##
+    # @private
+    class ServiceList
+      def initialize(configuration)
+        @configuration = configuration
+        @services      = []
+      end
+
+      def <<(service)
+        service.broker = @configuration.broker
+        @services << service
+      end
+
+      def length
+        @services.length
+      end
+
+      def first
+        @services.first
+      end
+
+      def map(&block)
+        @services.map(&block)
+      end
+    end
+
+    private_constant :ServiceList
+
     class << self
       attr_reader :accessors
 
@@ -22,15 +50,6 @@ module Moleculer
           attr_writer attribute.to_sym
         end
       end
-
-      def config_reader(attribute, value)
-        class_eval <<-method
-          def #{attribute}
-            @#{attribute} ||= #{value}
-            @#{attribute} 
-          end
-        method
-      end
     end
 
     config_accessor :log_file
@@ -47,7 +66,10 @@ module Moleculer
     config_accessor :serializer, :json
     config_accessor :node_id, "#{Socket.gethostname.downcase}-#{Process.pid}"
     config_accessor :service_prefix
-    config_reader :services, []
+
+    def services
+      @services ||= ServiceList.new(self)
+    end
 
     private
 
