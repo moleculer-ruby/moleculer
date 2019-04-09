@@ -43,22 +43,18 @@ RSpec.describe Moleculer do
     end
   end
 
-  describe "#config" do
+  describe "#configure" do
     # Necessary to clean up configuration so that it doesn't effect other tests
     before :each do
       Moleculer.send(:remove_instance_variable, :@logger) if Moleculer.send(:instance_variable_get, :@logger)
     end
 
     after :each do
-      %w[node_id log_level serializer heartbeat_interval services timeout transporter service_prefix logger].each do |v|
-        if Moleculer.send(:instance_variable_get, "@#{v}".to_sym)
-          Moleculer.send(:remove_instance_variable, "@#{v}".to_sym)
-        end
-      end
+      Moleculer.send(:remove_instance_variable, :@config)
     end
 
     it "should allow moleculer to be configured" do
-      subject.config do |c|
+      subject.configure do |c|
         c.node_id        = "test"
         c.log_level      = :trace
         c.serializer     = :yaml
@@ -69,25 +65,25 @@ RSpec.describe Moleculer do
         c.services << Moleculer::Service::Base
       end
 
-      expect(subject.node_id).to include("test")
-      expect(subject.logger.level).to eq Ougai::Logging::Severity::TRACE
-      expect(subject.serializer).to eq :yaml
-      expect(subject.timeout).to eq 100
-      expect(subject.transporter).to eq "some_transporter"
-      expect(subject.service_prefix).to eq "service"
-      expect(subject.heartbeat_interval).to eq 10
-      expect(subject.services).to include(Moleculer::Service::Base)
+      expect(subject.config.node_id).to include("test")
+      expect(subject.config.logger.level).to eq Ougai::Logging::Severity::TRACE
+      expect(subject.config.serializer).to eq :yaml
+      expect(subject.config.timeout).to eq 100
+      expect(subject.config.transporter).to eq "some_transporter"
+      expect(subject.config.service_prefix).to eq "service"
+      expect(subject.config.heartbeat_interval).to eq 10
+      expect(subject.config.services).to include(Moleculer::Service::Base)
     end
 
     it "should have the correct defaults" do
-      expect(subject.node_id).to include(Socket.gethostname.downcase)
-      expect(subject.logger.level).to eq Ougai::Logger::Severity::DEBUG
-      expect(subject.serializer).to eq :json
-      expect(subject.timeout).to eq 5
-      expect(subject.transporter).to eq "redis://localhost"
-      expect(subject.service_prefix).to be_nil
-      expect(subject.heartbeat_interval).to eq 5
-      expect(subject.services).to eq []
+      expect(subject.config.node_id).to include(Socket.gethostname.downcase)
+      expect(subject.config.logger.level).to eq Ougai::Logger::Severity::DEBUG
+      expect(subject.config.serializer).to eq :json
+      expect(subject.config.timeout).to eq 5
+      expect(subject.config.transporter).to eq "redis://localhost"
+      expect(subject.config.service_prefix).to be_nil
+      expect(subject.config.heartbeat_interval).to eq 5
+      expect(subject.config.services).to eq []
     end
   end
 

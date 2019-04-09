@@ -11,6 +11,7 @@ require "moleculer/version"
 require "moleculer/node"
 require "moleculer/serializers"
 require "moleculer/packets"
+require "moleculer/configuration"
 
 # Moleculer is a fast, modern and powerful microservices framework for originally written for
 # {Node.js}[https://nodejs.org/en/]. It helps you to build efficient, reliable & scalable services. Moleculer provides
@@ -22,13 +23,6 @@ require "moleculer/packets"
 module Moleculer
   extend self
   PROTOCOL_VERSION = "3".freeze
-
-  attr_writer :log_level,
-              :heartbeat_interval,
-              :serializer,
-              :timeout,
-              :transporter,
-              :logger
 
   # @return [Symbol] the service prefix. When used will prefix all services name with `<service_prefix>.`, defaults
   #                  to `nil`
@@ -58,12 +52,16 @@ module Moleculer
     broker.call(action.to_s, params, kwargs)
   end
 
+  def config
+    @config ||= Configuration.new
+  end
+
   ##
   # Allows configuration of moleculer. For more information on configuration see the [Readme](/index.html)
   #
   # @yield [self]
-  def config
-    yield self
+  def configure
+    yield config
   end
 
   ##
@@ -83,10 +81,9 @@ module Moleculer
   # @return [Ougai::Logger] the logging instance for this node. Log level is set to `:debug` by default.
   def logger
     unless @logger
-      logger           = Ougai::Logger.new(@log || STDOUT)
-      logger.formatter = Ougai::Formatters::Readable.new("MOL")
-      logger.level     = @log_level || :debug
-      @logger          = Moleculer::Support::LogProxy.new(logger)
+      @logger           = Ougai::Logger.new(@log || STDOUT)
+      @logger.formatter = Ougai::Formatters::Readable.new("MOL")
+      @logger.level     = @log_level || :debug
     end
     @logger
   end
