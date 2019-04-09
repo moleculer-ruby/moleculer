@@ -1,5 +1,5 @@
 require_relative "action"
-require_relative "./event"
+require_relative "event"
 
 module Moleculer
   module Service
@@ -70,6 +70,10 @@ module Moleculer
         def action_name_for(name)
           "#{service_name}.#{name}"
         end
+      end
+
+      def initializing(broker)
+        @broker = broker
       end
 
       ##
