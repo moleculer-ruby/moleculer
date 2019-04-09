@@ -17,13 +17,15 @@ module Moleculer
         node_id: Moleculer.config.node_id,
         logger: Moleculer.config.logger,
         transporter: Moleculer.config.transporter,
-        heartbeat_interval: Moleculer.config.heartbeat_interval
+        heartbeat_interval: Moleculer.config.heartbeat_interval,
+        services: Moleculer.config.services
       )
       @logger             = logger.get_child("[BROKER]")
       @registry           = Registry.new(self)
       @transporter        = Transporters.for(transporter)
       @contexts           = Concurrent::Map.new
       @heartbeat_interval = heartbeat_interval
+      @services           = services
     end
 
     ##
@@ -133,7 +135,7 @@ module Moleculer
 
     def process_event(packet)
       @logger.debug("processing event '#{packet.event}'")
-      events = @registry.fetch_events_for_node_id(packet.event, Moleculer.node_id)
+      events = @registry.fetch_events_for_node_id(packet.event, @node_id)
 
       events.each { |e| e.execute(packet.data) }
     rescue StandardError => e
@@ -142,7 +144,7 @@ module Moleculer
 
     def process_request(packet)
       @logger.debug "processing request #{packet.id}"
-      action = @registry.fetch_action_for_node_id(packet.action, Moleculer.node_id)
+      action = @registry.fetch_action_for_node_id(packet.action, @node_id)
       node   = @registry.fetch_node(packet.sender)
 
       context = Context.new(
@@ -220,10 +222,10 @@ module Moleculer
     end
 
     def register_local_node
-      logger.info "registering #{Moleculer.services.length} local services"
+      logger.info "registering #{@services.length} local services"
       node = Node.new(
-        node_id:  Moleculer.node_id,
-        services: Moleculer.services,
+        node_id:  @node_id,
+        services: @services,
         local:    true,
       )
       @registry.register_node(node)
@@ -235,7 +237,7 @@ module Moleculer
     end
 
     def register_local_services
-      Moleculer.services.each do |service|
+      @services.each do |service|
         register_service(service)
       end
     end
@@ -245,7 +247,7 @@ module Moleculer
     end
 
     def start_heartbeat
-      Concurrent::TimerTask.new(execution_interval: Moleculer.heartbeat_interval) do
+      Concurrent::TimerTask.new(execution_interval: @heartbeat_interval) do
         publish_heartbeat
         @registry.expire_nodes
       end.execute
@@ -262,13 +264,13 @@ module Moleculer
     end
 
     def subscribe_to_events
-      subscribe("MOL.EVENT.#{Moleculer.node_id}") do |packet|
+      subscribe("MOL.EVENT.#{@node_id}") do |packet|
         process_event(packet)
       end
     end
 
     def subscribe_to_info
-      subscribe("MOL.INFO.#{Moleculer.node_id}") do |packet|
+      subscribe("MOL.INFO.#{@node_id}") do |packet|
         register_or_update_remote_node(packet)
       end
       subscribe("MOL.INFO") do |packet|
@@ -277,22 +279,22 @@ module Moleculer
     end
 
     def subscribe_to_res
-      subscribe("MOL.RES.#{Moleculer.node_id}") do |packet|
+      subscribe("MOL.RES.#{@node_id}") do |packet|
         process_response(packet)
       end
     end
 
     def subscribe_to_req
-      subscribe("MOL.REQ.#{Moleculer.node_id}") do |packet|
+      subscribe("MOL.REQ.#{@node_id}") do |packet|
         process_request(packet)
       end
     end
 
     def subscribe_to_discover
       subscribe("MOL.DISCOVER") do |packet|
-        publish_info(packet.sender) unless packet.sender == Moleculer.node_id
+        publish_info(packet.sender) unless packet.sender == @node_id
       end
-      subscribe("MOL.DISCOVER.#{Moleculer.node_id}") do |packet|
+      subscribe("MOL.DISCOVER.#{@node_id}") do |packet|
         publish_info(packet.sender)
       end
     end
