@@ -130,7 +130,7 @@ module Moleculer
 
           def reset_disconnect
             @disconnect_hash ||= Concurrent::AtomicReference.new
-            @disconnect_hash.set("#{Moleculer.node_id}.#{SecureRandom.hex}.disconnect")
+            @disconnect_hash.set("#{broker.config.node_id}.#{SecureRandom.hex}.disconnect")
           end
 
           def process_packet(packet)
@@ -149,9 +149,10 @@ module Moleculer
           end
         end
 
-        def initialize
-          @uri           = Moleculer.transporter
-          @logger        = Moleculer.logger
+        def initialize(broker)
+          @broker        = broker
+          @uri           = broker.config.transporter
+          @logger        = broker..config.logger.get_child("[REDIS.TRANSPORTER]")
           @subscriptions = Concurrent::Array.new
         end
 
@@ -190,7 +191,7 @@ module Moleculer
       end
 
       def subscriber
-        @subscriber ||= Subscriber.new
+        @subscriber ||= Subscriber.new(broker)
       end
     end
   end
