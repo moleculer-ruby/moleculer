@@ -27,7 +27,8 @@ module Moleculer
               :heartbeat_interval,
               :serializer,
               :timeout,
-              :transporter
+              :transporter,
+              :logger
 
   # @return [Symbol] the service prefix. When used will prefix all services name with `<service_prefix>.`, defaults
   #                  to `nil`
@@ -82,9 +83,10 @@ module Moleculer
   # @return [Ougai::Logger] the logging instance for this node. Log level is set to `:debug` by default.
   def logger
     unless @logger
-      @logger           = Ougai::Logger.new(@log || STDOUT)
-      @logger.formatter = Ougai::Formatters::Readable.new("MOL")
-      @logger.level     = @log_level || :debug
+      logger           = Ougai::Logger.new(@log || STDOUT)
+      logger.formatter = Ougai::Formatters::Readable.new("MOL")
+      logger.level     = @log_level || :debug
+      @logger          = Moleculer::Support::LogProxy.new(logger)
     end
     @logger
   end
