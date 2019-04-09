@@ -11,13 +11,19 @@ module Moleculer
   # Moleculer::run is called.
   class Broker
     include Moleculer::Support
-    attr_reader :logger
+    attr_reader :logger, :node_id, :heartbeat_interval
 
-    def initialize
-      @registry    = Registry.new(self)
-      @logger      = Moleculer.logger
-      @transporter = Transporters.for(Moleculer.transporter)
-      @contexts    = Concurrent::Map.new
+    def initialize(
+        node_id: Moleculer.config.node_id,
+        logger: Moleculer.config.logger,
+        transporter: Moleculer.config.transporter,
+        heartbeat_interval: Moleculer.config.heartbeat_interval
+      )
+      @logger             = logger.get_child("[BROKER]")
+      @registry           = Registry.new(self)
+      @transporter        = Transporters.for(transporter)
+      @contexts           = Concurrent::Map.new
+      @heartbeat_interval = heartbeat_interval
     end
 
     ##
@@ -28,7 +34,7 @@ module Moleculer
     # @param meta [Hash] the metadata of the request
     #
     # @return [Hash] the return result of the action call
-    def call(action_name, params, meta: {}, node_id: nil, timeout: Moleculer.timeout) # rubocop:disable Metrics/MethodLength
+    def call(action_name, params, meta: {}, node_id: nil, timeout: Moleculer.timeout)
       action = node_id ? @registry.fetch_action_for_node_id(action_name, node_id) : @registry.fetch_action(action_name)
 
       context = Context.new(
@@ -52,14 +58,14 @@ module Moleculer
       future.value!(context.timeout)
     end
 
-    def emit(event_name, payload, options={})
+    def emit(event_name, payload, options = {})
       @logger.debug("emitting event '#{event_name}'")
       events = @registry.fetch_events(event_name)
 
       events.each { |e| e.execute(payload, options) }
     end
 
-    def run # rubocop:disable Metric/MethodLength
+    def run
       self_read, self_write = IO.pipe
 
       %w[INT TERM].each do |sig|
@@ -146,7 +152,7 @@ module Moleculer
         params:  packet.params,
         meta:    packet.meta,
         timeout: Moleculer.timeout,
-        )
+      )
 
       response = action.execute(context)
 
@@ -158,13 +164,11 @@ module Moleculer
         meta:    context.meta,
         stream:  false,
         node:    node,
-        )
+      )
     end
 
     def ensure_running
-      unless @transporter.started?
-        start
-      end
+      start unless @transporter.started?
     end
 
     private
@@ -305,7 +309,6 @@ module Moleculer
         @registry.remove_node(packet.sender)
       end
     end
-
 
     def subscribe(channel, &block)
       @transporter.subscribe(channel, &block)

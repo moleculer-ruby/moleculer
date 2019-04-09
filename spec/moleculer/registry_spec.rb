@@ -56,7 +56,7 @@ RSpec.describe Moleculer::Registry do
     )
   end
 
-  let(:broker) { instance_double(Moleculer::Broker) }
+  let(:broker) { Moleculer::Broker.new }
 
   subject { Moleculer::Registry.new(broker) }
 

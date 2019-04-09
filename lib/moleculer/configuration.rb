@@ -39,7 +39,7 @@ module Moleculer
       logger           = Ougai::Logger.new(c.log_file || STDOUT)
       logger.formatter = Ougai::Formatters::Readable.new("MOL")
       logger.level     = c.log_level
-      logger
+      Moleculer::Support::LogProxy.new(logger)
     end
     config_accessor :heartbeat_interval, 5
     config_accessor :timeout, 5

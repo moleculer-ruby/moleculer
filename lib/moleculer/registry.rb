@@ -10,8 +10,9 @@ module Moleculer
     ##
     # @private
     class NodeList
-      def initialize
-        @nodes = Concurrent::Hash.new
+      def initialize(heartbeat_interval)
+        @nodes              = Concurrent::Hash.new
+        @heartbeat_interval = heartbeat_interval
       end
 
       def add_node(node)
@@ -52,13 +53,14 @@ module Moleculer
     ##
     # @private
     class ActionList
-      def initialize
-        @actions = Concurrent::Hash.new
+      def initialize(heartbeat_interval)
+        @heartbeat_interval = heartbeat_interval
+        @actions            = Concurrent::Hash.new
       end
 
       def add(action)
         name             = "#{action.service.service_name}.#{action.name}"
-        @actions[name] ||= NodeList.new
+        @actions[name] ||= NodeList.new(@heartbeat_interval)
         @actions[name].add_node(action.node)
       end
 
@@ -82,12 +84,13 @@ module Moleculer
       ##
       # @private
       class Item
-        def initialize
-          @services = Concurrent::Hash.new
+        def initialize(heartbeat_interval)
+          @heartbeat_interval = heartbeat_interval
+          @services           = Concurrent::Hash.new
         end
 
         def add_service(service)
-          @services[service.service_name] ||= NodeList.new
+          @services[service.service_name] ||= NodeList.new(@heartbeat_interval)
           @services[service.service_name].add_node(service.node)
         end
 
@@ -107,13 +110,14 @@ module Moleculer
         end
       end
 
-      def initialize
-        @events = Concurrent::Hash.new
+      def initialize(heartbeat_interval)
+        @events             = Concurrent::Hash.new
+        @heartbeat_interval = heartbeat_interval
       end
 
       def add(event)
         name            = event.name
-        @events[name] ||= Item.new
+        @events[name] ||= Item.new(@heartbeat_interval)
         @events[name].add_service(event.service)
       end
 
@@ -143,11 +147,11 @@ module Moleculer
     # @param [Moleculer::Broker] broker the service broker instance
     def initialize(broker)
       @broker           = broker
-      @nodes            = NodeList.new
-      @actions          = ActionList.new
-      @events           = EventList.new
+      @nodes            = NodeList.new(broker.heartbeat_interval)
+      @actions          = ActionList.new(broker.heartbeat_interval)
+      @events           = EventList.new(broker.heartbeat_interval)
       @services         = Concurrent::Hash.new
-      @logger           = Moleculer.logger
+      @logger           = broker.logger.get_child("[REGISTRY]")
       @remove_semaphore = Concurrent::Semaphore.new(1)
     end
 
@@ -308,7 +312,7 @@ module Moleculer
 
     def update_services(node)
       node.services.values.each do |service|
-        @services[service.service_name] ||= NodeList.new
+        @services[service.service_name] ||= NodeList.new(@heartbeat_interval)
         @services[service.service_name].add_node(node)
       end
     end
