@@ -33,7 +33,7 @@ module Moleculer
   #
   # @return [Moleculer::Broker] the Moleculer Broker instance. Only one broker can exist per node.
   def broker
-    @broker ||= Broker.new
+    @broker ||= Broker.new(config)
   end
 
   ##

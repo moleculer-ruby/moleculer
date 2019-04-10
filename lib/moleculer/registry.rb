@@ -145,13 +145,13 @@ module Moleculer
 
     ##
     # @param [Moleculer::Broker] broker the service broker instance
-    def initialize(broker)
-      @broker           = broker
-      @nodes            = NodeList.new(broker.heartbeat_interval)
-      @actions          = ActionList.new(broker.heartbeat_interval)
-      @events           = EventList.new(broker.heartbeat_interval)
+    def initialize(config)
+      @config           = config
+      @nodes            = NodeList.new(@config.heartbeat_interval)
+      @actions          = ActionList.new(@config.heartbeat_interval)
+      @events           = EventList.new(@config.heartbeat_interval)
       @services         = Concurrent::Hash.new
-      @logger           = broker.logger.get_child("[REGISTRY]")
+      @logger           = @config.logger.get_child("[REGISTRY]")
       @remove_semaphore = Concurrent::Semaphore.new(1)
     end
 

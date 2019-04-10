@@ -8,12 +8,13 @@ module Moleculer
     # The Moleculer Redis transporter
     class Redis
       ##
+      # @private
       # Represents the publisher connection
       class Publisher
-        def initialize
-          @uri        = Moleculer.transporter
-          @logger     = Moleculer.logger
-          @serializer = Serializers.for(Moleculer.serializer)
+        def initialize(config)
+          @uri        = config.transporter
+          @logger     = config.logger.get_child("[REDIS.TRANSPORTER.PUBLISHER]")
+          @serializer = Serializers.for(config.serializer).new(config)
         end
 
         ##
@@ -47,48 +48,18 @@ module Moleculer
 
       ##
       # Represents the subscriber connection
+      # @private
       class Subscriber
         ##
         # Represents a subscription
         class Subscription
-          attr_reader :disconnect_hash, :channel
-          ##
-          # handles processing of messages from redis
-          module MessageProcessor
-            extend self
-
-            def process(subscription, message)
-              logger = Moleculer.logger
-              return :disconnect if message == subscription.disconnect_hash
-
-              return nil if message_is_disconnect?(message)
-
-              packet_type = Packets.for(subscription.channel.split(".")[1])
-
-              parsed = deserialize(message)
-
-              packet_type.new(parsed)
-            rescue StandardError => error
-              logger.error error
-            end
-
-            def deserialize(message)
-              parsed = Serializers.for(Moleculer.serializer).deserialize(message)
-              return nil if parsed["sender"] == Moleculer.node_id
-
-              parsed
-            end
-
-            def message_is_disconnect?(message)
-              message.split(".")[-1] == "disconnect"
-            end
-          end
-
-          def initialize(channel, block)
-            @connection  = ::Redis.new(url: @uri)
+          def initialize(config:, channel:, block:)
+            @connection  = ::Redis.new(url: config.transporter)
             @channel     = channel
             @block       = block
-            @logger      = Moleculer.logger
+            @logger      = config.logger.get_child("[REDIS.TRANSPORTER.SUBSCRIPTION.#{channel}]")
+            @serializer  = Serializers.for(config.serializer).new(config)
+            @node_id     = config.node_id
 
             # it is necessary to send some sort of message to signal the subscriber to disconnect and shutdown
             # this is an internal message
@@ -107,7 +78,7 @@ module Moleculer
                   end
 
                   on.message do |_, message|
-                    packet = MessageProcessor.process(self, message)
+                    packet = process_message(message)
                     next unless packet
 
                     process_packet(packet)
@@ -130,7 +101,20 @@ module Moleculer
 
           def reset_disconnect
             @disconnect_hash ||= Concurrent::AtomicReference.new
-            @disconnect_hash.set("#{broker.config.node_id}.#{SecureRandom.hex}.disconnect")
+            @disconnect_hash.set("#{@node_id}.#{SecureRandom.hex}.disconnect")
+          end
+
+          private
+
+          def deserialize(message)
+            parsed = @serializer.deserialize(message)
+            return nil if parsed["sender"] == @node_id
+
+            parsed
+          end
+
+          def message_is_disconnect?(message)
+            message.split(".")[-1] == "disconnect"
           end
 
           def process_packet(packet)
@@ -141,7 +125,19 @@ module Moleculer
             @logger.error error
           end
 
-          private
+          def process_message(message)
+            return :disconnect if message == @disconnect_hash
+
+            return nil if message_is_disconnect?(message)
+
+            packet_type = Packets.for(@channel.split(".")[1])
+
+            parsed = deserialize(message)
+
+            packet_type.new(parsed)
+          rescue StandardError => error
+            @logger.error error
+          end
 
           def unsubscribe
             @logger.debug "disconnecting channel '#{@channel}'"
@@ -149,22 +145,30 @@ module Moleculer
           end
         end
 
-        def initialize(broker)
-          @broker        = broker
-          @uri           = broker.config.transporter
-          @logger        = broker..config.logger.get_child("[REDIS.TRANSPORTER]")
+        def initialize(config)
+          @config        = config
+          @uri           = config.transporter
+          @logger        = config.logger.get_child("[REDIS.TRANSPORTER]")
           @subscriptions = Concurrent::Array.new
         end
 
         def subscribe(channel, &block)
           @logger.debug "subscribing to channel '#{channel}'"
-          @subscriptions << Subscription.new(channel, block).connect
+          @subscriptions << Subscription.new(
+            channel: channel,
+            block:   block,
+            config:  @config,
+          ).connect
         end
 
         def disconnect
           @logger.debug "disconnecting subscriptions"
           @subscriptions.each(&:disconnect)
         end
+      end
+
+      def initialize(config)
+        @config = config
       end
 
       def subscribe(channel, &block)
@@ -187,11 +191,11 @@ module Moleculer
       private
 
       def publisher
-        @publisher ||= Publisher.new
+        @publisher ||= Publisher.new(@config)
       end
 
       def subscriber
-        @subscriber ||= Subscriber.new(broker)
+        @subscriber ||= Subscriber.new(@config)
       end
     end
   end

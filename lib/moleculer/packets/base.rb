@@ -24,7 +24,7 @@ module Moleculer
       # @options  data [String] :sender the packet sender, defaults to `Moleculer#node_id`
       def initialize(data = {})
         @ver    = HashUtil.fetch(data, :ver, "3")
-        @sender = HashUtil.fetch(data, :sender, Moleculer.node_id)
+        @sender = HashUtil.fetch(data, :sender, Moleculer.config.node_id)
       end
 
       ##
