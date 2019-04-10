@@ -9,6 +9,8 @@ RSpec.describe Moleculer::Transporters::Redis do
     subject.disconnect
   end
 
+  subject { Moleculer::Transporters::Redis.new(Moleculer::Configuration.new) }
+
   describe "pub/sub" do
     let(:receiver) { spy("receiver") }
     let(:packet) do
