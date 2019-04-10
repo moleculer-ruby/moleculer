@@ -134,6 +134,9 @@ module Moleculer
 
             parsed = deserialize(message)
 
+            return nil unless parsed
+
+
             packet_type.new(parsed)
           rescue StandardError => error
             @logger.error error
