@@ -144,7 +144,7 @@ module Moleculer
     attr_reader :local_node
 
     ##
-    # @param [Moleculer::Broker] broker the service broker instance
+    # @param config [Moleculer::Config] the moleculer configuration
     def initialize(config)
       @config           = config
       @nodes            = NodeList.new(@config.heartbeat_interval)
