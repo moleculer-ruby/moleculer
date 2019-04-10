@@ -15,7 +15,8 @@ class Server < Moleculer::Service::Base
 
 end
 
-Moleculer.config do |c|
+Moleculer.configure do |c|
+  c.log_level = :trace
   c.services << Server
 end
 

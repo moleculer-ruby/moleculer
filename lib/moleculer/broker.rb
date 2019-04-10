@@ -2,11 +2,9 @@
 
 require "forwardable"
 
-
 require_relative "registry"
 require_relative "transporters"
 require_relative "support"
-
 
 module Moleculer
   ##
@@ -23,7 +21,10 @@ module Moleculer
     ##
     # @param config [Moleculer::Config] the broker configuration
     def initialize(config)
-      @config      = config
+      @config = config
+
+      @config.broker = self
+
       @logger      = @config.logger.get_child("[BROKER]")
       @registry    = Registry.new(@config)
       @transporter = Transporters.for(@config.transporter).new(@config)

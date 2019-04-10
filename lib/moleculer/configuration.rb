@@ -67,6 +67,8 @@ module Moleculer
     config_accessor :node_id, "#{Socket.gethostname.downcase}-#{Process.pid}"
     config_accessor :service_prefix
 
+    attr_accessor :broker
+
     def services
       @services ||= ServiceList.new(self)
     end
