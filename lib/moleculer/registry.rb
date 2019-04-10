@@ -58,9 +58,7 @@ module Moleculer
         @actions            = Concurrent::Hash.new
       end
 
-      def add(action)
-        name             = action.name
-        name             = "#{action.service.service_name}.#{action.name}" if action.node.local?
+      def add(name, action)
         @actions[name] ||= NodeList.new(@heartbeat_interval)
         @actions[name].add_node(action.node)
       end
@@ -304,8 +302,8 @@ module Moleculer
     end
 
     def update_actions(node)
-      node.actions.values.each do |action|
-        @actions.add(action)
+      node.actions.each do |name, action|
+        @actions.add(name, action)
       end
       @logger.debug "registered #{node.actions.length} action(s) for node '#{node.id}'"
     end
