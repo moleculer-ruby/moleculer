@@ -76,7 +76,7 @@ module Moleculer
         end
       end
 
-      def initializing(broker)
+      def initialize(broker)
         @broker = broker
       end
 

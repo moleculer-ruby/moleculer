@@ -59,7 +59,8 @@ module Moleculer
       end
 
       def add(action)
-        name             = "#{action.service.service_name}.#{action.name}"
+        name             = action.name
+        name             = "#{action.service.service_name}.#{action.name}" if action.node.local?
         @actions[name] ||= NodeList.new(@heartbeat_interval)
         @actions[name].add_node(action.node)
       end
@@ -172,9 +173,11 @@ module Moleculer
       end
       @logger.info "registering node #{node.id}" unless node.local?
       @nodes.add_node(node)
-      update_services(node)
       update_actions(node)
       update_events(node)
+      # always call this last, as it will immediately cause processes waiting for services to show it as ready even if
+      # the actions or events lists have not been updated.
+      update_services(node)
       node
     end
 
@@ -279,6 +282,10 @@ module Moleculer
       node.events.fetch(event_name)
     rescue KeyError
       raise Errors::EventNotFound, "The event '#{event_name}' was not found on the node id with id '#{node.id}'"
+    end
+
+    def fetch_action_from_node(action_name, node)
+      node.actions.fetch(action_name)
     end
 
     def fetch_next_nodes_for_event(event_name)

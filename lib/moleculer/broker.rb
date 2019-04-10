@@ -58,16 +58,16 @@ module Moleculer
         future:    future,
       }
 
-      action.execute(context)
+      action.execute(context, self)
 
       future.value!(context.timeout)
     end
 
-    def emit(event_name, payload, options = {})
+    def emit(event_name, payload)
       @logger.debug("emitting event '#{event_name}'")
       events = @registry.fetch_events(event_name)
 
-      events.each { |e| e.execute(payload, options) }
+      events.each { |e| e.execute(payload, self) }
     end
 
     def run
@@ -156,10 +156,10 @@ module Moleculer
         action:  action,
         params:  packet.params,
         meta:    packet.meta,
-        timeout: Moleculer.timeout,
+        timeout: @config.timeout,
       )
 
-      response = action.execute(context)
+      response = action.execute(context, self)
 
       publish_res(
         id:      context.id,
@@ -170,10 +170,6 @@ module Moleculer
         stream:  false,
         node:    node,
       )
-    end
-
-    def ensure_running
-      start unless @transporter.started?
     end
 
     private

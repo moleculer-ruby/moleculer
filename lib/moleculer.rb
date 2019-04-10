@@ -46,7 +46,6 @@ module Moleculer
   #
   # @return [Hash] the request response
   def call(action, params = {}, **kwargs)
-    broker.ensure_running
     return broker.call(action.to_s, kwargs) if params.empty?
 
     broker.call(action.to_s, params, kwargs)
@@ -70,7 +69,6 @@ module Moleculer
   # @param event [String] the name of the event
   # @param data [Hash] the data related to the event
   def emit(event, data)
-    broker.ensure_running
     broker.emit(event, data)
   end
 
