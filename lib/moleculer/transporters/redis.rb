@@ -120,6 +120,8 @@ module Moleculer
           def process_packet(packet)
             return @connection.unsubscribe if packet == :disconnect
 
+            @logger.trace "received packet from #{packet.sender}:", packet.as_json
+
             @block.call(packet)
           rescue StandardError => error
             @logger.error error
