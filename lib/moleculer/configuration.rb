@@ -27,6 +27,10 @@ module Moleculer
       def map(&block)
         @services.map(&block)
       end
+
+      def include?(service)
+        @services.include?(service)
+      end
     end
 
     private_constant :ServiceList
