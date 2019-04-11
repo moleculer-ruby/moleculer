@@ -62,11 +62,11 @@ module Moleculer
           seq = 0
           Support::HashUtil.fetch(service_info, :events).values.each do |a|
             name = Support::HashUtil.fetch(a, :name)
-            define_method("event_#{seq}".to_sym) do |data, options|
+            define_method("event_#{seq}".to_sym) do |data|
               @broker.send(:publish_event,
                            event:     name,
                            data:      data,
-                           broadcast: options[:broadcast] || false,
+                           broadcast: false,
                            groups:    [],
                            node:      self.class.node)
             end
