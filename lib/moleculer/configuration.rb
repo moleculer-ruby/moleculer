@@ -73,8 +73,19 @@ module Moleculer
 
     attr_accessor :broker
 
+    def initialize(options={})
+      options.each do |option, value|
+        send("#{option}=".to_sym, value)
+      end
+    end
+
     def services
       @services ||= ServiceList.new(self)
+    end
+
+    def services=(array)
+      @services = ServiceList.new(self)
+      array.each { |s| @services << s}
     end
 
     private

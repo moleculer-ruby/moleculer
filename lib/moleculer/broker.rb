@@ -16,7 +16,7 @@ module Moleculer
     extend Forwardable
     attr_reader :config
 
-    def_delegators :@config, :node_id, :heartbeat_interval, :services
+    def_delegators :@config, :node_id, :heartbeat_interval, :services, :service_prefix
 
     ##
     # @param config [Moleculer::Config] the broker configuration

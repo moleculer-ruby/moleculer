@@ -21,19 +21,22 @@ module Moleculer
         end
 
         def node
-          Moleculer.broker.local_node
+          broker.local_node
+        end
+
+        def broker
+          @broker || Moleculer.broker
         end
 
         ##
-        # Set the service_name to the provided name
+        # Set the service_name to the provided name. If the node is local it will prefix the service name with the
+        # service prefix
         #
         # @param name [String] the name to which the service_name should be set
         def service_name(name = nil)
-          if name
-            @service_name = name
+          @service_name = name if name
 
-            @service_name = "#{service_prefix}.#{@service_name}" if service_prefix
-          end
+          return "#{broker.service_prefix}.#{@service_name}" unless broker.service_prefix.nil?
 
           @service_name
         end
