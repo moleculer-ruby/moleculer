@@ -5,11 +5,11 @@ module Moleculer
     ##
     # Represents a service event.
     class Event
-      include Support
-
       # @!attribute [r] name
       #   @return [String] the name of the action
-      attr_reader :name
+      # @!attribute [r] service
+      #   @return [Moleculer::Service] the service that this event is tied to
+      attr_reader :name, :service
 
       ##
       # @param name [String] the name of the action
@@ -28,8 +28,8 @@ module Moleculer
       ##
       # Executes the event
       # @param data [Hash] the event data
-      def execute(data)
-        @service.new.public_send(@method, data)
+      def execute(data, broker)
+        @service.new(broker).public_send(@method, data)
       end
 
       ##
