@@ -56,6 +56,8 @@ module Moleculer
           args.each_index do |v|
             args[v] = "\n" + args[v].ai + "\n" unless args[v].is_a?(String)
           end
+        elsif args.last.is_a?(StandardError)
+          args = [args.slice(0, 1), args.last.message, "\n  ", args.last.backtrace.join("\n   ")].flatten
         end
 
         args.join(" ").strip

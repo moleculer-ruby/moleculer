@@ -32,8 +32,8 @@ module Moleculer
       # @param context [Moleculer::Context] the execution contextd
       #
       # @return [Moleculer::Support::Hash] returns a hash which will be converted into json for the response.
-      def execute(context)
-        response = @service.new.public_send(@method, context)
+      def execute(context, broker)
+        response = @service.new(broker).public_send(@method, context)
         # rubocop:disable Style/RaiseArgs
         raise Errors::InvalidActionResponse.new(response) unless response.is_a? Hash
 

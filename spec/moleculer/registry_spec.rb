@@ -56,9 +56,7 @@ RSpec.describe Moleculer::Registry do
     )
   end
 
-  let(:broker) { instance_double(Moleculer::Broker) }
-
-  subject { Moleculer::Registry.new(broker) }
+  subject { Moleculer::Registry.new(Moleculer::Configuration.new) }
 
   before :each do
     allow(service_1_2).to receive(:node).and_return(node_1)

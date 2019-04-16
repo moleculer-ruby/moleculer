@@ -25,9 +25,7 @@ module Moleculer
         end
 
         def service_name(name = nil)
-          if name
-            @service_name = name
-          end
+          @service_name = name if name
 
           @service_name
         end
@@ -44,15 +42,15 @@ module Moleculer
             next if Support::HashUtil.fetch(a, :name) =~ /^\$/
 
             define_method("action_#{seq}".to_sym) do |ctx|
-              Moleculer.broker.send(:publish_req,
-                                    id:         ctx.id,
-                                    action:     ctx.action.name,
-                                    params:     ctx.params,
-                                    meta:       ctx.meta,
-                                    timeout:    ctx.timeout,
-                                    node:       self.class.node,
-                                    request_id: ctx.request_id,
-                                    stream:     false)
+              @broker.send(:publish_req,
+                           id:         ctx.id,
+                           action:     ctx.action.name,
+                           params:     ctx.params,
+                           meta:       ctx.meta,
+                           timeout:    ctx.timeout,
+                           node:       self.class.node,
+                           request_id: ctx.request_id,
+                           stream:     false)
               {}
             end
             action(Support::HashUtil.fetch(a, :name), "action_#{seq}".to_sym)
@@ -64,13 +62,13 @@ module Moleculer
           seq = 0
           Support::HashUtil.fetch(service_info, :events).values.each do |a|
             name = Support::HashUtil.fetch(a, :name)
-            define_method("event_#{seq}".to_sym) do |data, options|
-              Moleculer.broker.send(:publish_event,
-                                    event:     name,
-                                    data:      data,
-                                    broadcast: options[:broadcast] || false,
-                                    groups:    [],
-                                    node:      self.class.node)
+            define_method("event_#{seq}".to_sym) do |data|
+              @broker.send(:publish_event,
+                           event:     name,
+                           data:      data,
+                           broadcast: false,
+                           groups:    [],
+                           node:      self.class.node)
             end
             event(name, "event_#{seq}".to_sym)
             seq += 1
