@@ -13,10 +13,10 @@ module Moleculer
     # @param [Moleculer::Broker] broker the broker instance
     #
     # @return [Moleculer::Transporters::Base] the transporter instance
-    def self.for(uri, broker)
+    def self.for(uri)
       parsed = URI(uri)
       require_relative("./transporters/#{parsed.scheme}")
-      const_get(parsed.scheme.split("_").map(&:capitalize).join).new(uri, broker)
+      const_get(parsed.scheme.split("_").map(&:capitalize).join)
     end
   end
 end

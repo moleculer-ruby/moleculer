@@ -1,7 +1,12 @@
 require "bundler/setup"
 require "moleculer"
+require "simplecov"
+require "timecop"
+
 
 RSpec.configure do |config|
+  SimpleCov.start
+
   # Enable flags like --only-failures and --next-failure
   config.example_status_persistence_file_path = ".rspec_status"
 

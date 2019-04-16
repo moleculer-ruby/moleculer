@@ -1,24 +1,25 @@
 require_relative "../../lib/moleculer"
 
 class Server < Moleculer::Service::Base
-  service_name "ruby-server"
-  action "echo", :echo
-  event "reply.event", :handle_event
+  service_name "math"
+  action "add", :add
+  event "echo.event", :echo
 
-  def echo(context)
-    {message: "You said #{context.params["message"]}"}
+  def add(ctx)
+    {
+      count: ctx.params.count,
+      res:   ctx.params["a"].to_i + ctx.params["b"].to_i,
+    }
   end
 
-  def handle_event(data, options={})
-    puts "\n\n\n\n\n\n\n#{data["counter"]}"
+  def echo(data)
+    broker.emit("reply.event", data)
   end
-
 end
 
-Moleculer.config do |c|
+Moleculer.configure do |c|
+  c.log_level = :trace
   c.services << Server
 end
 
 Moleculer.run
-
-

@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "forwardable"
+
 require_relative "registry"
 require_relative "transporters"
 require_relative "support"
@@ -11,41 +13,21 @@ module Moleculer
   # Moleculer::run is called.
   class Broker
     include Moleculer::Support
+    extend Forwardable
+    attr_reader :config
+
+    def_delegators :@config, :node_id, :heartbeat_interval, :services, :service_prefix
 
     ##
-    # @private
-    # A queue is a subscriber thread pool manager allowing Moleculer to handle requests asynchronously
-    class Queue
-      def initialize(name, options, &block)
-        opts      = { max_threads: 1, min_threads: 1, max_queue: 0, fallback_policy: :abort }.merge(options)
-        @executor = block
-        # noinspection RubyArgCount
-        @pool   = Concurrent::ThreadPoolExecutor.new(opts)
-        @name   = name
-        @logger = Moleculer.logger
-      end
+    # @param config [Moleculer::Config] the broker configuration
+    def initialize(config)
+      @config = config
 
-      ##
-      # Pushes a packet onto the queue by queuing the action in the thread pool
-      #
-      # @param [Moleculer::Packet::Base] packet the packet to queue into the pool
-      def <<(packet)
-        @pool.post do
-          begin
-            @executor.call(packet)
-          rescue StandardError => e
-            @logger.error e
-          end
-        end
-      end
-    end
+      @config.broker = self
 
-    attr_reader :logger
-
-    def initialize
-      @registry    = Registry.new(self)
-      @logger      = Moleculer.logger
-      @transporter = Transporters.for(Moleculer.transporter, self)
+      @logger      = @config.logger.get_child("[BROKER]")
+      @registry    = Registry.new(@config)
+      @transporter = Transporters.for(@config.transporter).new(@config)
       @contexts    = Concurrent::Map.new
     end
 
@@ -57,7 +39,7 @@ module Moleculer
     # @param meta [Hash] the metadata of the request
     #
     # @return [Hash] the return result of the action call
-    def call(action_name, params, meta: {}, node_id: nil, timeout: Moleculer.timeout) # rubocop:disable Metrics/MethodLength
+    def call(action_name, params, meta: {}, node_id: nil, timeout: Moleculer.config.timeout)
       action = node_id ? @registry.fetch_action_for_node_id(action_name, node_id) : @registry.fetch_action(action_name)
 
       context = Context.new(
@@ -76,19 +58,19 @@ module Moleculer
         future:    future,
       }
 
-      action.execute(context)
+      action.execute(context, self)
 
       future.value!(context.timeout)
     end
 
-    def emit(event_name, payload, options={})
+    def emit(event_name, payload)
       @logger.debug("emitting event '#{event_name}'")
-      events = @registry.fetch_events(event_name)
+      events = @registry.fetch_events_for_emit(event_name)
 
-      events.each { |e| e.execute(payload, options) }
+      events.each { |e| e.execute(payload, self) }
     end
 
-    def run # rubocop:disable Metric/MethodLength
+    def run
       self_read, self_write = IO.pipe
 
       %w[INT TERM].each do |sig|
@@ -110,8 +92,8 @@ module Moleculer
     end
 
     def start
-      logger.info "starting"
-      @transporter.start
+      @logger.info "starting"
+      @transporter.connect
       register_local_node
       start_subscribers
       publish_discover
@@ -123,7 +105,8 @@ module Moleculer
     def stop
       @logger.info "stopping"
       publish(:disconnect)
-      @transporter.stop
+      @transporter.disconnect
+      exit 0
     end
 
     def wait_for_services(*services)
@@ -155,7 +138,7 @@ module Moleculer
 
     def process_event(packet)
       @logger.debug("processing event '#{packet.event}'")
-      events = @registry.fetch_events_for_node_id(packet.event, Moleculer.node_id)
+      events = @registry.fetch_events_for_node_id(packet.event, node_id)
 
       events.each { |e| e.execute(packet.data) }
     rescue StandardError => e
@@ -164,7 +147,7 @@ module Moleculer
 
     def process_request(packet)
       @logger.debug "processing request #{packet.id}"
-      action = @registry.fetch_action_for_node_id(packet.action, Moleculer.node_id)
+      action = @registry.fetch_action_for_node_id(packet.action, node_id)
       node   = @registry.fetch_node(packet.sender)
 
       context = Context.new(
@@ -173,10 +156,10 @@ module Moleculer
         action:  action,
         params:  packet.params,
         meta:    packet.meta,
-        timeout: Moleculer.timeout,
-        )
+        timeout: @config.timeout,
+      )
 
-      response = action.execute(context)
+      response = action.execute(context, self)
 
       publish_res(
         id:      context.id,
@@ -186,13 +169,7 @@ module Moleculer
         meta:    context.meta,
         stream:  false,
         node:    node,
-        )
-    end
-
-    def ensure_running
-      unless @transporter.started?
-        start
-      end
+      )
     end
 
     private
@@ -240,14 +217,14 @@ module Moleculer
 
     def publish_to_node(packet_type, node, message = {})
       packet = Packets.for(packet_type).new(message.merge(node: node))
-      @transporter.publish_to_node(packet, node)
+      @transporter.publish(packet)
     end
 
     def register_local_node
-      logger.info "registering #{Moleculer.services.length} local services"
+      @logger.info "registering #{services.length} local services"
       node = Node.new(
-        node_id:  Moleculer.node_id,
-        services: Moleculer.services,
+        node_id:  node_id,
+        services: services,
         local:    true,
       )
       @registry.register_node(node)
@@ -259,7 +236,7 @@ module Moleculer
     end
 
     def register_local_services
-      Moleculer.services.each do |service|
+      services.each do |service|
         register_service(service)
       end
     end
@@ -269,8 +246,9 @@ module Moleculer
     end
 
     def start_heartbeat
-      Concurrent::TimerTask.new(execution_interval: Moleculer.heartbeat_interval) do
+      Concurrent::TimerTask.new(execution_interval: heartbeat_interval) do
         publish_heartbeat
+        @registry.expire_nodes
       end.execute
     end
 
@@ -280,51 +258,61 @@ module Moleculer
       subscribe_to_req
       subscribe_to_events
       subscribe_to_discover
+      subscribe_to_disconnect
+      subscribe_to_heartbeat
     end
 
     def subscribe_to_events
-      subscribe("MOL.EVENT.#{Moleculer.node_id}") do |packet|
+      subscribe("MOL.EVENT.#{node_id}") do |packet|
         process_event(packet)
       end
     end
 
     def subscribe_to_info
-      subscribe("MOL.INFO.#{Moleculer.node_id}") do |packet|
+      subscribe("MOL.INFO.#{node_id}") do |packet|
         register_or_update_remote_node(packet)
       end
       subscribe("MOL.INFO") do |packet|
-        register_or_update_remote_node(packet) unless packet.sender == Moleculer.node_id
+        register_or_update_remote_node(packet)
       end
     end
 
     def subscribe_to_res
-      subscribe("MOL.RES.#{Moleculer.node_id}") do |packet|
+      subscribe("MOL.RES.#{node_id}") do |packet|
         process_response(packet)
       end
     end
 
     def subscribe_to_req
-      subscribe("MOL.REQ.#{Moleculer.node_id}", min_threads: 10, max_threads: 100) do |packet|
+      subscribe("MOL.REQ.#{node_id}") do |packet|
         process_request(packet)
       end
     end
 
     def subscribe_to_discover
       subscribe("MOL.DISCOVER") do |packet|
-        publish_info(packet.sender) unless packet.sender == Moleculer.node_id
+        publish_info(packet.sender) unless packet.sender == node_id
       end
-      subscribe("MOL.DISCOVER.#{Moleculer.node_id}") do |packet|
+      subscribe("MOL.DISCOVER.#{node_id}") do |packet|
         publish_info(packet.sender)
       end
     end
 
-    def subscribe(channel, options = {}, &block)
-      @logger.trace "subscribing to channel '#{channel}' with options:", options
-      subscribers[channel] = Queue.new(channel, options, &block)
+    def subscribe_to_heartbeat
+      subscribe("MOL.HEARTBEAT") do |packet|
+        node = @registry.safe_fetch_node(packet.sender)
+        node.beat
+      end
     end
 
-    def subscribers
-      @subscribers ||= Concurrent::Hash.new([])
+    def subscribe_to_disconnect
+      subscribe("MOL.DISCONNECT") do |packet|
+        @registry.remove_node(packet.sender)
+      end
+    end
+
+    def subscribe(channel, &block)
+      @transporter.subscribe(channel, &block)
     end
   end
 end
