@@ -10,8 +10,9 @@ module Moleculer
     ##
     # @private
     class NodeList
-      def initialize
-        @nodes = Concurrent::Hash.new
+      def initialize(heartbeat_interval)
+        @nodes              = Concurrent::Hash.new
+        @heartbeat_interval = heartbeat_interval
       end
 
       def add_node(node)
@@ -41,7 +42,7 @@ module Moleculer
       end
 
       def active_nodes
-        @nodes.values.select { |node| (Time.now - node[:node].last_heartbeat_at) < Moleculer.heartbeat_interval * 3 }
+        @nodes.values.select { |node| (Time.now - node[:node].last_heartbeat_at) < @heartbeat_interval * 3 }
       end
 
       def expired_nodes
@@ -52,13 +53,13 @@ module Moleculer
     ##
     # @private
     class ActionList
-      def initialize
-        @actions = Concurrent::Hash.new
+      def initialize(heartbeat_interval)
+        @heartbeat_interval = heartbeat_interval
+        @actions            = Concurrent::Hash.new
       end
 
-      def add(action)
-        name             = "#{action.service.service_name}.#{action.name}"
-        @actions[name] ||= NodeList.new
+      def add(name, action)
+        @actions[name] ||= NodeList.new(@heartbeat_interval)
         @actions[name].add_node(action.node)
       end
 
@@ -82,12 +83,13 @@ module Moleculer
       ##
       # @private
       class Item
-        def initialize
-          @services = Concurrent::Hash.new
+        def initialize(heartbeat_interval)
+          @heartbeat_interval = heartbeat_interval
+          @services           = Concurrent::Hash.new
         end
 
         def add_service(service)
-          @services[service.service_name] ||= NodeList.new
+          @services[service.service_name] ||= NodeList.new(@heartbeat_interval)
           @services[service.service_name].add_node(service.node)
         end
 
@@ -107,13 +109,14 @@ module Moleculer
         end
       end
 
-      def initialize
-        @events = Concurrent::Hash.new
+      def initialize(heartbeat_interval)
+        @events             = Concurrent::Hash.new
+        @heartbeat_interval = heartbeat_interval
       end
 
       def add(event)
         name            = event.name
-        @events[name] ||= Item.new
+        @events[name] ||= Item.new(@heartbeat_interval)
         @events[name].add_service(event.service)
       end
 
@@ -140,14 +143,14 @@ module Moleculer
     attr_reader :local_node
 
     ##
-    # @param [Moleculer::Broker] broker the service broker instance
-    def initialize(broker)
-      @broker           = broker
-      @nodes            = NodeList.new
-      @actions          = ActionList.new
-      @events           = EventList.new
+    # @param config [Moleculer::Config] the moleculer configuration
+    def initialize(config)
+      @config           = config
+      @nodes            = NodeList.new(@config.heartbeat_interval)
+      @actions          = ActionList.new(@config.heartbeat_interval)
+      @events           = EventList.new(@config.heartbeat_interval)
       @services         = Concurrent::Hash.new
-      @logger           = Moleculer.logger
+      @logger           = @config.logger.get_child("[REGISTRY]")
       @remove_semaphore = Concurrent::Semaphore.new(1)
     end
 
@@ -168,9 +171,11 @@ module Moleculer
       end
       @logger.info "registering node #{node.id}" unless node.local?
       @nodes.add_node(node)
-      update_services(node)
       update_actions(node)
       update_events(node)
+      # always call this last, as it will immediately cause processes waiting for services to show it as ready even if
+      # the actions or events lists have not been updated.
+      update_services(node)
       node
     end
 
@@ -277,6 +282,10 @@ module Moleculer
       raise Errors::EventNotFound, "The event '#{event_name}' was not found on the node id with id '#{node.id}'"
     end
 
+    def fetch_action_from_node(action_name, node)
+      node.actions.fetch(action_name)
+    end
+
     def fetch_next_nodes_for_event(event_name)
       service_names = HashUtil.fetch(@events, event_name, {}).keys
       node_names    = service_names.map { |s| @services[s] }
@@ -293,8 +302,8 @@ module Moleculer
     end
 
     def update_actions(node)
-      node.actions.values.each do |action|
-        @actions.add(action)
+      node.actions.each do |name, action|
+        @actions.add(name, action)
       end
       @logger.debug "registered #{node.actions.length} action(s) for node '#{node.id}'"
     end
@@ -308,7 +317,7 @@ module Moleculer
 
     def update_services(node)
       node.services.values.each do |service|
-        @services[service.service_name] ||= NodeList.new
+        @services[service.service_name] ||= NodeList.new(@heartbeat_interval)
         @services[service.service_name].add_node(node)
       end
     end

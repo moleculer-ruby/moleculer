@@ -28,8 +28,8 @@ module Moleculer
       ##
       # Executes the event
       # @param data [Hash] the event data
-      def execute(data)
-        @service.new.public_send(@method, data)
+      def execute(data, broker)
+        @service.new(broker).public_send(@method, data)
       end
 
       ##

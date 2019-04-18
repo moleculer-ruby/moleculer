@@ -5,8 +5,8 @@ module Moleculer
     ##
     # Serializes data packets to and from JSON
     class Json
-      def initialize
-        @logger = Moleculer.logger
+      def initialize(config)
+        @logger = config.logger.get_child("[SERIALIZER]")
       end
 
       def serialize(message)

@@ -16,7 +16,7 @@ module Moleculer
     def self.for(uri)
       parsed = URI(uri)
       require_relative("./transporters/#{parsed.scheme}")
-      const_get(parsed.scheme.split("_").map(&:capitalize).join).new
+      const_get(parsed.scheme.split("_").map(&:capitalize).join)
     end
   end
 end

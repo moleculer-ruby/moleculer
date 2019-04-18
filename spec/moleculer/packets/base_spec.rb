@@ -9,7 +9,7 @@ RSpec.describe Moleculer::Packets::Base do
 
     describe "#sender" do
       it "defaults to Moleculer#node_id" do
-        expect(subject.sender).to eq Moleculer.node_id
+        expect(subject.sender).to eq Moleculer.config.node_id
       end
     end
   end
