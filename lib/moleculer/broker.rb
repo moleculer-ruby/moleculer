@@ -138,9 +138,9 @@ module Moleculer
 
     def process_event(packet)
       @logger.debug("processing event '#{packet.event}'")
-      events = @registry.fetch_events_for_node_id(packet.event, node_id)
+      events = @registry.fetch_events_for_emit(packet.event)
 
-      events.each { |e| e.execute(packet.data) }
+      events.each { |e| e.execute(packet.data, self) }
     rescue StandardError => e
       @logger.error e
     end
