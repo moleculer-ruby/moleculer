@@ -28,7 +28,7 @@ Moleculer is configured through the Moleculer::config method. Example:
 
 ```ruby
 Moleculer.configure do |c|
-  c.log_level :debug
+  c.log_level = :debug
 end
 ```
 
