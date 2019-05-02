@@ -223,7 +223,7 @@ module Moleculer
     def register_local_node
       @logger.info "registering #{services.length} local services"
       services.each { |s| s.broker = self }
-      node = Node.new(
+      node                         = Node.new(
         node_id:  node_id,
         services: services,
         local:    true,
