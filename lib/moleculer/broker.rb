@@ -182,7 +182,7 @@ module Moleculer
     end
 
     def publish(packet_type, message = {})
-      packet = Packets.for(packet_type).new(message)
+      packet = Packets.for(packet_type).new(message.merge(sender: @registry.local_node.id))
       @transporter.publish(packet)
     end
 
@@ -222,6 +222,7 @@ module Moleculer
 
     def register_local_node
       @logger.info "registering #{services.length} local services"
+      services.each { |s| s.broker = self }
       node = Node.new(
         node_id:  node_id,
         services: services,
