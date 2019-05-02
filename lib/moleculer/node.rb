@@ -83,12 +83,13 @@ module Moleculer
 
     def as_json
       {
+        sender:   @id,
         config:   {},
         seq:      1,
         ipList:   [],
         hostname: @hostname,
         services: @services.values.map(&:as_json),
-        client:   client_attrubutes
+        client:   client_attrubutes,
       }
     end
 
@@ -98,7 +99,7 @@ module Moleculer
       {
         type:         "Ruby",
         version:      Moleculer::VERSION,
-        lang_version: RUBY_VERSION
+        lang_version: RUBY_VERSION,
       }
     end
   end
