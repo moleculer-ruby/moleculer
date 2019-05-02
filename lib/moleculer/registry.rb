@@ -130,7 +130,7 @@ module Moleculer
       def fetch_events(event_name)
         return [] unless @events[event_name]
 
-        @events[event_name].fetch_nodes.map { |n| n.events[event_name] }.flatten.uniq
+        @events[event_name].fetch_nodes.map { |n| n.events[event_name] }.flatten.uniq { |e| e.service.service_name }
       end
     end
 
