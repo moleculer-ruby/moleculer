@@ -1,4 +1,6 @@
 # Moleculer
+![Moleculer logo](https://github.com/moleculerjs/moleculer/raw/master/docs/assets/logo.png)
+
 [![Build Status](https://travis-ci.org/moleculer-ruby/moleculer.svg?branch=develop)](https://travis-ci.org/moleculer-ruby/moleculer)
 [![Maintainability](https://api.codeclimate.com/v1/badges/d4211bbefca62cb4c10e/maintainability)](https://codeclimate.com/github/moleculer-ruby/moleculer/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/d4211bbefca62cb4c10e/test_coverage)](https://codeclimate.com/github/moleculer-ruby/moleculer/test_coverage)
@@ -22,6 +24,41 @@ microservices.
 - all nodes are equal, no master/leader node
 
 
+## Getting Started
+### Install the Gem
+
+```ruby
+gem install "moleculer-ruby"
+```
+
+or add to your Gemfile:
+
+```ruby
+gem "moleculer-ruby", "~>0.1"
+```
+
+### Create a  Simple Service
+
+```ruby
+class SimpleService < Moleculer::Service::Base
+  action :get_user, :get_user
+  
+  
+  def get_user
+    # .. usery getting stuff
+  end
+end
+
+
+Moleculer.config do |c|
+  c.services << SimpleService
+end
+
+Moleculer.start
+
+```
+
+
 ## Configuration
 
 Moleculer is configured through the Moleculer::config method. Example:
@@ -34,9 +71,15 @@ end
 
 ### Configuration Options
 
+#### logger (default: Ougai::Logger)
+Sets teh Moleculer logger, this must be a Ruby `Logger` or `Ougai` compatible logger.
+
 #### log_level (default: debug)
 Sets the log level of the node. defaults to `:debug`. Can be one of `:trace`, `:debug`, `:info`, `:warn`, `:error`, 
 `:fatal`.
+
+#### heartbeat_interval (default: 5)
+The interval in which to send heartbeats.
 
 #### node_id (default: \<hostname\>-\<pid\>)
 The node id. Node IDs are required to be unique. In Moleculer-ruby all node ids are suffixed with the PID of the 
