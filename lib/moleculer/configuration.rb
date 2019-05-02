@@ -28,6 +28,10 @@ module Moleculer
         @services.map(&block)
       end
 
+      def each(&block)
+        @services.each(&block)
+      end
+
       def include?(service)
         @services.include?(service)
       end
