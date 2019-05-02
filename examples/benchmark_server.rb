@@ -13,7 +13,7 @@ class Users < Moleculer::Service::Base
   end
 end
 
-Moleculer.config do |c|
+Moleculer.configure do |c|
   c.services << Users
   c.log_level = :info
 end

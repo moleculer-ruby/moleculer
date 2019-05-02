@@ -27,7 +27,7 @@ microservices.
 Moleculer is configured through the Moleculer::config method. Example:
 
 ```ruby
-Moleculer.config do |c|
+Moleculer.configure do |c|
   c.log_level :debug
 end
 ```
