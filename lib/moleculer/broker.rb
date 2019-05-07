@@ -138,9 +138,9 @@ module Moleculer
 
     def process_event(packet)
       @logger.debug("processing event '#{packet.event}'")
-      events = @registry.fetch_events_for_node_id(packet.event, node_id)
+      events = @registry.fetch_events_for_emit(packet.event)
 
-      events.each { |e| e.execute(packet.data) }
+      events.each { |e| e.execute(packet.data, self) }
     rescue StandardError => e
       @logger.error e
     end
@@ -182,7 +182,7 @@ module Moleculer
     end
 
     def publish(packet_type, message = {})
-      packet = Packets.for(packet_type).new(message)
+      packet = Packets.for(packet_type).new(message.merge(sender: @registry.local_node.id))
       @transporter.publish(packet)
     end
 
@@ -222,7 +222,8 @@ module Moleculer
 
     def register_local_node
       @logger.info "registering #{services.length} local services"
-      node = Node.new(
+      services.each { |s| s.broker = self }
+      node                         = Node.new(
         node_id:  node_id,
         services: services,
         local:    true,

@@ -64,8 +64,8 @@ Moleculer.start
 Moleculer is configured through the Moleculer::config method. Example:
 
 ```ruby
-Moleculer.config do |c|
-  c.log_level :debug
+Moleculer.configure do |c|
+  c.log_level = :debug
 end
 ```
 

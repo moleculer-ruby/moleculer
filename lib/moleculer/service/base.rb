@@ -14,7 +14,7 @@ module Moleculer
 
         ##
         # The broker this service is attached to
-        attr_accessor :broker
+        attr_writer :broker
 
         def service_prefix
           Moleculer.service_prefix
