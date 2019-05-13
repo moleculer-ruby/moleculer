@@ -1,4 +1,5 @@
 require "redis"
+require_relative "base"
 
 # frozen_string_literal: true
 
@@ -6,7 +7,7 @@ module Moleculer
   module Transporters
     ##
     # The Moleculer Redis transporter
-    class Redis
+    class Redis < Base
       ##
       # @private
       # Represents the publisher connection
@@ -155,6 +156,7 @@ module Moleculer
           @uri           = config.transporter
           @logger        = config.logger.get_child("[REDIS.TRANSPORTER]")
           @subscriptions = Concurrent::Array.new
+          @started       = false
         end
 
         def subscribe(channel, &block)
@@ -163,12 +165,20 @@ module Moleculer
             channel: channel,
             block:   block,
             config:  @config,
-          ).connect
+          )
+
+          @subscriptions.last.connect if @started
         end
 
         def disconnect
           @logger.debug "disconnecting subscriptions"
           @subscriptions.each(&:disconnect)
+        end
+
+        def connect
+          @logger.debug "connecting subscriptions"
+          @subscriptions.each(&:connect)
+          @started = true
         end
       end
 
@@ -186,11 +196,20 @@ module Moleculer
 
       def connect
         publisher.connect
+        subscriber.connect
       end
 
       def disconnect
         publisher.disconnect
         subscriber.disconnect
+      end
+
+      def start
+        connect
+      end
+
+      def stop
+        disconnect
       end
 
       private
