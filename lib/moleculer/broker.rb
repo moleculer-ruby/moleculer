@@ -93,7 +93,7 @@ module Moleculer
 
     def start
       @logger.info "starting"
-      @transporter.connect
+      @transporter.start
       register_local_node
       start_subscribers
       publish_discover
@@ -105,7 +105,7 @@ module Moleculer
     def stop
       @logger.info "stopping"
       publish(:disconnect)
-      @transporter.disconnect
+      @transporter.stop
       exit 0
     end
 
