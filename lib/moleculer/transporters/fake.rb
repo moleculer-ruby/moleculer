@@ -6,7 +6,6 @@ module Moleculer
     # The fake transporter is designed to be used in testing. It is simply an in memory queue and should not be used
     # in production.
     class Fake < Base
-
       def initialize(config)
         super(config)
         @subscriptions ||= {}
@@ -35,7 +34,6 @@ module Moleculer
       def stop
         disconnect
       end
-
     end
   end
 end
