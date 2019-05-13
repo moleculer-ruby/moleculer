@@ -7,7 +7,6 @@ module Moleculer
     # All transporters inherit from this class. The Base class simply defines an interface that transporters should
     # adhere to.
     class Base
-
       ##
       # @param config [Moleculer::Configuration] the transporter configuration.
       def initialize(config)
@@ -53,7 +52,6 @@ module Moleculer
       def stop
         raise NotImplementedError
       end
-
     end
   end
 end
