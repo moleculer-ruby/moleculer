@@ -1,4 +1,4 @@
-module Moelculer
+module Moleculer
   ##
   # A transporter is the method by which moleculer transports information from one service to the next. Transporters can
   # be created using any over-the-wire bus that can be made to support some level of queueing (i.e. Redis, NATS, Kafka)
