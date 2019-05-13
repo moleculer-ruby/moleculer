@@ -11,14 +11,6 @@ module Moleculer
         @subscriptions ||= {}
       end
 
-      def connect
-        true
-      end
-
-      def disconnect
-        true
-      end
-
       def subscribe(channel, &block)
         @subscriptions[channel] = block
       end
@@ -28,11 +20,11 @@ module Moleculer
       end
 
       def start
-        connect
+        true
       end
 
       def stop
-        disconnect
+        true
       end
     end
   end
