@@ -29,7 +29,7 @@ module Moleculer
       ##
       # Subscribes to the given channel on the transporter's message bus
       # @param channel [String] the channel to which to subscribe
-      def subscribe(channel, &block)
+      def subscribe(_channel, &_block)
         raise NotImplementedError
       end
 
@@ -37,7 +37,7 @@ module Moleculer
       # Publishes the provided packet to the transporter's message bus. The publish method is expected to implement the
       # method of translating the packet data into the channel information on which to publish.
       # @param packet [Moleculer::Packet::Base] the packet to publish to the network.
-      def publish(packet)
+      def publish(_packet)
         raise NotImplementedError
       end
 
