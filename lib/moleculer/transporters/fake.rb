@@ -37,4 +37,3 @@ module Moleculer
     end
   end
 end
-
