@@ -14,18 +14,6 @@ module Moleculer
       end
 
       ##
-      # Connects the transporter to it's message bus.
-      def connect
-        raise NotImplementedError
-      end
-
-      ##
-      # Disconnects the transporter from it's message bus
-      def disconnect
-        raise NotImplementedError
-      end
-
-      ##
       # Subscribes to the given channel on the transporter's message bus
       # @param channel [String] the channel to which to subscribe
       def subscribe(_channel, &_block)
