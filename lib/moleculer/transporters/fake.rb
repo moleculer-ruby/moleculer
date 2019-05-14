@@ -8,15 +8,15 @@ module Moleculer
     class Fake < Base
       def initialize(config)
         super(config)
-        @subscriptions ||= {}
+        @@subscriptions ||= {}
       end
 
       def subscribe(channel, &block)
-        @subscriptions[channel] = block
+        @@subscriptions[channel] = block
       end
 
       def publish(packet)
-        @subscriptions[packet.topic].call(packet)
+        @@subscriptions[packet.topic].call(packet)
       end
 
       def start
