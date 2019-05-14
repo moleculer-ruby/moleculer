@@ -167,7 +167,7 @@ module Moleculer
             config:  @config,
           )
 
-          @subscriptions.last.connect if @started
+          @subscriptions.last.connect if started?
         end
 
         def disconnect
@@ -199,13 +199,13 @@ module Moleculer
       end
 
       def start
-        publisher.disconnect
-        subscriber.disconnect
+        publisher.connect
+        subscriber.connect
       end
 
       def stop
-        publisher.connect
-        subscriber.connect
+        publisher.disconnect
+        subscriber.disconnect
       end
 
       private
