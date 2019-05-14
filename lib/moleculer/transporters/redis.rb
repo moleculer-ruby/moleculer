@@ -22,7 +22,7 @@ module Moleculer
         # Publishes the packet to the packet's topic
         def publish(packet)
           topic = packet.topic
-          @logger.debug  "publishing packet to '#{topic}'", packet.as_json
+          @logger.debug "publishing packet to '#{topic}'", packet.as_json
           connection.publish(topic, @serializer.serialize(packet))
         end
 
@@ -180,6 +180,10 @@ module Moleculer
           @subscriptions.each(&:connect)
           @started = true
         end
+
+        def started?
+          @started
+        end
       end
 
       def initialize(config)
@@ -194,22 +198,14 @@ module Moleculer
         publisher.publish(packet)
       end
 
-      def connect
-        publisher.connect
-        subscriber.connect
-      end
-
-      def disconnect
+      def start
         publisher.disconnect
         subscriber.disconnect
       end
 
-      def start
-        connect
-      end
-
       def stop
-        disconnect
+        publisher.connect
+        subscriber.connect
       end
 
       private
