@@ -10,20 +10,6 @@ build efficient, reliable & scalable services. Moleculer provides many features 
 microservices.
 
 
-## Features
-- request-reply concept
-- event-driven architecture with balancing
-- built-in service registry & dynamic service discovery
-- load balanced requests & events (round-robin, random(wip), cpu-usage(wip), latency(wip))
-- supports versioned services
-- built-in caching solution (memory, Redis)
-- pluggable transporters (TCP, NATS, MQTT, Redis, NATS Streaming, Kafka)
-- pluggable serializers (JSON, Avro, MsgPack, Protocol Buffers, Thrift)
-- pluggable validator
-- multiple services on a node/server
-- all nodes are equal, no master/leader node
-
-
 ## Getting Started
 ### Install the Gem
 
@@ -100,3 +86,23 @@ times out and throws an error.
 
 #### transporter (default: redis://localhost)
 The transporter Moleculer should use. For more information on transporters see [Transporters](https://moleculer.services/docs/0.13/networking.html#Transporters)
+
+
+## Roadmap
+
+### 0.1 (COMPLETE)
+Initial release
+
+* Redis transporter
+* Round robin load balancing
+* Service registry & dynamic service discovery
+* JSON serializer
+
+### 0.2 (IN  PROGRESS)
+* Fake transporter (for testing)
+* Error handling, (ability to use Airbrake, etc.)
+* Event grouping
+
+### 0.3 (PENDING)
+* NATS transporter
+* Built in caching solution (Redis, Memory)
