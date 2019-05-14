@@ -3,7 +3,7 @@ PATH
   specs:
     moleculer (0.1.1)
       awesome_print (~> 1.8)
-      concurrent-ruby (~> 1.0)
+      concurrent-ruby (~> 1.1)
       ougai (~> 1.7)
 
 GEM
@@ -54,4 +54,4 @@ DEPENDENCIES
   yard (~> 0.9.11)
 
 BUNDLED WITH
-   1.17.1
+   1.17.2
