@@ -8,6 +8,9 @@ module Moleculer
     class Fake < Base
       def initialize(config)
         super(config)
+        # in this case we want to use a class var as this needs to behave like a singleton to mimic how a global
+        # transporter functions
+        # rubocop:disable Style/ClassVars
         @@subscriptions ||= {}
       end
 
