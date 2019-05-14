@@ -9,7 +9,20 @@ RSpec.describe Moleculer::Transporters::Redis do
     subject.stop
   end
 
-  subject { Moleculer::Transporters::Redis.new(Moleculer::Configuration.new({log_level: :trace})) }
+  ##
+  # this allows us to wait until the transporter as fully connected
+  subject do
+    Class.new(Moleculer::Transporters::Redis) do
+      attr_reader :started
+
+      def start
+        super
+        while !subscriber.instance_variable_get(:@started)
+          sleep 0.1
+        end
+      end
+    end.new(Moleculer::Configuration.new)
+  end
 
   describe "#publis/scubscribe" do
     let(:packet) do
@@ -33,6 +46,8 @@ RSpec.describe Moleculer::Transporters::Redis do
       subject.subscribe(packet.topic) do
         received = true
       end
+
+      sleep 0.5
 
       subject.publish(packet)
       sleep 0.1 until received

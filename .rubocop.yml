@@ -7,7 +7,7 @@ Layout/IndentHash:
 Layout/IndentationWidth:
   IgnoredPatterns: []
 
-Style/AlignHash:
+Layout/AlignHash:
   EnforcedColonStyle: table
   EnforcedHashRocketStyle: table
 
@@ -22,6 +22,9 @@ Style/TrailingCommaInHashLiteral:
 
 Style/TrailingCommaInArrayLiteral:
   EnforcedStyleForMultiline: comma
+
+Style/FrozenStringLiteralComment:
+  Enabled: true
 
 Style/StringLiterals:
     EnforcedStyle: "double_quotes"
