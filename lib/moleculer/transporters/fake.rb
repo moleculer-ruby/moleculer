@@ -10,9 +10,7 @@ module Moleculer
         super(config)
         # in this case we want to use a class var as this needs to behave like a singleton to mimic how a global
         # transporter functions
-        # rubocop:disable Style/ClassVars
-        @@subscriptions ||= {}
-        # rubocop:enable Style/ClassVars
+        @@subscriptions ||= {} # rubocop:disable Style/ClassVars
       end
 
       def subscribe(channel, &block)
