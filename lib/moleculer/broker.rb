@@ -172,6 +172,18 @@ module Moleculer
       )
     end
 
+    ##
+    # @return [Proc] returns the rescue_action if defined on the configuration
+    def rescue_action
+      config.rescue_action
+    end
+
+    ##
+    # @return [Proc] returns the rescue_event if defined on the configuration
+    def rescue_event
+      config.rescue_event
+    end
+
     private
 
     def handle_signal(sig)

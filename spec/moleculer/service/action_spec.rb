@@ -1,6 +1,8 @@
 RSpec.describe Moleculer::Service::Action do
   let(:config) { Moleculer::Configuration.new }
-  let(:broker) { instance_double(Moleculer::Broker, config: config) }
+  let(:broker) do
+    instance_double(Moleculer::Broker, config: config, rescue_action: nil)
+  end
 
   let(:context) { instance_double(Moleculer::Context) }
 
@@ -46,7 +48,7 @@ RSpec.describe Moleculer::Service::Action do
       end
 
       before :each do
-        config.rescue_action = -> (e) { errors << e }
+        allow(broker).to receive(:rescue_action).and_return(-> (e) { errors << e })
       end
 
       it "handles the raised exception using the configured rescue_action" do

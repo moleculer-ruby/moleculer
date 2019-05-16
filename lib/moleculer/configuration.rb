@@ -75,6 +75,7 @@ module Moleculer
     config_accessor :node_id, "#{Socket.gethostname.downcase}-#{Process.pid}"
     config_accessor :service_prefix
     config_accessor :rescue_action
+    config_accessor :rescue_event
 
     attr_accessor :broker
 
