@@ -28,8 +28,13 @@ module Moleculer
       ##
       # Executes the event
       # @param data [Hash] the event data
+      # @param broker [Moleculer::Broker] the moleculer broker
       def execute(data, broker)
         @service.new(broker).public_send(@method, data)
+      rescue StandardError => e
+        raise e unless broker.rescue_event
+
+        broker.rescue_event.call(e)
       end
 
       ##

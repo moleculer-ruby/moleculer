@@ -40,8 +40,9 @@ module Moleculer
 
         response
       rescue StandardError => e
-        raise e unless broker.config.rescue_action
-        broker.config.rescue_action.call(e)
+        raise e unless broker.rescue_action
+
+        broker.rescue_action.call(e)
       end
 
       def node
