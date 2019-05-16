@@ -29,15 +29,19 @@ module Moleculer
       end
 
       ##
-      # @param context [Moleculer::Context] the execution contextd
+      # @param context [Moleculer::Context] the execution context
       #
       # @return [Moleculer::Support::Hash] returns a hash which will be converted into json for the response.
+      # @raise [Errors::InvalidActionResponse] thrown when the result of calling the action does not return a hash
       def execute(context, broker)
         response = @service.new(broker).public_send(@method, context)
-        # rubocop:disable Style/RaiseArgs
-        raise Errors::InvalidActionResponse.new(response) unless response.is_a? Hash
+        # rubocop disabled because in this case we need a specific error handling format
+        raise Errors::InvalidActionResponse.new(response) unless response.is_a? Hash # rubocop:disable Style/RaiseArgs
 
         response
+      rescue StandardError => e
+        raise e unless broker.config.rescue_action
+        broker.config.rescue_action.call(e)
       end
 
       def node
