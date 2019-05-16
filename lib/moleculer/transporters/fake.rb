@@ -12,7 +12,7 @@ module Moleculer
         # transporter functions
         # rubocop:disable Style/ClassVars
         @@subscriptions ||= {}
-        # rubocop:disable Style/ClassVars
+        # rubocop:enable Style/ClassVars
       end
 
       def subscribe(channel, &block)
