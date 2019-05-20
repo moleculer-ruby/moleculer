@@ -37,24 +37,21 @@ RSpec.describe Moleculer::Broker do
                           ))
   end
 
+  let(:transporter) { subject.instance_variable_get(:@transporter) }
+
   before :each do
+    allow(transporter).to receive(:publish)
     allow(event_1).to receive(:execute).with(packet.data, subject)
     allow(event_2).to receive(:execute).with(packet.data, subject)
+    subject.start
   end
 
   describe "#start" do
     let(:registry) { subject.instance_variable_get(:@registry) }
-    let(:transporter) { subject.instance_variable_get(:@transporter) }
     let(:local_node) { registry.local_node }
 
-    before :each do
-      allow(transporter).to receive(:publish)
-      subject.start
-    end
-
-
     it "starts the broker" do
-      expect(subject.started?).to eq(true)
+      expect(subject.started?).to be_truthy
     end
 
     it "registers the local node" do
@@ -80,6 +77,31 @@ RSpec.describe Moleculer::Broker do
     it "starts the heartbeat" do
       expect(subject.instance_variable_get(:@heartbeat)).to be_instance_of(Concurrent::TimerTask)
     end
+  end
+
+  describe "#stop" do
+    before(:each) do
+      allow(transporter).to receive(:stop)
+    end
+
+    it "publishes disconnect" do
+      subject.stop
+      expect(transporter).to have_received(:publish).exactly(3).times
+    end
+
+    it "stops the transporter" do
+      subject.stop
+      expect(transporter).to have_received(:stop)
+    end
+
+    it "sets #started? to false" do
+      subject.stop
+      expect(subject.started?).to be_falsey
+    end
+  end
+
+  describe "#wait_for_services" do
+
   end
 
   describe "#process_event" do

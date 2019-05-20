@@ -119,15 +119,22 @@ module Moleculer
       @logger.info "stopping"
       publish(:disconnect)
       @transporter.stop
+      @started = false
     end
 
+    ##
+    # Blocks until the given services are registered.
+    #
+    # @param services [Array<String>] a list of one or more services to wait for
     def wait_for_services(*services)
       until (services = @registry.missing_services(*services)) && services.empty?
-        @logger.info "waiting for services '#{services.join(', ')}'"
+        @logger.debug "waiting for services '#{services.join(', ')}'"
         sleep 0.1
       end
     end
 
+    ##
+    # @return [Moleculer::Node] the local node
     def local_node
       @registry.local_node
     end
