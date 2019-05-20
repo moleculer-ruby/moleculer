@@ -28,6 +28,10 @@ module Moleculer
       def stop
         true
       end
+
+      def subscriptions
+        @@subscriptions
+      end
     end
   end
 end

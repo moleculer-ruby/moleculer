@@ -270,7 +270,7 @@ module Moleculer
     end
 
     def start_heartbeat
-      Concurrent::TimerTask.new(execution_interval: heartbeat_interval) do
+      @heartbeat = Concurrent::TimerTask.new(execution_interval: heartbeat_interval) do
         publish_heartbeat
         @registry.expire_nodes
       end.execute
