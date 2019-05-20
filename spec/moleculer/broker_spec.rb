@@ -33,6 +33,7 @@ RSpec.describe Moleculer::Broker do
                             node_id:   "test1",
                             services:  [service_1, service_2],
                             log_level: "trace",
+                            transporter: "fake://localhost"
                           ))
   end
 
