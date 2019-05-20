@@ -113,11 +113,12 @@ module Moleculer
       @started || false
     end
 
+    ##
+    # Stops the broker.
     def stop
       @logger.info "stopping"
       publish(:disconnect)
       @transporter.stop
-      exit 0
     end
 
     def wait_for_services(*services)
