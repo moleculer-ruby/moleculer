@@ -70,6 +70,8 @@ module Moleculer
       events.each { |e| e.execute(payload, self) }
     end
 
+    ##
+    # Runs the broker in the foreground.
     def run
       self_read, self_write = IO.pipe
 
@@ -91,6 +93,8 @@ module Moleculer
       end
     end
 
+    ##
+    # Starts the broker. This will start the broker in the background, to run it in the foreground use #run
     def start
       @logger.info "starting"
       @transporter.start
@@ -99,7 +103,14 @@ module Moleculer
       publish_discover
       publish_info
       start_heartbeat
+      @started = true
       self
+    end
+
+    ##
+    # @return [Boolean] whether or not the broker is started
+    def started?
+      @started || false
     end
 
     def stop
