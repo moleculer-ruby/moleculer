@@ -302,7 +302,7 @@ module Moleculer
     def subscribe_to_heartbeat
       subscribe("MOL.HEARTBEAT") do |packet|
         node = @registry.safe_fetch_node(packet.sender)
-        node.beat
+        node.beat if node
       end
     end
 
