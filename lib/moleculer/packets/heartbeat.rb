@@ -6,8 +6,8 @@ module Moleculer
     # Represents a DISCOVER packet
     class Heartbeat < Base
 
-      def initialize(data)
-        super(data)
+      def initialize(broker, data)
+        super(broker, data)
 
         @cpu = 0
       end

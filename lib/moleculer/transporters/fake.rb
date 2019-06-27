@@ -21,6 +21,7 @@ module Moleculer
 
       def publish(packet)
         @logger.debug "publishing packet to '#{packet.topic}'", packet.as_json
+        @logger.debug "processing #{@@subscriptions[packet.topic].length} callbacks for '#{packet.topic}'"
         @@subscriptions[packet.topic].each { |c| c.call(packet) }
       end
 

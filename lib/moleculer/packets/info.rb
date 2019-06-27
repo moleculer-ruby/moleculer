@@ -64,21 +64,20 @@ module Moleculer
       # @options data [Array<String>] ip_list the list of ip addresses for the node
       # @options data [String] hostname the hostname  of the node
       # @options data [Hash] client the client data for the node
-      def initialize(data)
-        super(data)
+      def initialize(broker, data)
+        super(broker, data)
         @services = HashUtil.fetch(data, :services)
         @config   = OpenStruct.new(Hash[HashUtil.fetch(data, :config).map { |i| [StringUtil.underscore(i[0]), i[1]] }])
         @ip_list  = HashUtil.fetch(data, :ip_list)
         @hostname = HashUtil.fetch(data, :hostname)
         @client   = Client.new(HashUtil.fetch(data, :client))
-        @node     = HashUtil.fetch(data, :node, nil)
+        node      = HashUtil.fetch(data, :node, nil)
+        @node_id  = HashUtil.fetch(data, :node_id, node&.id)
       end
 
       def topic
-        if @node
-          return "#{super}.#{@node.id}" if @node.is_a? Moleculer::Node
-
-          return "#{super}.#{@node}"
+        if @node_id
+          return "#{super}.#{@node_id}"
         end
         super
       end

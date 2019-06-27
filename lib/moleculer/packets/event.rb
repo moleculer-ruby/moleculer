@@ -10,8 +10,8 @@ module Moleculer
                   :broadcast,
                   :groups
 
-      def initialize(data)
-        super(data)
+      def initialize(broker, data)
+        super(broker, data)
 
         @event     = HashUtil.fetch(data, :event)
         @data      = HashUtil.fetch(data, :data)
