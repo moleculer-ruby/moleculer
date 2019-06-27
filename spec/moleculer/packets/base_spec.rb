@@ -8,7 +8,7 @@ RSpec.describe Moleculer::Packets::Base do
       ))
   }
 
-  subject { Moleculer::Packets::Base.new(broker)  }
+  subject { Moleculer::Packets::Base.new(broker.config)  }
   describe "defaults" do
     describe "#ver" do
       it "defaults to '3'" do
@@ -24,7 +24,7 @@ RSpec.describe Moleculer::Packets::Base do
   end
 
   describe "overrides" do
-    subject { Moleculer::Packets::Base.new(broker, ver: "4", sender: "not-node")}
+    subject { Moleculer::Packets::Base.new(broker.config, ver: "4", sender: "not-node")}
     describe "#ver" do
       it "uses data[:ver]" do
         expect(subject.ver).to eq "4"

@@ -5,8 +5,8 @@ module Moleculer
     ##
     # Represents a DISCOVER packet
     class Discover < Base
-      def initialize(broker, data)
-        super(broker, data)
+      def initialize(config, data)
+        super(config, data)
 
         node = HashUtil.fetch(data, :node, nil)
         @node_id = HashUtil.fetch(data, :node_id, node)

@@ -12,8 +12,8 @@ module Moleculer
                   :meta,
                   :stream
 
-      def initialize(broker, data)
-        super(broker, data)
+      def initialize(config, data)
+        super(config, data)
 
         @id      = HashUtil.fetch(data, :id)
         @success = HashUtil.fetch(data, :success)

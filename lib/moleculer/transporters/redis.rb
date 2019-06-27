@@ -61,6 +61,7 @@ module Moleculer
             @logger      = config.logger.get_child("[REDIS.TRANSPORTER.SUBSCRIPTION.#{channel}]")
             @serializer  = Serializers.for(config.serializer).new(config)
             @node_id     = config.node_id
+            @config      = config
 
             # it is necessary to send some sort of message to signal the subscriber to disconnect and shutdown
             # this is an internal message
@@ -140,7 +141,7 @@ module Moleculer
             return nil unless parsed
 
 
-            packet_type.new(parsed)
+            packet_type.new(@config, parsed)
           rescue StandardError => error
             @logger.error error
           end

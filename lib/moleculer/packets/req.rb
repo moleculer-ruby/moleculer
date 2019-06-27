@@ -19,7 +19,7 @@ module Moleculer
                   :node
 
       def initialize(broker, ata)
-        super(broker, data)
+        super(config, data)
 
         @id         = HashUtil.fetch(data, :id)
         @action     = HashUtil.fetch(data, :action)

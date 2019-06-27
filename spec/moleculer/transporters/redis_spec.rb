@@ -28,6 +28,7 @@ RSpec.describe Moleculer::Transporters::Redis do
     let(:packet) do
       instance_double(Moleculer::Packets::Info,
                       topic:   "MOL.INFO.test-321",
+                               sender: "test-123",
                       as_json: { sender:   "test-123",
                                  ver:      "3",
                                  services: [],

@@ -22,9 +22,9 @@ module Moleculer
       # @param data [Hash] the raw packet data
       # @options data [String] :ver the protocol version, defaults to `'3'`
       # @options  data [String] :sender the packet sender, defaults to `Moleculer#node_id`
-      def initialize(broker, data = {})
+      def initialize(config, data = {})
         @ver    = HashUtil.fetch(data, :ver, "3")
-        @sender = HashUtil.fetch(data, :sender, broker.config.node_id)
+        @sender = HashUtil.fetch(data, :sender, config.node_id)
       end
 
       ##
