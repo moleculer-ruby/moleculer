@@ -11,14 +11,17 @@ module Moleculer
         # in this case we want to use a class var as this needs to behave like a singleton to mimic how a global
         # transporter functions
         @@subscriptions ||= {} # rubocop:disable Style/ClassVars
+        @logger         = config.logger.get_child("[FAKE.TRANSPORTER]")
       end
 
       def subscribe(channel, &block)
-        @@subscriptions[channel] = block
+        @@subscriptions[channel] ||= []
+        @@subscriptions[channel] << block
       end
 
       def publish(packet)
-        @@subscriptions[packet.topic].call(packet)
+        @logger.debug "publishing packet to '#{packet.topic}'", packet.as_json
+        @@subscriptions[packet.topic].each { |c| c.call(packet) }
       end
 
       def start
