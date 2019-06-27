@@ -1,5 +1,14 @@
 RSpec.describe Moleculer::Packets::Base do
-  subject { Moleculer::Packets::Base.new }
+  let(:broker) {
+    Moleculer::Broker.new(Moleculer::Configuration.new(
+      node_id:   "test1",
+      services:  [],
+      log_level: "trace",
+      transporter: "fake://localhost",
+      ))
+  }
+
+  subject { Moleculer::Packets::Base.new(broker)  }
   describe "defaults" do
     describe "#ver" do
       it "defaults to '3'" do
@@ -8,14 +17,14 @@ RSpec.describe Moleculer::Packets::Base do
     end
 
     describe "#sender" do
-      it "defaults to Moleculer#node_id" do
-        expect(subject.sender).to eq Moleculer.config.node_id
+      it "defaults to broker.config#node_id" do
+        expect(subject.sender).to eq broker.config.node_id
       end
     end
   end
 
   describe "overrides" do
-    subject { Moleculer::Packets::Base.new(ver: "4", sender: "not-node")}
+    subject { Moleculer::Packets::Base.new(broker, ver: "4", sender: "not-node")}
     describe "#ver" do
       it "uses data[:ver]" do
         expect(subject.ver).to eq "4"
