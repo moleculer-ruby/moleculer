@@ -8,7 +8,7 @@ module Moleculer
       def initialize(config, data)
         super(config, data)
 
-        node = HashUtil.fetch(data, :node, nil)
+        node     = HashUtil.fetch(data, :node, nil)
         @node_id = HashUtil.fetch(data, :node_id, node)
       end
 
@@ -16,6 +16,7 @@ module Moleculer
         if @node_id
           return "#{super}.#{@node_id}"
         end
+
         super
       end
     end

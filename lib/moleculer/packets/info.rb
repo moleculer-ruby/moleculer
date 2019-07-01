@@ -67,7 +67,7 @@ module Moleculer
       def initialize(config, data)
         super(config, data)
         @services = HashUtil.fetch(data, :services)
-        @config   = OpenStruct.new(Hash[HashUtil.fetch(data, :config).map { |i| [StringUtil.underscore(i[0]), i[1]] }])
+        @config   = get_config
         @ip_list  = HashUtil.fetch(data, :ip_list)
         @hostname = HashUtil.fetch(data, :hostname)
         @client   = Client.new(HashUtil.fetch(data, :client))
@@ -76,9 +76,7 @@ module Moleculer
       end
 
       def topic
-        if @node_id
-          return "#{super}.#{@node_id}"
-        end
+        return "#{super}.#{@node_id}" if @node_id
         super
       end
 
@@ -90,6 +88,12 @@ module Moleculer
           hostname: @hostname,
           client:   @client.as_json,
         )
+      end
+
+      private
+
+      def get_config
+        OpenStruct.new(Hash[HashUtil.fetch(data, :config).map { |i| [StringUtil.underscore(i[0]), i[1]] }])
       end
     end
   end
