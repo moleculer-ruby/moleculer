@@ -92,7 +92,7 @@ module Moleculer
 
       private
 
-      def get_config
+      def get_config(data)
         OpenStruct.new(Hash[HashUtil.fetch(data, :config).map { |i| [StringUtil.underscore(i[0]), i[1]] }])
       end
     end
