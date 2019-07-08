@@ -13,9 +13,7 @@ module Moleculer
       end
 
       def topic
-        if @node_id
-          return "#{super}.#{@node_id}"
-        end
+        return "#{super}.#{@node_id}" if @node_id
 
         super
       end
