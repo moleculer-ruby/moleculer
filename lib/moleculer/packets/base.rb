@@ -10,13 +10,13 @@ module Moleculer
       include Support
 
       class << self
-        attr_reader :packet_accessors
+        def packet_accessors
+          @packet_accessors ||= {}
+        end
 
         ##
         # Sets an accessor that fetches @data attributes
         def packet_attr(name, default = :__not_defined__)
-          @packet_accessors     ||= {}
-          @packet_accessors[name] = default
           class_eval <<-ATTR, __FILE__, __LINE__ + 1
             def #{name}
               default = self.class.packet_accessors[:#{name}]
