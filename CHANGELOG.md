@@ -1,6 +1,5 @@
 # 0.2.0
 
-<<<<<<< HEAD
 ## 0.2.0
 ### Features
 * add a fake transporter that can be used for testing without dependencies on an
@@ -10,8 +9,6 @@
 * fix `concurrent_ruby` version requirement to ensure at least `1.1` is required.
 
 ##  0.1.1
-=======
-### Features
 
 * **actions:** ability to process errors that occur when executing actions 
   ([9a3f36d](https://github.com/moleculer-ruby/moleculer/commit/9a3f36d))
@@ -24,9 +21,3 @@
 * fix `concurrent_ruby` version requirement to ensure at least `1.1` is required
 * fix an issue where heartbeats back up in the queue and cause errors when consumed
 
-#  0.1.1
->>>>>>> 1008ad58f156ad77076b73eadd487aed02f6cf85
-
-### Bugfixes
-* fixes bug where event publishing uses the wrong method name to look up local events
-* fixes condition where events may double publish when multiple events are registered
