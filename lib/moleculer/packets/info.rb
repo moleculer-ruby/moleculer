@@ -76,6 +76,7 @@ module Moleculer
 
       def topic
         return "#{super}.#{@node_id}" if @node_id
+
         super
       end
 
