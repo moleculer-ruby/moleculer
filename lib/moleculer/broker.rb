@@ -230,8 +230,8 @@ module Moleculer
       if node
         publish_to_node(:info, node, @registry.local_node.as_json)
       elsif force
-        ## in rare cases there may be a lack of synchronization between brokers, if we can't find the node in the registry
-        # we will attempt to force publish it (if force is true)
+        ## in rare cases there may be a lack of synchronization between brokers, if we can't find the node in the
+        # registry we will attempt to force publish it (if force is true)
         publish_to_node_id(:info, node_id, @registry.local_node.as_json)
       end
     end
