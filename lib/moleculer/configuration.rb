@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Moleculer
   ##
   # Handles Moleculer configuration
@@ -48,11 +50,11 @@ module Moleculer
         @accessors                 ||= {}
         @accessors[attribute.to_sym] = { default: default, block: block }
 
-        class_eval <<-method
+        class_eval <<-METHOD, __FILE__, __LINE__ + 1
           def #{attribute}
             @#{attribute} ||= default_for("#{attribute}".to_sym)
           end
-        method
+        METHOD
 
         instance_eval do
           attr_writer attribute.to_sym
@@ -79,7 +81,7 @@ module Moleculer
 
     attr_accessor :broker
 
-    def initialize(options={})
+    def initialize(options = {})
       options.each do |option, value|
         send("#{option}=".to_sym, value)
       end
@@ -91,19 +93,19 @@ module Moleculer
 
     def services=(array)
       @services = ServiceList.new(self)
-      array.each { |s| @services << s}
+      array.each { |s| @services << s }
     end
 
     def to_h
       {
-        log_file: log_file,
-        log_level: log_level,
+        log_file:           log_file,
+        log_level:          log_level,
         heartbeat_interval: heartbeat_interval,
-        timeout: timeout,
-        transporter: transporter,
-        serializer: serializer,
-        node_id: node_id,
-        service_prefix: service_prefix
+        timeout:            timeout,
+        transporter:        transporter,
+        serializer:         serializer,
+        node_id:            node_id,
+        service_prefix:     service_prefix,
       }
     end
 

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "../support"
 
 module Moleculer
@@ -10,13 +12,12 @@ module Moleculer
       class << self
         attr_reader :packet_accessors
 
-
         ##
         # Sets an accessor that fetches @data attributes
-        def packet_attr(name, default=:__not_defined__)
-          @packet_accessors ||= {}
+        def packet_attr(name, default = :__not_defined__)
+          @packet_accessors     ||= {}
           @packet_accessors[name] = default
-           class_eval <<-ATTR
+          class_eval <<-ATTR, __FILE__, __LINE__ + 1
             def #{name}
               default = self.class.packet_accessors[:#{name}]
               if default != :__not_defined__

@@ -1,7 +1,7 @@
 Layout/ExtraSpacing:
   ForceEqualSignAlignment: true
 
-Layout/IndentHash:
+Layout/IndentFirstHashElement:
   EnforcedStyle: consistent
 
 Layout/IndentationWidth:
