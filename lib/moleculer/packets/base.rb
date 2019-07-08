@@ -6,25 +6,50 @@ module Moleculer
     # @abstract Subclass for packet types.
     class Base
       include Support
+
+      class << self
+        attr_reader :packet_accessors
+
+
+        ##
+        # Sets an accessor that fetches @data attributes
+        def packet_attr(name, default=:__not_defined__)
+          @packet_accessors ||= {}
+          @packet_accessors[name] = default
+           class_eval <<-ATTR
+            def #{name}
+              default = self.class.packet_accessors[:#{name}]
+              if default != :__not_defined__
+                 return HashUtil.fetch(@data, :#{name}, default) unless default.is_a? Proc
+                 return HashUtil.fetch(@data, :#{name}, default.call(self))
+              end
+              return HashUtil.fetch(@data, :#{name})
+            end
+          ATTR
+        end
+
+        def packet_name
+          name.split("::").last.upcase
+        end
+      end
+
       ##
       # The protocol version
-      attr_reader :ver
+      packet_attr :ver, "3"
 
       ##
       # The sender of the packet
-      attr_reader :sender
+      packet_attr :sender, ->(packet) { packet.config.node_id }
 
-      def self.packet_name
-        name.split("::").last.upcase
-      end
+      attr_reader :config
 
       ##
       # @param data [Hash] the raw packet data
       # @options data [String] :ver the protocol version, defaults to `'3'`
       # @options  data [String] :sender the packet sender, defaults to `Moleculer#node_id`
       def initialize(config, data = {})
-        @ver    = HashUtil.fetch(data, :ver, "3")
-        @sender = HashUtil.fetch(data, :sender, config.node_id)
+        @data   = data
+        @config = config
       end
 
       ##

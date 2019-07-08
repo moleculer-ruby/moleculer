@@ -5,52 +5,35 @@ module Moleculer
     ##
     # Represents a REQ packet
     class Req < Base
-      attr_reader :action,
-                  :params,
-                  :meta,
-                  :timeout,
-                  :level,
-                  :parent_id,
-                  :request_id,
-                  :stream,
-                  :metrics,
-                  :stream,
-                  :id,
-                  :node
-
-      def initialize(broker, data)
-        super(broker, data)
-
-        @id         = HashUtil.fetch(data, :id)
-        @action     = HashUtil.fetch(data, :action)
-        @params     = HashUtil.fetch(data, :params)
-        @meta       = HashUtil.fetch(data, :meta)
-        @timeout    = HashUtil.fetch(data, :timeout, nil)
-        @level      = HashUtil.fetch(data, :level, 1)
-        @metrics    = HashUtil.fetch(data, :metrics, false)
-        @parent_id  = HashUtil.fetch(data, :parent_id, nil)
-        @request_id = HashUtil.fetch(data, :request_id, nil)
-        @stream     = false
-        @node       = HashUtil.fetch(data, :node, nil)
-      end
+      packet_attr :action
+      packet_attr :params
+      packet_attr :meta
+      packet_attr :timeout, nil
+      packet_attr :level, 1
+      packet_attr :parent_id, nil
+      packet_attr :request_id, nil
+      packet_attr :stream, false
+      packet_attr :metrics, false
+      packet_attr :id
+      packet_attr :node, nil
 
       def as_json # rubocop:disable Metrics/MethodLength
         super.merge(
-          id:         @id,
-          action:     @action,
-          params:     @params,
-          meta:       @meta,
-          timeout:    @timeout,
-          level:      @level,
-          metrics:    @metrics,
-          parent_id:  @parent_id,
-          request_id: @request_id,
-          stream:     @stream,
+          id:         id,
+          action:     action,
+          params:     params,
+          meta:       meta,
+          timeout:    timeout,
+          level:      level,
+          metrics:    metrics,
+          parent_id:  parent_id,
+          request_id: request_id,
+          stream:     stream,
         )
       end
 
       def topic
-        "#{super}.#{@node.id}"
+        "#{super}.#{node.id}"
       end
     end
   end
