@@ -67,7 +67,6 @@ module Moleculer
       def initialize(config, data)
         super(config, data)
         @services = HashUtil.fetch(data, :services)
-        @config   = get_config(data)
         @ip_list  = HashUtil.fetch(data, :ip_list)
         @hostname = HashUtil.fetch(data, :hostname)
         @client   = Client.new(HashUtil.fetch(data, :client))
@@ -83,17 +82,11 @@ module Moleculer
       def as_json
         super.merge(
           services: @services,
-          config:   @config.to_h,
+          config:   config.to_h,
           ipList:   @ip_list,
           hostname: @hostname,
           client:   @client.as_json,
         )
-      end
-
-      private
-
-      def get_config(data)
-        OpenStruct.new(Hash[HashUtil.fetch(data, :config).map { |i| [StringUtil.underscore(i[0]), i[1]] }])
       end
     end
   end

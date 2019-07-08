@@ -9,7 +9,7 @@ module Moleculer
         super(config, data)
 
         node     = HashUtil.fetch(data, :node, nil)
-        @node_id = HashUtil.fetch(data, :node_id, node)
+        @node_id = HashUtil.fetch(data, :node_id, node&.id)
       end
 
       def topic
