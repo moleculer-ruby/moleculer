@@ -195,7 +195,7 @@ module Moleculer
     end
 
     def publish(packet_type, message = {})
-      packet = Packets.for(packet_type).new(self, message.merge(sender: @registry.local_node.id))
+      packet = Packets.for(packet_type).new(@config, message.merge(sender: @registry.local_node.id))
       @transporter.publish(packet)
     end
 
@@ -245,14 +245,14 @@ module Moleculer
     end
 
     def publish_to_node(packet_type, node, message = {})
-      packet = Packets.for(packet_type).new(self, message.merge(node: node))
+      packet = Packets.for(packet_type).new(@config, message.merge(node: node))
       @transporter.publish(packet)
     end
 
     ##
     # Publishes the provided packet directly to the given node_id
     def publish_to_node_id(packet_type, node_id, message = {})
-      packet = Packets.for(packet_type).new(self, message.merge(node_id: node_id))
+      packet = Packets.for(packet_type).new(@config, message.merge(node_id: node_id))
       @transporter.publish(packet)
     end
 

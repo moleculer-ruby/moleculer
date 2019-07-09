@@ -27,6 +27,7 @@ module Moleculer
               return HashUtil.fetch(@data, :#{name})
             end
           ATTR
+          packet_accessors[name] = default
         end
 
         def packet_name
