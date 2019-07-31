@@ -64,7 +64,7 @@ module Moleculer
       # @options data [Array<String>] ip_list the list of ip addresses for the node
       # @options data [String] hostname the hostname  of the node
       # @options data [Hash] client the client data for the node
-      def initialize(config, data)
+      def initialize(config, data = {})
         super(config, data)
         @services = HashUtil.fetch(data, :services)
         @ip_list  = HashUtil.fetch(data, :ip_list)
