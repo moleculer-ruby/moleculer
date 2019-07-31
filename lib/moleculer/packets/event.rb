@@ -10,7 +10,7 @@ module Moleculer
                   :broadcast,
                   :groups
 
-      def initialize(config, data)
+      def initialize(config, data={})
         super(config, data)
 
         @event     = HashUtil.fetch(data, :event)
