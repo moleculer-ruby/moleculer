@@ -9,8 +9,9 @@ module Moleculer
   # communicates accordingly.
   class Node
     class << self
-      def from_remote_info(info_packet)
+      def from_remote_info(config, info_packet)
         new(
+          config,
           services: info_packet.services,
           node_id:  info_packet.sender,
         )

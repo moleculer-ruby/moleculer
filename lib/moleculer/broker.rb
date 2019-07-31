@@ -268,7 +268,7 @@ module Moleculer
     end
 
     def register_or_update_remote_node(info_packet)
-      node = Node.from_remote_info(info_packet)
+      node = Node.from_remote_info(config, info_packet)
       @registry.register_node(node)
     end
 

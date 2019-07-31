@@ -24,9 +24,9 @@ module Moleculer
                     :lang_version
 
         def initialize(data)
-          @type         = HashUtil.fetch(data, :type)
-          @version      = HashUtil.fetch(data, :version)
-          @lang_version = HashUtil.fetch(data, :lang_version)
+          @type         = HashUtil.fetch(data, :type, nil)
+          @version      = HashUtil.fetch(data, :version, nil)
+          @lang_version = HashUtil.fetch(data, :lang_version, nil)
         end
 
         ##
@@ -69,7 +69,7 @@ module Moleculer
         @services = HashUtil.fetch(data, :services)
         @ip_list  = HashUtil.fetch(data, :ip_list)
         @hostname = HashUtil.fetch(data, :hostname)
-        @client   = Client.new(HashUtil.fetch(data, :client))
+        @client   = Client.new(HashUtil.fetch(data, :client, {}))
         node      = HashUtil.fetch(data, :node, nil)
         @node_id  = HashUtil.fetch(data, :node_id, node&.id)
       end
