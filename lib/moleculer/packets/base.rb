@@ -10,6 +10,11 @@ module Moleculer
       include Support
 
       class << self
+        # this ensures that the packets get the accessors from the parent
+        def inherited(other)
+          other.instance_variable_set(:@packet_accessors, other.packet_accessors.merge(packet_accessors))
+        end
+
         def packet_accessors
           @packet_accessors ||= {}
         end

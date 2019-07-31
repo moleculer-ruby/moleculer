@@ -5,16 +5,10 @@ module Moleculer
     ##
     # Represents a DISCOVER packet
     class Discover < Base
-      def initialize(config, data)
-        super(config, data)
-
-        node     = HashUtil.fetch(data, :node, nil)
-        @node_id = HashUtil.fetch(data, :node_id, node&.id)
-      end
+      packet_attr :node_id, nil
 
       def topic
-        return "#{super}.#{@node_id}" if @node_id
-
+        return "#{super}.#{node_id}" if node_id
         super
       end
     end
