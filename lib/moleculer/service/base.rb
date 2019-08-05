@@ -103,7 +103,7 @@ module Moleculer
         self.class.broker
       end
 
-      def self.as_json
+      def self.to_h
         {
           name:     service_name,
           settings: {},

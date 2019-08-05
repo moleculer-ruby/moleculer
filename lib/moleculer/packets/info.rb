@@ -31,7 +31,7 @@ module Moleculer
 
         ##
         # @return [Hash] the object prepared for conversion to JSON for transmission
-        def as_json
+        def to_h
           {
             type:        @type,
             version:     @version,
@@ -86,7 +86,7 @@ module Moleculer
           config:   config.to_h,
           ipList:   @ip_list,
           hostname: @hostname,
-          client:   @client.as_json,
+          client:   @client.to_h,
         )
       end
     end

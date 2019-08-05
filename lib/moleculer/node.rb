@@ -81,7 +81,7 @@ module Moleculer
       @local
     end
 
-    def as_json
+    def to_h
       {
         sender:   @id,
         config:   {},

@@ -2,7 +2,7 @@ require_relative "../../../lib/moleculer/transporters/fake"
 
 RSpec.describe Moleculer::Transporters::Fake do
   let(:config) { Moleculer::Configuration.new }
-  let(:packet) { instance_double(Moleculer::Packets::Base, as_json: {}, topic: "test") }
+  let(:packet) { instance_double(Moleculer::Packets::Base, to_h: {}, topic: "test") }
 
   subject { Moleculer::Transporters::Fake.new(config) }
 

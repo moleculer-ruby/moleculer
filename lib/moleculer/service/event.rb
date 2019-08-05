@@ -45,7 +45,7 @@ module Moleculer
 
       ##
       # @return [Hash] a hash representing this event as it would be in JSON
-      def as_json
+      def to_h
         {
           name: name,
         }

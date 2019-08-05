@@ -49,7 +49,7 @@ module Moleculer
         @service.node
       end
 
-      def as_json
+      def to_h
         {
           name:    "#{@service.service_name}.#{name}",
           rawName: name,
