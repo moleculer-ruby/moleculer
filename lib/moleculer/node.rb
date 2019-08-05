@@ -88,7 +88,7 @@ module Moleculer
         seq:      1,
         ipList:   [],
         hostname: @hostname,
-        services: @services.values.map(&:as_json),
+        services: @services.values.map(&:to_h),
         client:   client_attrubutes,
       }
     end

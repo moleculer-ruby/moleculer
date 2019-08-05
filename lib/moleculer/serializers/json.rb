@@ -10,7 +10,7 @@ module Moleculer
       end
 
       def serialize(message)
-        message.as_json.to_json
+        message.to_h.to_json
       end
 
       def deserialize(message)

@@ -22,7 +22,7 @@ module Moleculer
         # Publishes the packet to the packet's topic
         def publish(packet)
           topic = packet.topic
-          @logger.debug "publishing packet to '#{topic}'", packet.as_json
+          @logger.debug "publishing packet to '#{topic}'", packet.to_h
           connection.publish(topic, @serializer.serialize(packet))
         end
 
@@ -122,7 +122,7 @@ module Moleculer
           def process_packet(packet)
             return @connection.unsubscribe if packet == :disconnect
 
-            @logger.trace "received packet from #{packet.sender}:", packet.as_json
+            @logger.trace "received packet from #{packet.sender}:", packet.to_h
 
             @block.call(packet)
           rescue StandardError => error

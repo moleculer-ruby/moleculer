@@ -80,7 +80,7 @@ module Moleculer
         super
       end
 
-      def as_json
+      def to_h
         super.merge(
           services: @services,
           config:   config.to_h,

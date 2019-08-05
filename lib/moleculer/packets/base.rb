@@ -68,7 +68,7 @@ module Moleculer
         "MOL.#{self.class.packet_name}"
       end
 
-      def as_json
+      def to_h
         {
           ver:    ver,
           sender: sender,

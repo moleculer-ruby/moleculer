@@ -28,7 +28,7 @@ module Moleculer
         "#{super}.#{@node.id}"
       end
 
-      def as_json
+      def to_h
         super.merge(
           id:      @id,
           success: @success,

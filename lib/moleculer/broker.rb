@@ -224,15 +224,15 @@ module Moleculer
     ##
     # Publishes the info packet to either all nodes, or the given node
     def publish_info(node_id = nil, force = false)
-      return publish(:info, @registry.local_node.as_json) unless node_id
+      return publish(:info, @registry.local_node.to_h) unless node_id
 
       node = @registry.safe_fetch_node(node_id)
       if node
-        publish_to_node(:info, node, @registry.local_node.as_json)
+        publish_to_node(:info, node, @registry.local_node.to_h)
       elsif force
         ## in rare cases there may be a lack of synchronization between brokers, if we can't find the node in the
         # registry we will attempt to force publish it (if force is true)
-        publish_to_node_id(:info, node_id, @registry.local_node.as_json)
+        publish_to_node_id(:info, node_id, @registry.local_node.to_h)
       end
     end
 

@@ -20,7 +20,7 @@ module Moleculer
         @node      = HashUtil.fetch(data, :node, nil)
       end
 
-      def as_json
+      def to_h
         super.merge(
           event:     @event,
           data:      @data,

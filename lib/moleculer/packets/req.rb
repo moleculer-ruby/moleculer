@@ -17,7 +17,7 @@ module Moleculer
       packet_attr :id
       packet_attr :node, nil
 
-      def as_json # rubocop:disable Metrics/MethodLength
+      def to_h # rubocop:disable Metrics/MethodLength
         super.merge(
           id:         id,
           action:     action,
