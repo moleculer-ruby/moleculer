@@ -5,11 +5,12 @@ require_relative "./base_packet_behavior"
 RSpec.describe Moleculer::Packets::Info do
   let(:broker) do
     Moleculer::Broker.new(Moleculer::Configuration.new(
-                            node_id:     "test1",
-                            services:    [],
-                            log_level:   "trace",
-                            transporter: "fake://localhost",
-                          ))
+        node_id:     "test1",
+        services:    [],
+        log_level:   "trace",
+        transporter: "fake://localhost",
+        log_file: "test",
+    ))
   end
 
   subject do
@@ -21,4 +22,10 @@ RSpec.describe Moleculer::Packets::Info do
   end
 
   include_examples "base packet"
+
+  describe "#to_hash" do
+    it "does not include the log file" do
+      expect(subject.to_h[:config][:log_file]).to be_nil
+    end
+  end
 end

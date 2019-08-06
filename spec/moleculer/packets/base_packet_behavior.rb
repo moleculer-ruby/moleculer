@@ -20,4 +20,10 @@ RSpec.shared_examples "base packet" do
       expect(subject.topic).to include(subject.class.name.split("::")[-1].upcase)
     end
   end
+
+  describe "#to_h" do
+    it "returns the version and sender" do
+      expect(subject.to_h).to include(ver: "3", sender: subject.sender)
+    end
+  end
 end

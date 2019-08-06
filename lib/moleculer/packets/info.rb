@@ -83,11 +83,17 @@ module Moleculer
       def to_h
         super.merge(
           services: @services,
-          config:   config.to_h.except(:log_file),
+          config:   config_for_hash,
           ipList:   @ip_list,
           hostname: @hostname,
           client:   @client.to_h,
         )
+      end
+
+      private
+
+      def config_for_hash
+        Hash[config.to_h.to_a.reject { |a| a[0] == :log_file }]
       end
     end
   end
