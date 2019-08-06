@@ -83,7 +83,7 @@ module Moleculer
       def to_h
         super.merge(
           services: @services,
-          config:   config.to_h,
+          config:   config.to_h.execpt(:log_file),
           ipList:   @ip_list,
           hostname: @hostname,
           client:   @client.to_h,
