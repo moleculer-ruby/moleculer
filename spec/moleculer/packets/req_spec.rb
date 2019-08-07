@@ -12,9 +12,16 @@ RSpec.describe Moleculer::Packets::Req do
                           ))
   end
 
-  let(:node) { double("node", id: 1)}
+  let(:node) { double("node", id: 1) }
 
-  subject { Moleculer::Packets::Req.new(broker.config, node: node) }
+  subject do
+    Moleculer::Packets::Req.new(broker.config,
+                                node:   node,
+                                id:     SecureRandom.uuid,
+                                action: "test",
+                                meta:   {},
+                                params: {})
+  end
 
   include_examples "base packet"
 end
