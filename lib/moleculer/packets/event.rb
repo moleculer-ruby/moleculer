@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "base"
 
 module Moleculer
@@ -10,7 +12,7 @@ module Moleculer
                   :broadcast,
                   :groups
 
-      def initialize(config, data={})
+      def initialize(config, data = {})
         super(config, data)
 
         @event     = HashUtil.fetch(data, :event)
