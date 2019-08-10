@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "action"
 require_relative "event"
 
@@ -66,6 +68,15 @@ module Moleculer
           events[name] = Event.new(name, self, method, options)
         end
 
+        ##
+        # Defines a version name or number on the service.
+        #
+        # @param name [String|Number] the version of the service.
+        def version(name = nil)
+          @version = name if name
+          @version
+        end
+
         def actions
           @actions ||= {}
         end
@@ -74,8 +85,27 @@ module Moleculer
           @events ||= {}
         end
 
+        ##
+        # returns the full name of the service, including version and prefix
+        def full_name
+          return @full_name if @full_name
+
+          name    = service_name.dup
+          version = @version
+          version.prepend("v") if @version.is_a? Numeric
+
+          if name.include? "."
+            name.sub! ".", ".#{version}."
+          elsif version
+            name.prepend("#{version}.")
+          end
+
+          @full_name = name
+          @full_name
+        end
+
         def action_name_for(name)
-          "#{service_name}.#{name}"
+          "#{full_name}.#{name}"
         end
       end
 
@@ -103,9 +133,10 @@ module Moleculer
         self.class.broker
       end
 
-      def self.as_json
+      def self.as_json # rubocop:disable Metrics/AbcSize
         {
-          name:     service_name,
+          name:     full_name,
+          version:  version,
           settings: {},
           metadata: {},
           actions:  Hash[actions.values.map { |a| [a.name.to_sym, a.as_json] }],

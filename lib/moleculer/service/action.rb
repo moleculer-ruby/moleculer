@@ -51,7 +51,7 @@ module Moleculer
 
       def as_json
         {
-          name:    "#{@service.service_name}.#{name}",
+          name:    "#{@service.full_name}.#{name}",
           rawName: name,
           cache:   HashUtil.fetch(@options, :cache, false),
           metrics: {
