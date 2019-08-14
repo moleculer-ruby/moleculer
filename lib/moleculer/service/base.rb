@@ -96,7 +96,18 @@ module Moleculer
             return @full_name
           end
 
-          append_version_name
+          name    = service_name.dup
+          version = @version.to_s
+          version.prepend("v") if @version.is_a? Numeric
+
+          if name.include? "."
+            name.sub! ".", ".#{version}."
+          elsif version
+            name.prepend("#{version}.")
+          end
+
+          @full_name = name
+          @full_name
         end
 
         def action_name_for(name)
@@ -137,27 +148,6 @@ module Moleculer
           actions:  Hash[actions.values.map { |a| [a.name.to_sym, a.as_json] }],
           events:   Hash[events.values.map { |e| [e.name.to_sym, e.as_json] }],
         }
-      end
-
-      private
-
-      ##
-      # In theory, this function should only be called once on a versionated service
-      # returns the full name of the service, including prefix, version, and service name
-      # @returns string
-      def append_version_name
-        name    = service_name.dup
-        version = @version.to_s
-        version.prepend("v") if @version.is_a? Numeric
-
-        if name.include? "."
-          name.sub! ".", ".#{version}."
-        elsif version
-          name.prepend("#{version}.")
-        end
-
-        @full_name = name
-        @full_name
       end
     end
   end
