@@ -1,16 +1,23 @@
-# 0.2.0
-
-<<<<<<< HEAD
 ## 0.2.0
+
 ### Features
 * add a fake transporter that can be used for testing without dependencies on an
   actual connected transporter
+* updated json to 2.2.0
+* updated oj to 3.7.12
+* updated redis to 4.1.2
+* updated yard to 0.9.20
+* updated rspec-support to 3.8.2
+* updated ruby-progressbar to 1.10.1
+* updated rspec-mocks to 3.8.1
+* updated simplecov to 0.17.0
+* updated rspec-core to 3.8.2
+* updated rubocop to 0.74.0
   
 ### Bugfixes
 * fix `concurrent_ruby` version requirement to ensure at least `1.1` is required.
 
 ##  0.1.1
-=======
 ### Features
 
 * **actions:** ability to process errors that occur when executing actions 
@@ -25,7 +32,6 @@
 * fix an issue where heartbeats back up in the queue and cause errors when consumed
 
 #  0.1.1
->>>>>>> 1008ad58f156ad77076b73eadd487aed02f6cf85
 
 ### Bugfixes
 * fixes bug where event publishing uses the wrong method name to look up local events
