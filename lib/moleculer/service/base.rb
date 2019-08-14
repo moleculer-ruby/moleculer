@@ -96,7 +96,7 @@ module Moleculer
           end
 
           name    = service_name.dup
-          version = @version
+          version = @version.to_s
           version.prepend("v") if @version.is_a? Numeric
 
           if name.include? "."
