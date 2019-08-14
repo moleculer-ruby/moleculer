@@ -61,15 +61,15 @@ module Moleculer
     end
 
     config_accessor :log_file
-    config_accessor :log_level, ENV["MOLECULER_LOG_LEVEL"] || :debug
+    config_accessor :log_level, ENV["MOLECULER_LOG_LEVEL"]&.to_sym || :debug
     config_accessor :logger do |c|
       logger           = Ougai::Logger.new(c.log_file || STDOUT)
       logger.formatter = Ougai::Formatters::Readable.new("MOL")
       logger.level     = c.log_level
       Moleculer::Support::LogProxy.new(logger)
     end
-    config_accessor :heartbeat_interval, ENV["MOLECULER_HEARTBEAT_INTERVAL"].to_i || h5
-    config_accessor :timeout, ENV["MOLECULER_TIMEOUT"] || 5
+    config_accessor :heartbeat_interval, ENV["MOLECULER_HEARTBEAT_INTERVAL"]&.to_i || 5
+    config_accessor :timeout, ENV["MOLECULER_TIMEOUT"]&.to_i || 5
     config_accessor :transporter, ENV["MOLECULER_TRANSPORTER"] || "redis://localhost"
     config_accessor :serializer, :json
     config_accessor :node_id, "#{Socket.gethostname.downcase}-#{Process.pid}"
