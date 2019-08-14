@@ -59,8 +59,20 @@ Some Moleculer configuration values can also be set through environment variable
 
 ### Configuration Options
 
-#### logger (default: Ougai::Logger)
-Sets the moleculer logger.
+#### log_file (default: STDOUT)
+Sets teh moleculer log_file. This value can also be set by setting the `MOLECULER_LOG_FILE` environment variable.
+
+#### logger
+Sets the moleculer logger. The logger must be an instance of `Moleculer::Support::LogProxy`. The log proxy supports any
+ruby logger that supports the ruby `Logger` interface.
+
+Example: 
+```
+c.logger = Moleculer::Support::Logger.new(Rails.logger)
+```
+
+In the case that the logger is set to something other than the default, the log level set for moleculer is ignored, and the
+level of the passed logger is used.
 
 #### log_level (default: debug)
 Sets the log level of the node. defaults to `:debug`. Can be one of `:trace`, `:debug`, `:info`, `:warn`, `:error`, 

@@ -1,5 +1,14 @@
-# 0.2.0
+## 0.2.0
+### Features
+* add a fake transporter that can be used for testing without dependencies on an
+  actual connected transporter
+* `log_level`, `transporter`, `heartbeat_interval`, `log_file` and `timeout` are now configurable
+  via environment variable prefixed with `MOLECULER_`
+  
+### Bugfixes
+* fix `concurrent_ruby` version requirement to ensure at least `1.1` is required.
 
+##  0.1.1
 ### Features
 
 * **actions:** ability to process errors that occur when executing actions 
@@ -12,9 +21,3 @@
 ### Bugfixes
 * fix `concurrent_ruby` version requirement to ensure at least `1.1` is required
 * fix an issue where heartbeats back up in the queue and cause errors when consumed
-
-#  0.1.1
-
-### Bugfixes
-* fixes bug where event publishing uses the wrong method name to look up local events
-* fixes condition where events may double publish when multiple events are registered
