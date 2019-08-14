@@ -3,6 +3,10 @@ require "moleculer"
 require "simplecov"
 require "timecop"
 
+# Turn off logging for specs
+ENV["MOLECULER_LOGGER"] = false
+load File.expand_path("lib/moleculer/configuration", __dir__)
+
 
 RSpec.configure do |config|
   SimpleCov.start
