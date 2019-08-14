@@ -71,9 +71,9 @@ module Moleculer
         ##
         # Defines a version name or number on the service.
         #
-        # @param name [String|Number] the version of the service.
-        def version(name = nil)
-          @version = name if name
+        # @param ver [String|Number] the version of the service.
+        def version(ver = nil)
+          @version = ver if ver
           @version
         end
 
@@ -86,27 +86,20 @@ module Moleculer
         end
 
         ##
-        # returns the full name of the service, including version and prefix
-        # @return string
+        # @return [String] returns the full name of the service, including version and prefix
         def full_name
-          return @full_name if @full_name
+          return service_name unless @version
 
-          unless @version
-            @full_name = service_name
-            return @full_name
-          end
-
-          name    = service_name.dup
-          version = @version.to_s
+          @full_name = service_name.dup
+          version    = @version.to_s
           version.prepend("v") if @version.is_a? Numeric
 
-          if name.include? "."
-            name.sub! ".", ".#{version}."
+          if @full_name.include?(".")
+            @full_name.sub!(".", ".#{version}.")
           elsif version
-            name.prepend("#{version}.")
+            @full_name.prepend("#{version}.")
           end
 
-          @full_name = name
           @full_name
         end
 
