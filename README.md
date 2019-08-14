@@ -60,7 +60,7 @@ Some Moleculer configuration values can also be set through environment variable
 ### Configuration Options
 
 #### log_file (default: STDOUT)
-Sets teh moleculer log_file. This value can also be set by setting the `MOLECULER_LOG_FILE` environment variable.
+Sets the moleculer log_file. This value can also be set by setting the `MOLECULER_LOG_FILE` environment variable.
 
 #### logger
 Sets the moleculer logger. The logger must be an instance of `Moleculer::Support::LogProxy`. The log proxy supports any
