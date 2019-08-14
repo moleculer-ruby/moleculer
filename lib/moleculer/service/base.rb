@@ -90,6 +90,11 @@ module Moleculer
         def full_name
           return @full_name if @full_name
 
+          unless @version
+            @full_name = service_name
+            return @full_name
+          end
+
           name    = service_name.dup
           version = @version
           version.prepend("v") if @version.is_a? Numeric
