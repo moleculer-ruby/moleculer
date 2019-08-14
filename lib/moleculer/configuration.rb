@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Moleculer
   ##
   # Handles Moleculer configuration
@@ -48,11 +50,11 @@ module Moleculer
         @accessors                 ||= {}
         @accessors[attribute.to_sym] = { default: default, block: block }
 
-        class_eval <<-method
+        class_eval <<-METHOD, __FILE__, __LINE__ + 1
           def #{attribute}
             @#{attribute} ||= default_for("#{attribute}".to_sym)
           end
-        method
+        METHOD
 
         instance_eval do
           attr_writer attribute.to_sym
@@ -60,26 +62,28 @@ module Moleculer
       end
     end
 
-    config_accessor :log_file, ENV["MOLECULER_LOG_FILE"]
-    config_accessor :log_level, ENV["MOLECULER_LOG_LEVEL"]&.to_sym || :debug
     config_accessor :logger do |c|
       logger           = Ougai::Logger.new(c.log_file || STDOUT)
       logger.formatter = Ougai::Formatters::Readable.new("MOL")
       logger.level     = c.log_level
       Moleculer::Support::LogProxy.new(logger)
     end
+    config_accessor :log_file,           ENV["MOLECULER_LOG_FILE"]
+    config_accessor :log_level,          ENV["MOLECULER_LOG_LEVEL"]&.to_sym        || :debug
     config_accessor :heartbeat_interval, ENV["MOLECULER_HEARTBEAT_INTERVAL"]&.to_i || 5
-    config_accessor :timeout, ENV["MOLECULER_TIMEOUT"]&.to_i || 5
-    config_accessor :transporter, ENV["MOLECULER_TRANSPORTER"] || "redis://localhost"
+    config_accessor :timeout,            ENV["MOLECULER_TIMEOUT"]&.to_i            || 5
+    config_accessor :transporter,        ENV["MOLECULER_TRANSPORTER"]              || "redis://localhost"
+
     config_accessor :serializer, :json
-    config_accessor :node_id, "#{Socket.gethostname.downcase}-#{Process.pid}"
+    config_accessor :node_id,    "#{Socket.gethostname.downcase}-#{Process.pid}"
+
     config_accessor :service_prefix
     config_accessor :rescue_action
     config_accessor :rescue_event
 
     attr_accessor :broker
 
-    def initialize(options={})
+    def initialize(options = {})
       options.each do |option, value|
         send("#{option}=".to_sym, value)
       end
@@ -91,7 +95,7 @@ module Moleculer
 
     def services=(array)
       @services = ServiceList.new(self)
-      array.each { |s| @services << s}
+      array.each { |s| @services << s }
     end
 
     private
