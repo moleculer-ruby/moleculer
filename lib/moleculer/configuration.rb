@@ -60,7 +60,7 @@ module Moleculer
       end
     end
 
-    config_accessor :log_file
+    config_accessor :log_file, ENV["MOLECULER_LOG_FILE"]
     config_accessor :log_level, ENV["MOLECULER_LOG_LEVEL"]&.to_sym || :debug
     config_accessor :logger do |c|
       logger           = Ougai::Logger.new(c.log_file || STDOUT)

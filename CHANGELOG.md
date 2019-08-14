@@ -2,7 +2,7 @@
 ### Features
 * add a fake transporter that can be used for testing without dependencies on an
   actual connected transporter
-* `log_level`, `transporter`, `heartbeat_interval`, and `timeout` are now configurable
+* `log_level`, `transporter`, `heartbeat_interval`, `log_file` and `timeout` are now configurable
   via environment variable prefixed with `MOLECULER_`
   
 ### Bugfixes
