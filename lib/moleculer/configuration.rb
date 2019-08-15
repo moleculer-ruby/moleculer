@@ -68,24 +68,27 @@ module Moleculer
       logger.level     = c.log_level
       Moleculer::Support::LogProxy.new(logger)
     end
-    config_accessor :log_file,           ENV["MOLECULER_LOG_FILE"]
-    config_accessor :log_level,          ENV["MOLECULER_LOG_LEVEL"]&.to_sym        || :debug
+    config_accessor :log_file, ENV["MOLECULER_LOG_FILE"]
+    config_accessor :log_level, ENV["MOLECULER_LOG_LEVEL"]&.to_sym || :debug
     config_accessor :heartbeat_interval, ENV["MOLECULER_HEARTBEAT_INTERVAL"]&.to_i || 5
-    config_accessor :timeout,            ENV["MOLECULER_TIMEOUT"]&.to_i            || 5
-    config_accessor :transporter,        ENV["MOLECULER_TRANSPORTER"]              || "redis://localhost"
+    config_accessor :timeout, ENV["MOLECULER_TIMEOUT"]&.to_i || 5
+    config_accessor :transporter, ENV["MOLECULER_TRANSPORTER"] || "redis://localhost"
 
     config_accessor :serializer, :json
-    config_accessor :node_id,    "#{Socket.gethostname.downcase}-#{Process.pid}"
+    config_accessor :node_id, "#{Socket.gethostname.downcase}-#{Process.pid}"
 
     config_accessor :service_prefix
-    config_accessor :rescue_action
-    config_accessor :rescue_event
 
     attr_accessor :broker
 
     def initialize(options = {})
       options.each do |option, value|
         send("#{option}=".to_sym, value)
+      end
+      @rescue_handlers = {}
+
+      rescue_from(StandardError) do |e|
+        logger.error(e)
       end
     end
 
@@ -96,6 +99,35 @@ module Moleculer
     def services=(array)
       @services = ServiceList.new(self)
       array.each { |s| @services << s }
+    end
+
+    ##
+    # Add a rescue handler for a specific error. This allows libraries such as airbrake to hook into the error handling
+    # flow. When a rescue handler raises, it will look for a rescue handler for the parent class of the thrown error
+    # recursively until it reaches StandardError. If the block does not itself raise an error, the error may be swallowed.
+    #
+    # @param err [Class] the error class to handle
+    # @param block [Proc] the block to execute when the error is captured
+    def rescue_from(err, &block)
+      raise ArgumentError, "block required" unless block_given?
+      raise ArgumentError, "error must be a standard error" unless err.ancestors.include?(StandardError)
+
+      @rescue_handlers[err] = block
+    end
+
+    ##
+    # @private
+    def handle_exception(error, parent = nil)
+      handler = @rescue_handlers[parent || error.class]
+      handler.call(error)
+    rescue StandardError => e
+      superclass = parent&.superclass || error.class.superclass
+      raise e if superclass == Exception
+      # if the error was re-raised, and a new err was not raised then call the handler for the parent of the original
+      # error, otherwise, restart the chain
+      return handle_exception(error, superclass) if error == e
+
+      handle_exception(error)
     end
 
     private

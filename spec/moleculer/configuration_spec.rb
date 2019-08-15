@@ -51,4 +51,56 @@ RSpec.describe Moleculer::Configuration do
   describe "#hearbeat_interfval" do
     include_examples "environment configurable", :heartbeat_interval, 5, 2, 3
   end
+
+  describe "#handle_error" do
+    let(:grandparent) { Class.new(StandardError) }
+    let(:parent) { Class.new(grandparent) }
+    let(:child) { Class.new(parent) }
+
+    before :each do
+      allow(subject.logger).to receive(:error)
+      subject.rescue_from(ArgumentError) do |e|
+        subject.logger.error(e)
+      end
+      subject.rescue_from(child) do |e|
+        subject.logger.error(e)
+        raise e
+      end
+      subject.rescue_from(parent) do |e|
+        subject.logger.error(e)
+        raise e
+      end
+      subject.rescue_from(grandparent) do |e|
+        subject.logger.error(e)
+        raise e
+      end
+    end
+
+    it "should log out standard error" do
+      err = StandardError.new("test")
+      subject.handle_exception(err)
+      expect(subject.logger).to have_received(:error).with(err)
+    end
+
+    it "should handle custom errors when defined" do
+      err = ArgumentError.new("test")
+      subject.handle_exception(ArgumentError.new("test"))
+      expect(subject.logger).to have_received(:error).with(err)
+    end
+
+    it "should cascade errors up the parent tree when children raise" do
+      err = child.new("test")
+      subject.handle_exception(err)
+      expect(subject.logger).to have_received(:error).with(err).exactly(4).times
+    end
+
+    it "should not try and handle an exception if the exception handler raises at StandardError" do
+      subject.rescue_from(StandardError) do |e|
+        raise e
+      end
+
+      err = StandardError.new("test")
+      expect { subject.handle_exception(err) }.to raise_error(err)
+    end
+  end
 end
