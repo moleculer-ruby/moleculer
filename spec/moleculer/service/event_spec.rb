@@ -15,21 +15,7 @@ RSpec.describe Moleculer::Service::Event do
   describe "#execute" do
     subject { Moleculer::Service::Event.new("test", service, :test_event) }
 
-    describe "an exception is raised when no rescue_event handler is configured" do
-      let(:service) do
-        Class.new(Moleculer::Service::Base) do
-          def test_event(_)
-            raise StandardError, "test error"
-          end
-        end
-      end
-
-      it "raises an exception if a hash is not returned" do
-        expect { subject.execute({}, broker) }.to raise_error(StandardError)
-      end
-    end
-
-    describe "rescue_event is configured" do
+    describe "exception handling" do
       let(:errors) { [] }
       let(:service) do
         Class.new(Moleculer::Service::Base) do
