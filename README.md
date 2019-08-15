@@ -20,7 +20,7 @@ gem install "moleculer-ruby"
 or add to your Gemfile:
 
 ```ruby
-gem "moleculer-ruby", "~>0.1"
+gem "moleculer-ruby", "~>0.2"
 ```
 
 ### Create a  Simple Service
@@ -55,17 +55,31 @@ Moleculer.configure do |c|
 end
 ```
 
+Some Moleculer configuration values can also be set through environment variables.
+
 ### Configuration Options
 
-#### logger (default: Ougai::Logger)
-Sets teh Moleculer logger, this must be a Ruby `Logger` or `Ougai` compatible logger.
+#### log_file (default: STDOUT)
+Sets the moleculer log_file. This value can also be set by setting the `MOLECULER_LOG_FILE` environment variable.
+
+#### logger
+Sets the moleculer logger. The logger must be an instance of `Moleculer::Support::LogProxy`. The log proxy supports any
+ruby logger that supports the ruby `Logger` interface.
+
+Example: 
+```
+c.logger = Moleculer::Support::Logger.new(Rails.logger)
+```
+
+In the case that the logger is set to something other than the default, the log level set for moleculer is ignored, and the
+level of the passed logger is used.
 
 #### log_level (default: debug)
 Sets the log level of the node. defaults to `:debug`. Can be one of `:trace`, `:debug`, `:info`, `:warn`, `:error`, 
-`:fatal`.
+`:fatal`. This value can also be set by setting the `MOLECULER_LOG_LEVEL` environment variable.
 
 #### heartbeat_interval (default: 5)
-The interval in which to send heartbeats.
+The interval in which to send heartbeats. This value can also be set by setting the `MOLECULER_HEARTBEAT` environment variable.
 
 #### node_id (default: \<hostname\>-\<pid\>)
 The node id. Node IDs are required to be unique. In Moleculer-ruby all node ids are suffixed with the PID of the 
@@ -82,10 +96,11 @@ service whose `service_name` is set to `users` would get the full `service_name`
 
 #### timeout (default: 5)
 The Moleculer system timeout. This is used to determine how long a moleculer `call` will wait for a response until it
-times out and throws an error.
+times out and throws an error. This value can also be set by setting the `MOLECULER_TIMEOUT` environment variable.
 
 #### transporter (default: redis://localhost)
 The transporter Moleculer should use. For more information on transporters see [Transporters](https://moleculer.services/docs/0.13/networking.html#Transporters)
+This value can also be set by setting the `MOLECULER_TRANSPORTER` environment variable.
 
 
 ## Roadmap
