@@ -1,6 +1,6 @@
 RSpec.describe Moleculer::Service::Event do
   let(:config) { Moleculer::Configuration.new }
-  let(:broker) { instance_double(Moleculer::Broker, config: config, rescue_event: nil) }
+  let(:broker) { instance_double(Moleculer::Broker, config: config) }
 
   subject do
     Moleculer::Service::Event.new(
@@ -40,12 +40,12 @@ RSpec.describe Moleculer::Service::Event do
       end
 
       before :each do
-        allow(broker).to receive(:rescue_event).and_return(-> (e) { errors << e })
+        allow(broker.config.logger).to receive(:error)
       end
 
       it "handles the error using the rescue_event proc" do
         subject.execute({}, broker)
-        expect(errors.last).to be_instance_of(StandardError)
+        expect(broker.config.logger).to have_received(:error).with(instance_of(StandardError))
       end
     end
   end
