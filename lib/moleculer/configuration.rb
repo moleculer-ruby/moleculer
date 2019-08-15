@@ -47,7 +47,7 @@ module Moleculer
       private
 
       def config_accessor(attribute, default = nil, &block)
-        @accessors                 ||= {}
+        @accessors                   ||= {}
         @accessors[attribute.to_sym] = { default: default, block: block }
 
         class_eval <<-METHOD, __FILE__, __LINE__ + 1
@@ -118,19 +118,26 @@ module Moleculer
     ##
     # @private
     def handle_exception(error, parent = nil)
-      handler = @rescue_handlers[parent || error.class]
-      handler.call(error)
-    rescue StandardError => e
-      superclass = parent&.superclass || error.class.superclass
-      raise e if superclass == Exception
-      # if the error was re-raised, and a new err was not raised then call the handler for the parent of the original
-      # error, otherwise, restart the chain
-      return handle_exception(error, superclass) if error == e
+      handler = select_rescue_handler_for(parent || error.class)
+      raise error unless handler
 
-      handle_exception(error)
+      begin
+        handler.call(error)
+      rescue StandardError => e
+        superclass = parent&.superclass || error.class.superclass
+        # if the error was re-raised, and a new err was not raised then call the handler for the parent of the original
+        # error, otherwise, restart the chain
+        return handle_exception(error, superclass) if error == e
+
+        handle_exception(error)
+      end
     end
 
     private
+
+    def select_rescue_handler_for(error_class)
+      @rescue_handlers[error_class] || error_class.ancestors.map { |a| @rescue_handlers[a] }.first
+    end
 
     def accessors
       self.class.accessors
