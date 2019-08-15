@@ -24,7 +24,6 @@ module Moleculer
         @name    = name
         @service = service
         @method  = method
-        @service = service
         @options = options
       end
 
@@ -40,9 +39,7 @@ module Moleculer
 
         response
       rescue StandardError => e
-        raise e unless broker.rescue_action
-
-        broker.rescue_action.call(e)
+        broker.config.handle_exception(e)
       end
 
       def node

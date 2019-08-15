@@ -1,7 +1,7 @@
 RSpec.describe Moleculer::Service::Action do
   let(:config) { Moleculer::Configuration.new }
   let(:broker) do
-    instance_double(Moleculer::Broker, config: config, rescue_action: nil)
+    instance_double(Moleculer::Broker, config: config)
   end
 
   let(:context) { instance_double(Moleculer::Context) }
@@ -37,23 +37,23 @@ RSpec.describe Moleculer::Service::Action do
       end
     end
 
-    describe "handles exceptions used the configured rescue_action config" do
-      let(:errors) { [] }
+    describe "handles exceptions used the configured rescue_from config" do
+      let(:error) { StandardError.new("an error occurred") }
       let(:service) do
         Class.new(Moleculer::Service::Base) do
           def test_action(_)
-            raise StandardError, "an error occurred"
+            raise StandardError, "test"
           end
         end
       end
 
       before :each do
-        allow(broker).to receive(:rescue_action).and_return(-> (e) { errors << e })
+        allow(broker.config.logger).to receive(:error).and_return(nil)
       end
 
       it "handles the raised exception using the configured rescue_action" do
         expect { subject.execute(context, broker) }.to_not raise_error
-        expect(errors.last).to be_instance_of(StandardError)
+        expect(broker.config.logger).to have_received(:error).with(instance_of(StandardError))
       end
     end
   end
