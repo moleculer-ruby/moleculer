@@ -59,6 +59,11 @@ Some Moleculer configuration values can also be set through environment variable
 
 ### Configuration Options
 
+#### rescue_from
+Sets an error handler that ties into the infrastructure of Moleculer instructing it how to handle errors of the specified
+class. This allows things like Airbrake to easily tie in to exception handling. By default Moleculer rescues from 
+`StandardError` and simply logs it out.
+
 #### log_file (default: STDOUT)
 Sets the moleculer log_file. This value can also be set by setting the `MOLECULER_LOG_FILE` environment variable.
 

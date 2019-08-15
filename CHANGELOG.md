@@ -1,5 +1,8 @@
 ## 0.2.0
-
+### Breaking Changes
+* `rescue_event` and `rescue_action` have been removed and replaced with a more generic `rescue_from`
+  handler
+ 
 ### Features
 * add a fake transporter that can be used for testing without dependencies on an
   actual connected transporter
