@@ -124,10 +124,9 @@ module Moleculer
       begin
         handler.call(error)
       rescue StandardError => e
-        superclass = parent&.superclass || error.class.superclass
         # if the error was re-raised, and a new err was not raised then call the handler for the parent of the original
         # error, otherwise, restart the chain
-        return handle_exception(error, superclass) if error == e
+        return handle_exception(error, parent&.superclass || error.class.superclass) if error == e
 
         handle_exception(error)
       end

@@ -15,8 +15,8 @@ module Moleculer
 
       def deserialize(message)
         JSON.parse(message)
-      rescue StandardError => e
-        @logger.error e
+      rescue StandardError  => e
+        config.handle_error(e)
       end
     end
   end
