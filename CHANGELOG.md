@@ -5,6 +5,7 @@
   actual connected transporter
 * `log_level`, `transporter`, `heartbeat_interval`, `log_file` and `timeout` are now configurable
   via environment variable prefixed with `MOLECULER_`
+* added `rescue_from` configuration. this replaces `rescue_event` and `rescue_action`.
 * updated json to 2.2.0
 * updated oj to 3.7.12
 * updated redis to 4.1.2
