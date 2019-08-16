@@ -124,7 +124,7 @@ module Moleculer
             @logger.trace "received packet from #{packet.sender}:", packet.as_json
 
             @block.call(packet)
-          rescue StandardError  => e
+          rescue StandardError => e
             @config.handle_error(e)
           end
 
@@ -141,7 +141,7 @@ module Moleculer
 
 
             packet_type.new(parsed)
-          rescue StandardError  => e
+          rescue StandardError => e
             @config.handle_error(e)
           end
 
