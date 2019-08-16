@@ -47,7 +47,7 @@ module Moleculer
       private
 
       def config_accessor(attribute, default = nil, &block)
-        @accessors                   ||= {}
+        @accessors                 ||= {}
         @accessors[attribute.to_sym] = { default: default, block: block }
 
         class_eval <<-METHOD, __FILE__, __LINE__ + 1
