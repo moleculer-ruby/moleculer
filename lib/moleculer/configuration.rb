@@ -104,7 +104,8 @@ module Moleculer
     ##
     # Add a rescue handler for a specific error. This allows libraries such as airbrake to hook into the error handling
     # flow. When a rescue handler raises, it will look for a rescue handler for the parent class of the thrown error
-    # recursively until it reaches StandardError. If the block does not itself raise an error, the error may be swallowed.
+    # recursively until it reaches StandardError. If the block does not itself raise an error, the error may be
+    # swallowed.
     #
     # @param err [Class] the error class to handle
     # @param block [Proc] the block to execute when the error is captured
