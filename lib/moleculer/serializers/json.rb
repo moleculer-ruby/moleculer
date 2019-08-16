@@ -7,6 +7,7 @@ module Moleculer
     class Json
       def initialize(config)
         @logger = config.logger.get_child("[SERIALIZER]")
+        @config = config
       end
 
       def serialize(message)
@@ -16,7 +17,7 @@ module Moleculer
       def deserialize(message)
         JSON.parse(message)
       rescue StandardError => e
-        config.handle_error(e)
+        @config.handle_error(e)
       end
     end
   end

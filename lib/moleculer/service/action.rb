@@ -39,7 +39,7 @@ module Moleculer
 
         response
       rescue StandardError => e
-        broker.config.handle_exception(e)
+        broker.config.handle_error(e)
       end
 
       def node

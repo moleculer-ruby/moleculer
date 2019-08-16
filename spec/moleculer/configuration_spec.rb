@@ -78,19 +78,19 @@ RSpec.describe Moleculer::Configuration do
 
     it "should log out standard error" do
       err = StandardError.new("test")
-      subject.handle_exception(err)
+      subject.handle_error(err)
       expect(subject.logger).to have_received(:error).with(err)
     end
 
     it "should handle custom errors when defined" do
       err = ArgumentError.new("test")
-      subject.handle_exception(ArgumentError.new("test"))
+      subject.handle_error(ArgumentError.new("test"))
       expect(subject.logger).to have_received(:error).with(err)
     end
 
     it "should cascade errors up the parent tree when children raise" do
       err = child.new("test")
-      subject.handle_exception(err)
+      subject.handle_error(err)
       expect(subject.logger).to have_received(:error).with(err).exactly(4).times
     end
 
@@ -100,7 +100,7 @@ RSpec.describe Moleculer::Configuration do
       end
 
       err = StandardError.new("test")
-      expect { subject.handle_exception(err) }.to raise_error(err)
+      expect { subject.handle_error(err) }.to raise_error(err)
     end
   end
 end

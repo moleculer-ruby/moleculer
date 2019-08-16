@@ -32,7 +32,7 @@ module Moleculer
       def execute(data, broker)
         @service.new(broker).public_send(@method, data)
       rescue StandardError => e
-        broker.config.handle_exception(e)
+        broker.config.handle_error(e)
       end
 
       ##

@@ -118,7 +118,7 @@ module Moleculer
 
     ##
     # @private
-    def handle_exception(error, parent = nil)
+    def handle_error(error, parent = nil)
       handler = select_rescue_handler_for(parent || error.class)
       raise error unless handler
 
@@ -127,16 +127,16 @@ module Moleculer
       rescue StandardError => e
         # if the error was re-raised, and a new err was not raised then call the handler for the parent of the original
         # error, otherwise, restart the chain
-        return handle_exception(error, parent&.superclass || error.class.superclass) if error == e
+        return handle_error(error, parent&.superclass || error.class.superclass) if error == e
 
-        handle_exception(error)
+        handle_error(error)
       end
     end
 
     private
 
     def select_rescue_handler_for(error_class)
-      @rescue_handlers[error_class] || error_class.ancestors.map { |a| @rescue_handlers[a] }.first
+      @rescue_handlers[error_class] || error_class.ancestors.map { |a| @rescue_handlers[a] }.compact.first
     end
 
     def accessors

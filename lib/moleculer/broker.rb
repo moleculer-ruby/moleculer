@@ -128,7 +128,7 @@ module Moleculer
     def process_message(channel, message)
       subscribers[channel] << Packets.for(channel.split(".")[1]).new(message) if subscribers[channel]
     rescue StandardError => e
-      config.handle_exception(e)
+      config.handle_error(e)
     end
 
     def process_response(packet)
