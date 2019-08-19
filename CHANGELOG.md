@@ -36,9 +36,3 @@
 ### Bugfixes
 * fix `concurrent_ruby` version requirement to ensure at least `1.1` is required
 * fix an issue where heartbeats back up in the queue and cause errors when consumed
-
-#  0.1.1
-
-### Bugfixes
-* fixes bug where event publishing uses the wrong method name to look up local events
-* fixes condition where events may double publish when multiple events are registered
