@@ -37,7 +37,7 @@ RSpec.describe Moleculer::Configuration do
   end
 
   describe "#log_file" do
-    include_examples "environment configurable", :log_file, nil, "otherfile.log", "otherotherfile.log"
+    include_examples "environment configurable", :log_file, "/dev/null", "otherfile.log", "otherotherfile.log"
   end
 
   describe "#log_level" do
