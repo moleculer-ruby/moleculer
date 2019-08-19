@@ -14,7 +14,7 @@ module Moleculer
   class Broker
     include Moleculer::Support
     extend Forwardable
-    attr_reader :config
+    attr_reader :config, :logger
 
     def_delegators :@config, :node_id, :heartbeat_interval, :services, :service_prefix
 
@@ -129,7 +129,7 @@ module Moleculer
     def process_message(channel, message)
       subscribers[channel] << Packets.for(channel.split(".")[1]).new(message) if subscribers[channel]
     rescue StandardError => e
-      @logger.error e
+      config.handle_error(e)
     end
 
     def process_response(packet)
@@ -143,7 +143,7 @@ module Moleculer
 
       events.each { |e| e.execute(packet.data, self) }
     rescue StandardError => e
-      @logger.error e
+      config.handle_error(e)
     end
 
     def process_request(packet)

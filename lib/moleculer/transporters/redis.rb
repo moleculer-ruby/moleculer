@@ -125,8 +125,8 @@ module Moleculer
             @logger.trace "received packet from #{packet.sender}:", packet.to_h
 
             @block.call(packet)
-          rescue StandardError => error
-            @logger.error error
+          rescue StandardError => e
+            @config.handle_error(e)
           end
 
           def process_message(message)
@@ -142,8 +142,8 @@ module Moleculer
 
 
             packet_type.new(@config, parsed)
-          rescue StandardError => error
-            @logger.error error
+          rescue StandardError => e
+            @config.handle_error(e)
           end
 
           def unsubscribe
