@@ -132,7 +132,7 @@ module Moleculer
         self.class.broker
       end
 
-      def self.as_json # rubocop:disable Metrics/AbcSize
+      def self.to_h # rubocop:disable Metrics/AbcSize
         {
           name:     full_name,
           version:  version,
