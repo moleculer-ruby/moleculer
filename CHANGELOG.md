@@ -1,14 +1,27 @@
-# 0.2.0
-
 ## 0.2.0
+
 ### Features
 * add a fake transporter that can be used for testing without dependencies on an
   actual connected transporter
+* adds version support
+* updated json to 2.2.0
+* updated oj to 3.7.12
+* updated redis to 4.1.2
+* updated yard to 0.9.20
+* updated rspec-support to 3.8.2
+* updated ruby-progressbar to 1.10.1
+* updated rspec-mocks to 3.8.1
+* updated simplecov to 0.17.0
+* updated rspec-core to 3.8.2
+* updated rubocop to 0.74.0
   
 ### Bugfixes
 * fix `concurrent_ruby` version requirement to ensure at least `1.1` is required.
+* fixes issue where services don't recognize heartbeats by firing a DISCOVER packet
+  when a heartbeat is received from an unknown node.
 
 ##  0.1.1
+### Features
 
 * **actions:** ability to process errors that occur when executing actions 
   ([9a3f36d](https://github.com/moleculer-ruby/moleculer/commit/9a3f36d))
