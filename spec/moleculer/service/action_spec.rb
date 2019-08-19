@@ -33,7 +33,9 @@ RSpec.describe Moleculer::Service::Action do
       end
 
       it "raises an exception if a hash is not returned" do
-        expect { subject.execute(context, broker) }.to raise_error(Moleculer::Errors::InvalidActionResponse)
+        allow(broker.config.logger).to receive(:error)
+        subject.execute(context, broker)
+        expect(broker.config.logger).to have_received(:error).with(instance_of(Moleculer::Errors::InvalidActionResponse))
       end
     end
 
