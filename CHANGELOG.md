@@ -1,11 +1,9 @@
-## 0.2.0
+## 0.3.0
 ### Breaking Changes
 * `rescue_event` and `rescue_action` have been removed and replaced with a more generic `rescue_from`
   handler
  
 ### Features
-* add a fake transporter that can be used for testing without dependencies on an
-  actual connected transporter
 * adds version support
 * `log_level`, `transporter`, `heartbeat_interval`, `log_file` and `timeout` are now configurable
   via environment variable prefixed with `MOLECULER_`
@@ -25,6 +23,10 @@
 * fix `concurrent_ruby` version requirement to ensure at least `1.1` is required.
 * fixes issue where services don't recognize heartbeats by firing a DISCOVER packet
   when a heartbeat is received from an unknown node.
+
+## 0.2.0
+* add a fake transporter that can be used for testing without dependencies on an
+* add `rescue_action` and `rescue_event` rescue handlers
 
 ##  0.1.1
 ### Features
