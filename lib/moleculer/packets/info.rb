@@ -93,7 +93,7 @@ module Moleculer
       private
 
       def config_for_hash
-        Hash[config.to_h.reject { |a, _| a[0] == :log_file }]
+        Hash[config.to_h.reject { |a, _| a == :log_file }]
       end
     end
   end
