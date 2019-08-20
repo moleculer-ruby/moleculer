@@ -93,6 +93,7 @@ module Moleculer
 
     def start
       @logger.info "starting"
+      @logger.info "using transporter '#{@config.transporter}'"
       @transporter.start
       register_local_node
       start_subscribers
@@ -194,7 +195,7 @@ module Moleculer
     end
 
     def publish(packet_type, message = {})
-      packet = Packets.for(packet_type).new(message.merge(sender: @registry.local_node.id))
+      packet = Packets.for(packet_type).new(@config, message.merge(sender: @registry.local_node.id))
       @transporter.publish(packet)
     end
 
@@ -203,20 +204,36 @@ module Moleculer
     end
 
     def publish_heartbeat
+      @logger.trace "publishing hearbeat"
       publish(:heartbeat)
     end
 
     ##
     # Publishes the discover packet
     def publish_discover
+      @logger.trace "publishing discover request"
       publish(:discover)
     end
 
-    def publish_info(node_id = nil)
-      return publish(:info, @registry.local_node.as_json) unless node_id
+    ##
+    # Publish targeted discovery to node
+    def publish_discover_to_node_id(node_id)
+      publish_to_node_id(:discover, node_id)
+    end
 
-      node = @registry.safe_fetch_node(node_id) || node_id
-      publish_to_node(:info, node, @registry.local_node.as_json)
+    ##
+    # Publishes the info packet to either all nodes, or the given node
+    def publish_info(node_id = nil, force = false)
+      return publish(:info, @registry.local_node.to_h) unless node_id
+
+      node = @registry.safe_fetch_node(node_id)
+      if node
+        publish_to_node(:info, node, @registry.local_node.to_h)
+      elsif force
+        ## in rare cases there may be a lack of synchronization between brokers, if we can't find the node in the
+        # registry we will attempt to force publish it (if force is true)
+        publish_to_node_id(:info, node_id, @registry.local_node.to_h)
+      end
     end
 
     def publish_req(request_data)
@@ -228,7 +245,14 @@ module Moleculer
     end
 
     def publish_to_node(packet_type, node, message = {})
-      packet = Packets.for(packet_type).new(message.merge(node: node))
+      packet = Packets.for(packet_type).new(@config, message.merge(node: node))
+      @transporter.publish(packet)
+    end
+
+    ##
+    # Publishes the provided packet directly to the given node_id
+    def publish_to_node_id(packet_type, node_id, message = {})
+      packet = Packets.for(packet_type).new(@config, message.merge(node_id: node_id))
       @transporter.publish(packet)
     end
 
@@ -259,6 +283,7 @@ module Moleculer
     end
 
     def start_heartbeat
+      @logger.trace "starting heartbeat timer"
       Concurrent::TimerTask.new(execution_interval: heartbeat_interval) do
         publish_heartbeat
         @registry.expire_nodes
@@ -276,12 +301,14 @@ module Moleculer
     end
 
     def subscribe_to_events
+      @logger.info "setting up 'EVENT' subscriber"
       subscribe("MOL.EVENT.#{node_id}") do |packet|
         process_event(packet)
       end
     end
 
     def subscribe_to_info
+      @logger.trace "setting up 'INFO' subscribers"
       subscribe("MOL.INFO.#{node_id}") do |packet|
         register_or_update_remote_node(packet)
       end
@@ -291,34 +318,48 @@ module Moleculer
     end
 
     def subscribe_to_res
+      @logger.trace "setting up 'RES' subscriber"
       subscribe("MOL.RES.#{node_id}") do |packet|
         process_response(packet)
       end
     end
 
     def subscribe_to_req
+      @logger.trace "setting up 'REQ' subscriber"
       subscribe("MOL.REQ.#{node_id}") do |packet|
         process_request(packet)
       end
     end
 
     def subscribe_to_discover
+      @logger.trace "setting up 'DISCOVER' subscriber"
       subscribe("MOL.DISCOVER") do |packet|
         publish_info(packet.sender) unless packet.sender == node_id
       end
       subscribe("MOL.DISCOVER.#{node_id}") do |packet|
-        publish_info(packet.sender)
+        publish_info(packet.sender, true)
       end
     end
 
+    ##
+    # Subscribes to heartbeats from other services. If a node is not registered when it received a heartbeat the broker
+    # will send a discover packet directly to the node that published the beat.
     def subscribe_to_heartbeat
+      @logger.trace "setting up 'HEARTBEAT' subscriber"
       subscribe("MOL.HEARTBEAT") do |packet|
         node = @registry.safe_fetch_node(packet.sender)
-        node.beat if node
+        if node
+          node.beat
+        else
+          # because the node is not registered with the broker, we have to assume that something broke down. we need to
+          # force a publish to the node we just received the heartbeat from
+          publish_discover_to_node_id(packet.sender)
+        end
       end
     end
 
     def subscribe_to_disconnect
+      @logger.trace "setting up 'DISCONNECT' subscriber"
       subscribe("MOL.DISCONNECT") do |packet|
         @registry.remove_node(packet.sender)
       end

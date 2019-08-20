@@ -6,6 +6,7 @@
 ### Features
 * add a fake transporter that can be used for testing without dependencies on an
   actual connected transporter
+* adds version support
 * `log_level`, `transporter`, `heartbeat_interval`, `log_file` and `timeout` are now configurable
   via environment variable prefixed with `MOLECULER_`
 * added `rescue_from` configuration. this replaces `rescue_event` and `rescue_action`.
@@ -22,6 +23,8 @@
   
 ### Bugfixes
 * fix `concurrent_ruby` version requirement to ensure at least `1.1` is required.
+* fixes issue where services don't recognize heartbeats by firing a DISCOVER packet
+  when a heartbeat is received from an unknown node.
 
 ##  0.1.1
 ### Features
@@ -36,3 +39,4 @@
 ### Bugfixes
 * fix `concurrent_ruby` version requirement to ensure at least `1.1` is required
 * fix an issue where heartbeats back up in the queue and cause errors when consumed
+

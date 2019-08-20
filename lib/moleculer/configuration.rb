@@ -68,11 +68,11 @@ module Moleculer
       logger.level     = c.log_level
       Moleculer::Support::LogProxy.new(logger)
     end
-    config_accessor :log_file, ENV["MOLECULER_LOG_FILE"]
-    config_accessor :log_level, ENV["MOLECULER_LOG_LEVEL"]&.to_sym || :debug
+    config_accessor :log_file,           ENV["MOLECULER_LOG_FILE"]
+    config_accessor :log_level,          ENV["MOLECULER_LOG_LEVEL"]&.to_sym || :debug
     config_accessor :heartbeat_interval, ENV["MOLECULER_HEARTBEAT_INTERVAL"]&.to_i || 5
-    config_accessor :timeout, ENV["MOLECULER_TIMEOUT"]&.to_i || 5
-    config_accessor :transporter, ENV["MOLECULER_TRANSPORTER"] || "redis://localhost"
+    config_accessor :timeout,            ENV["MOLECULER_TIMEOUT"]&.to_i || 5
+    config_accessor :transporter,        ENV["MOLECULER_TRANSPORTER"] || "redis://localhost"
 
     config_accessor :serializer, :json
     config_accessor :node_id, "#{Socket.gethostname.downcase}-#{Process.pid}"
@@ -99,6 +99,19 @@ module Moleculer
     def services=(array)
       @services = ServiceList.new(self)
       array.each { |s| @services << s }
+    end
+
+    def to_h
+      {
+        log_file:           log_file,
+        log_level:          log_level,
+        heartbeat_interval: heartbeat_interval,
+        timeout:            timeout,
+        transporter:        transporter,
+        serializer:         serializer,
+        node_id:            node_id,
+        service_prefix:     service_prefix,
+      }
     end
 
     ##

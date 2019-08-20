@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "../../spec_helper"
 require_relative "../../../lib/moleculer/transporters/redis"
 RSpec.describe Moleculer::Transporters::Redis do
@@ -17,9 +19,7 @@ RSpec.describe Moleculer::Transporters::Redis do
 
       def start
         super
-        while !subscriber.instance_variable_get(:@started)
-          sleep 0.1
-        end
+        sleep 0.1 until subscriber.instance_variable_get(:@started)
       end
     end.new(Moleculer::Configuration.new)
   end
@@ -27,18 +27,19 @@ RSpec.describe Moleculer::Transporters::Redis do
   describe "#publis/scubscribe" do
     let(:packet) do
       instance_double(Moleculer::Packets::Info,
-                      topic:   "MOL.INFO.test-321",
-                      as_json: { sender:   "test-123",
-                                 ver:      "3",
-                                 services: [],
-                                 ipList:   [],
-                                 config:   {},
-                                 hostname: "thehost",
-                                 client:   {
-                                   type:        1,
-                                   version:     1,
-                                   langVersion: 1,
-                                 } })
+                      topic:  "MOL.INFO.test-321",
+                      sender: "test-123",
+                      to_h:   { sender:   "test-123",
+                                ver:      "3",
+                                services: [],
+                                ipList:   [],
+                                config:   {},
+                                hostname: "thehost",
+                                client:   {
+                                  type:        1,
+                                  version:     1,
+                                  langVersion: 1,
+                                } })
     end
 
     it "is capable of publishing packets and receiving them" do

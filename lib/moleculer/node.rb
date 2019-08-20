@@ -81,14 +81,14 @@ module Moleculer
       @local
     end
 
-    def as_json
+    def to_h
       {
         sender:   @id,
         config:   {},
         seq:      1,
         ipList:   [],
         hostname: @hostname,
-        services: @services.values.map(&:as_json),
+        services: @services.values.map(&:to_h),
         client:   client_attrubutes,
       }
     end

@@ -132,14 +132,14 @@ module Moleculer
         self.class.broker
       end
 
-      def self.as_json # rubocop:disable Metrics/AbcSize
+      def self.to_h # rubocop:disable Metrics/AbcSize
         {
           name:     full_name,
           version:  version,
           settings: {},
           metadata: {},
-          actions:  Hash[actions.values.map { |a| [a.name.to_sym, a.as_json] }],
-          events:   Hash[events.values.map { |e| [e.name.to_sym, e.as_json] }],
+          actions:  Hash[actions.values.map { |a| [a.name.to_sym, a.to_h] }],
+          events:   Hash[events.values.map { |e| [e.name.to_sym, e.to_h] }],
         }
       end
     end
