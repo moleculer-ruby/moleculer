@@ -46,7 +46,7 @@ module Moleculer
       end
 
       def expired_nodes
-        @nodes.values.select { |node| (Time.now - node[:node].last_heartbeat_at) >expiration_interval }
+        @nodes.values.select { |node| (Time.now - node[:node].last_heartbeat_at) > expiration_interval }
       end
 
       private
