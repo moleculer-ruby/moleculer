@@ -20,7 +20,7 @@ gem install "moleculer-ruby"
 or add to your Gemfile:
 
 ```ruby
-gem "moleculer-ruby", "~>0.2"
+gem "moleculer-ruby", "~>0.3"
 ```
 
 ### Create a  Simple Service
@@ -118,11 +118,22 @@ Initial release
 * Service registry & dynamic service discovery
 * JSON serializer
 
-### 0.2 (IN  PROGRESS)
+### 0.2 (COMPLETE)
 * Fake transporter (for testing)
 * Error handling, (ability to use Airbrake, etc.)
-* Event grouping
 
-### 0.3 (PENDING)
-* NATS transporter
-* Built in caching solution (Redis, Memory)
+### 0.3 (COMPLETE)
+* Service versioning
+* Environment variable based configuration
+
+### 0.4 (IN PROGRESS)
+* Protobuf serializer
+* Add MessagePack serializer
+* Circuit Breaker support
+* Retry support
+
+### 0.5 (PLANNED)
+* Bulkhead support
+* Fallback support
+* Nested call support
+
