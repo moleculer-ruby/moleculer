@@ -28,7 +28,7 @@ module Moleculer
       svcs = options.fetch(:services)
       # TODO: move this up to from_remote_info
       svcs.map! { |service| Service.from_remote_info(service, self) } if svcs.first.is_a? Hash
-      @services = Hash[svcs.map { |s| [s.service_name, s] }]
+      @services = Hash[svcs.map { |s| [s.full_name, s] }]
     end
 
     def register_service(service)
@@ -81,14 +81,14 @@ module Moleculer
       @local
     end
 
-    def as_json
+    def to_h
       {
         sender:   @id,
         config:   {},
         seq:      1,
         ipList:   [],
         hostname: @hostname,
-        services: @services.values.map(&:as_json),
+        services: @services.values.map(&:to_h),
         client:   client_attrubutes,
       }
     end

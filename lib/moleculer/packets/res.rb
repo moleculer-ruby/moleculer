@@ -12,8 +12,8 @@ module Moleculer
                   :meta,
                   :stream
 
-      def initialize(data)
-        super(data)
+      def initialize(config, data)
+        super(config, data)
 
         @id      = HashUtil.fetch(data, :id)
         @success = HashUtil.fetch(data, :success)
@@ -28,7 +28,7 @@ module Moleculer
         "#{super}.#{@node.id}"
       end
 
-      def as_json
+      def to_h
         super.merge(
           id:      @id,
           success: @success,

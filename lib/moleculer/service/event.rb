@@ -32,9 +32,7 @@ module Moleculer
       def execute(data, broker)
         @service.new(broker).public_send(@method, data)
       rescue StandardError => e
-        raise e unless broker.rescue_event
-
-        broker.rescue_event.call(e)
+        broker.config.handle_error(e)
       end
 
       ##
@@ -45,7 +43,7 @@ module Moleculer
 
       ##
       # @return [Hash] a hash representing this event as it would be in JSON
-      def as_json
+      def to_h
         {
           name: name,
         }

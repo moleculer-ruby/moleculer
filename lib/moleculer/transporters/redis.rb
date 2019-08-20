@@ -22,7 +22,7 @@ module Moleculer
         # Publishes the packet to the packet's topic
         def publish(packet)
           topic = packet.topic
-          @logger.debug "publishing packet to '#{topic}'", packet.as_json
+          @logger.debug "publishing packet to '#{topic}'", packet.to_h
           connection.publish(topic, @serializer.serialize(packet))
         end
 
@@ -61,6 +61,7 @@ module Moleculer
             @logger      = config.logger.get_child("[REDIS.TRANSPORTER.SUBSCRIPTION.#{channel}]")
             @serializer  = Serializers.for(config.serializer).new(config)
             @node_id     = config.node_id
+            @config      = config
 
             # it is necessary to send some sort of message to signal the subscriber to disconnect and shutdown
             # this is an internal message
@@ -121,11 +122,11 @@ module Moleculer
           def process_packet(packet)
             return @connection.unsubscribe if packet == :disconnect
 
-            @logger.trace "received packet from #{packet.sender}:", packet.as_json
+            @logger.trace "received packet from #{packet.sender}:", packet.to_h
 
             @block.call(packet)
-          rescue StandardError => error
-            @logger.error error
+          rescue StandardError => e
+            @config.handle_error(e)
           end
 
           def process_message(message)
@@ -140,9 +141,9 @@ module Moleculer
             return nil unless parsed
 
 
-            packet_type.new(parsed)
-          rescue StandardError => error
-            @logger.error error
+            packet_type.new(@config, parsed)
+          rescue StandardError => e
+            @config.handle_error(e)
           end
 
           def unsubscribe

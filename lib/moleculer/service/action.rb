@@ -24,7 +24,6 @@ module Moleculer
         @name    = name
         @service = service
         @method  = method
-        @service = service
         @options = options
       end
 
@@ -40,18 +39,16 @@ module Moleculer
 
         response
       rescue StandardError => e
-        raise e unless broker.rescue_action
-
-        broker.rescue_action.call(e)
+        broker.config.handle_error(e)
       end
 
       def node
         @service.node
       end
 
-      def as_json
+      def to_h
         {
-          name:    "#{@service.service_name}.#{name}",
+          name:    "#{@service.full_name}.#{name}",
           rawName: name,
           cache:   HashUtil.fetch(@options, :cache, false),
           metrics: {

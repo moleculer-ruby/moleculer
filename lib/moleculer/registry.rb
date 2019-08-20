@@ -42,11 +42,17 @@ module Moleculer
       end
 
       def active_nodes
-        @nodes.values.select { |node| (Time.now - node[:node].last_heartbeat_at) < @heartbeat_interval * 3 }
+        @nodes.values.select { |node| (Time.now - node[:node].last_heartbeat_at) < expiration_interval }
       end
 
       def expired_nodes
-        @nodes.values.select { |node| (Time.now - node[:node].last_heartbeat_at) > 600 }
+        @nodes.values.select { |node| (Time.now - node[:node].last_heartbeat_at) > expiration_interval }
+      end
+
+      private
+
+      def expiration_interval
+        @heartbeat_interval * 3
       end
     end
 
@@ -89,8 +95,8 @@ module Moleculer
         end
 
         def add_service(service)
-          @services[service.service_name] ||= NodeList.new(@heartbeat_interval)
-          @services[service.service_name].add_node(service.node)
+          @services[service.full_name] ||= NodeList.new(@heartbeat_interval)
+          @services[service.full_name].add_node(service.node)
         end
 
         def fetch_nodes
@@ -130,7 +136,7 @@ module Moleculer
       def fetch_events(event_name)
         return [] unless @events[event_name]
 
-        @events[event_name].fetch_nodes.map { |n| n.events[event_name] }.flatten.uniq { |e| e.service.service_name }
+        @events[event_name].fetch_nodes.map { |n| n.events[event_name] }.flatten.uniq { |e| e.service.full_name }
       end
     end
 
@@ -317,8 +323,8 @@ module Moleculer
 
     def update_services(node)
       node.services.values.each do |service|
-        @services[service.service_name] ||= NodeList.new(@heartbeat_interval)
-        @services[service.service_name].add_node(node)
+        @services[service.full_name] ||= NodeList.new(@heartbeat_interval)
+        @services[service.full_name].add_node(node)
       end
     end
   end
