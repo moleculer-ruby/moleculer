@@ -1,16 +1,9 @@
 require_relative "../../../lib/moleculer/serializers/json"
+require_relative "serializer_behavior"
+
 RSpec.describe Moleculer::Serializers::Json do
-  subject { Moleculer::Serializers::Json.new(Moleculer::Configuration.new) }
-  describe "#deserialize" do
-    let(:logger) { subject.instance_variable_get(:@config).logger }
+  let(:config) { Moleculer::Configuration.new }
+  subject { Moleculer::Serializers::Json.new(config) }
 
-    before :each do
-      allow(logger).to receive(:error)
-    end
-
-    it "calls the rescue handler instead of blowing up when JSON serialization fails" do
-      expect { subject.deserialize("foo") }.to_not raise_error
-      expect(logger).to have_received(:error).with(instance_of(JSON::ParserError))
-    end
-  end
+  include_examples "serializer"
 end

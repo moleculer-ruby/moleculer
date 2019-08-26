@@ -21,11 +21,12 @@ module Moleculer
       ##
       # Deserializes the provided message
       #
+      # @param type [Moleculer::Packets::Base] the type of message
       # @param message [String] the message to deserialize
-      def deserialize(message)
+      def deserialize(type, message)
         hash = JSON.parse(message)
         hash = deserialize_custom_fields(hash)
-        hash
+        PACKET_TYPE_MAP[type].new(@config, hash)
       end
     end
   end

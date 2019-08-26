@@ -34,7 +34,7 @@ module Moleculer
         def deserialize(type, message)
           proto = protobuf_packet_for(type).decode(message)
           hash  = deserialize_custom_fields(proto.to_hash)
-          PROTOBUF_PACKET_MAP[type].new(@config, hash)
+          PACKET_TYPE_MAP[type].new(@config, hash)
         end
 
         private
