@@ -5,6 +5,16 @@ module Moleculer
     ##
     # The base serializer that all other serializers inherit from
     class Base
+      PACKET_TYPE_MAP = {
+        disconnect: Moleculer::Packets::Disconnect,
+        discover:   Moleculer::Packets::Discover,
+        event:      Moleculer::Packets::Event,
+        heartbeat:  Moleculer::Packets::Heartbeat,
+        info:       Moleculer::Packets::Info,
+        req:        Moleculer::Packets::Req,
+        res:        Moleculer::Packets::Res,
+      }.freeze
+
       def initialize(config)
         @config = config
         @logger = config.logger.get_child("[SERIALIZER]")
@@ -12,7 +22,7 @@ module Moleculer
 
       private
 
-      def deserialize_custom_fields(type, hash)
+      def deserialize_custom_fields(hash)
         hash  = deserialize_custom_field(:data, hash)
         hash  = deserialize_custom_field(:services, hash)
         hash  = deserialize_custom_field(:config, hash)

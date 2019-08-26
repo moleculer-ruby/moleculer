@@ -9,7 +9,7 @@ module Moleculer
       ##
       # Protobuf serializer
       class Serializer < Serializers::Base
-        PACKET_MAP = {
+        PROTOBUF_PACKET_MAP = {
           Moleculer::Packets::Disconnect => Packets::PacketDisconnect,
           Moleculer::Packets::Discover   => Packets::PacketDiscover,
           Moleculer::Packets::Event      => Packets::PacketEvent,
@@ -19,22 +19,12 @@ module Moleculer
           Moleculer::Packets::Res        => Packets::PacketResponse,
         }.freeze
 
-        PACKET_TYPE_MAP = {
-          disconnect: Moleculer::Packets::Disconnect,
-          discover:   Moleculer::Packets::Discover,
-          event:      Moleculer::Packets::Event,
-          heartbeat:  Moleculer::Packets::Heartbeat,
-          info:       Moleculer::Packets::Info,
-          req:        Moleculer::Packets::Req,
-          res:        Moleculer::Packets::Res,
-        }.freeze
-
         ##
         # Serializes the packet using protobuf
         # @param packet [Moleculer::Packets::Base]
         def serialize(packet)
-          hash = serialize_custom_fields(packet.to_h)
-          proto = PACKET_MAP[packet.class].new(hash)
+          hash  = serialize_custom_fields(packet.to_h)
+          proto = PROTOBUF_PACKET_MAP[packet.class].new(hash)
           proto.encode
         end
 
@@ -43,14 +33,14 @@ module Moleculer
         # @param message [String] encoded protobuf message
         def deserialize(type, message)
           proto = protobuf_packet_for(type).decode(message)
-          hash = deserialize_custom_fields(type, proto.to_hash)
-          PACKET_TYPE_MAP[type].new(@config, hash)
+          hash  = deserialize_custom_fields(proto.to_hash)
+          PROTOBUF_PACKET_MAP[type].new(@config, hash)
         end
 
         private
 
         def protobuf_packet_for(type)
-          PACKET_MAP[PACKET_TYPE_MAP[type]]
+          PROTOBUF_PACKET_MAP[PACKET_TYPE_MAP[type]]
         end
       end
     end
