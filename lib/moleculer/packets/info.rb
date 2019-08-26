@@ -67,7 +67,7 @@ module Moleculer
       def initialize(config, data = {})
         super(config, data)
         @services = HashUtil.fetch(data, :services)
-        @ip_list  = HashUtil.fetch(data, :ip_list)
+        @ip_list  = HashUtil.fetch(data, :ip_list, [])
         @hostname = HashUtil.fetch(data, :hostname)
         @client   = Client.new(HashUtil.fetch(data, :client, {}))
         node      = HashUtil.fetch(data, :node, nil)
