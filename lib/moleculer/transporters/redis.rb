@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "redis"
 require_relative "base"
 
@@ -72,24 +74,22 @@ module Moleculer
           # Starts the subscriber
           def connect
             @thread = Thread.new do
-              begin
-                @logger.debug "starting subscription to '#{@channel}'"
-                @connection.subscribe(@channel) do |on|
-                  on.unsubscribe do
-                    unsubscribe
-                  end
-
-                  on.message do |_, message|
-                    packet = process_message(message)
-                    next unless packet
-
-                    process_packet(packet)
-                  end
+              @logger.debug "starting subscription to '#{@channel}'"
+              @connection.subscribe(@channel) do |on|
+                on.unsubscribe do
+                  unsubscribe
                 end
-              rescue StandardError => error
-                @logger.fatal error
-                exit 1
+
+                on.message do |_, message|
+                  packet = process_message(message)
+                  next unless packet
+
+                  process_packet(packet)
+                end
               end
+            rescue StandardError => e
+              @logger.fatal e
+              exit 1
             end
             self
           end
@@ -108,9 +108,9 @@ module Moleculer
 
           private
 
-          def deserialize(message)
-            parsed = @serializer.deserialize(message)
-            return nil if parsed["sender"] == @node_id
+          def deserialize(type, message)
+            packet = @serializer.deserialize(type, message)
+            return nil if packet.sender == @node_id
 
             parsed
           end
@@ -134,14 +134,12 @@ module Moleculer
 
             return nil if message_is_disconnect?(message)
 
-            packet_type = Packets.for(@channel.split(".")[1])
+            type   = Packets.for(@channel.split(".")[1]).to_sym
+            packet = deserialize(type, message)
 
-            parsed = deserialize(message)
+            return nil unless packet
 
-            return nil unless parsed
-
-
-            packet_type.new(@config, parsed)
+            packet
           rescue StandardError => e
             @config.handle_error(e)
           end
