@@ -12,7 +12,7 @@ RSpec.describe Moleculer::Packets::Event do
                           ))
   end
 
-  let(:node) { double("node", id: 1)}
+  let(:node) { double("node", id: 1) }
 
   subject { Moleculer::Packets::Event.new(broker.config, event: "test", data: {}, broadcast: false, node: node) }
 

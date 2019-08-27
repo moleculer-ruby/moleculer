@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe Moleculer::Registry do
   let(:service_1_1) do
     Class.new(Moleculer::Service::Base) do
@@ -99,7 +101,7 @@ RSpec.describe Moleculer::Registry do
     end
 
     it "raises an exception if the node was not found" do
-      expect {subject.fetch_node("not-a-node")}.to raise_error(Moleculer::Errors::NodeNotFound)
+      expect { subject.fetch_node("not-a-node") }.to raise_error(Moleculer::Errors::NodeNotFound)
     end
   end
 
