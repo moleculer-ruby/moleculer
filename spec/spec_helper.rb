@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "bundler/setup"
 require "moleculer"
 require "simplecov"
@@ -6,7 +8,6 @@ require "timecop"
 # Turn off logging for specs
 ENV["MOLECULER_LOG_FILE"] = "/dev/null"
 load File.expand_path("../lib/moleculer/configuration.rb", __dir__)
-
 
 RSpec.configure do |config|
   SimpleCov.start

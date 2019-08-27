@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe Moleculer::Support::HashUtil do
   subject { Moleculer::Support::HashUtil }
 
@@ -12,7 +14,7 @@ RSpec.describe Moleculer::Support::HashUtil do
         "testTwo" => 2,
         testThree: 3,
         test_four: 4,
-        obj => 5
+        obj => 5,
       }
     end
 
