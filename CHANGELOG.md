@@ -1,3 +1,7 @@
+## 0.4.0
+### Features
+* protobuf serializer support
+
 ## 0.3.0
 ### Breaking Changes
 * `rescue_event` and `rescue_action` have been removed and replaced with a more generic `rescue_from`
