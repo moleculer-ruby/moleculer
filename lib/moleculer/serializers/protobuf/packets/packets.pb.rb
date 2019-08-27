@@ -1,9 +1,9 @@
-# encoding: utf-8
+# frozen_string_literal: true
 
 ##
 # This file is auto-generated. DO NOT EDIT!
 #
-require 'protobuf'
+require "protobuf"
 
 module Moleculer
   module Serializers
@@ -20,7 +20,6 @@ module Moleculer
         class PacketDiscover < ::Protobuf::Message; end
         class PacketInfo < ::Protobuf::Message
           class Client < ::Protobuf::Message; end
-
         end
 
         class PacketDisconnect < ::Protobuf::Message; end
@@ -30,7 +29,6 @@ module Moleculer
         class PacketGossipHello < ::Protobuf::Message; end
         class PacketGossipRequest < ::Protobuf::Message; end
         class PacketGossipResponse < ::Protobuf::Message; end
-
 
         ##
         # Message Fields
@@ -136,12 +134,7 @@ module Moleculer
           optional :string, :online, 3
           optional :string, :offline, 4
         end
-
       end
-
     end
-
   end
-
 end
-
