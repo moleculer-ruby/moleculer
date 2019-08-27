@@ -160,9 +160,9 @@ module Moleculer
         def subscribe(channel, &block)
           @logger.debug "subscribing to channel '#{channel}'"
           @subscriptions << Subscription.new(
-              channel: channel,
-              block:   block,
-              config:  @config,
+            channel: channel,
+            block:   block,
+            config:  @config,
           )
 
           @subscriptions.last.connect if started?
