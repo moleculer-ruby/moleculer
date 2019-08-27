@@ -5,16 +5,6 @@ module Moleculer
     ##
     # The base serializer that all other serializers inherit from
     class Base
-      PACKET_TYPE_MAP = {
-        disconnect: Moleculer::Packets::Disconnect,
-        discover:   Moleculer::Packets::Discover,
-        event:      Moleculer::Packets::Event,
-        heartbeat:  Moleculer::Packets::Heartbeat,
-        info:       Moleculer::Packets::Info,
-        req:        Moleculer::Packets::Req,
-        res:        Moleculer::Packets::Res,
-      }.freeze
-
       def initialize(config)
         @config = config
         @logger = config.logger.get_child("[SERIALIZER]")

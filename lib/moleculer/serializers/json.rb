@@ -26,7 +26,7 @@ module Moleculer
       def deserialize(type, message)
         hash = JSON.parse(message)
         hash = deserialize_custom_fields(hash)
-        PACKET_TYPE_MAP[type].new(@config, hash)
+        Packets.for(type).new(@config, hash)
       end
     end
   end
