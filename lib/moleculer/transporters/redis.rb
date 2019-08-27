@@ -55,13 +55,13 @@ module Moleculer
         # Represents a subscription
         class Subscription
           def initialize(config:, channel:, block:)
-            @connection  = ::Redis.new(url: config.transporter)
-            @channel     = channel
-            @block       = block
-            @logger      = config.logger.get_child("[REDIS.TRANSPORTER.SUBSCRIPTION.#{channel}]")
-            @serializer  = Serializers.for(config.serializer).new(config)
-            @node_id     = config.node_id
-            @config      = config
+            @connection = ::Redis.new(url: config.transporter)
+            @channel    = channel
+            @block      = block
+            @logger     = config.logger.get_child("[REDIS.TRANSPORTER.SUBSCRIPTION.#{channel}]")
+            @serializer = Serializers.for(config.serializer).new(config)
+            @node_id    = config.node_id
+            @config     = config
 
             # it is necessary to send some sort of message to signal the subscriber to disconnect and shutdown
             # this is an internal message
@@ -72,21 +72,23 @@ module Moleculer
           # Starts the subscriber
           def connect
             @thread = Thread.new do
-              @logger.debug "starting subscription to '#{@channel}'"
-              @connection.subscribe(@channel) do |on|
-                on.unsubscribe do
-                  unsubscribe
-                end
+              begin
+                @logger.debug "starting subscription to '#{@channel}'"
+                @connection.subscribe(@channel) do |on|
+                  on.unsubscribe do
+                    unsubscribe
+                  end
 
-                on.message do |_, message|
-                  packet = process_message(message)
-                  next unless packet
+                  on.message do |_, message|
+                    packet = process_message(message)
+                    next unless packet
 
-                  process_packet(packet)
+                    process_packet(packet)
+                  end
                 end
+              rescue StandardError => e
+                @config.handle_error(e)
               end
-            rescue StandardError => e
-              @config.handle_error(e)
             end
             self
           end
@@ -158,9 +160,9 @@ module Moleculer
         def subscribe(channel, &block)
           @logger.debug "subscribing to channel '#{channel}'"
           @subscriptions << Subscription.new(
-            channel: channel,
-            block:   block,
-            config:  @config,
+              channel: channel,
+              block:   block,
+              config:  @config,
           )
 
           @subscriptions.last.connect if started?

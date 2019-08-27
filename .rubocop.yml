@@ -2,6 +2,8 @@ AllCops:
   Exclude:
     - 'lib/moleculer/serializers/protobuf/packets/packets.pb.rb'
 
+TargetRubyVersion: 2.3
+
 Layout/ExtraSpacing:
   ForceEqualSignAlignment: true
 
