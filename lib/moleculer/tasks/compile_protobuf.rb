@@ -32,6 +32,10 @@ module Moleculer
       def compile_protobuf
         ::Rake::Task["protobuf:compile"].invoke("packets", "./tmp/protobuf", "lib/moleculer/serializers/protobuf")
       end
+
+      def cleanup
+        run "rubocop -a #{PROTOBUF_DESTINATION_FILE}"
+      end
     end
   end
 end
