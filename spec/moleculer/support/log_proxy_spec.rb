@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.shared_examples "basic logger" do
   subject { Moleculer::Support::LogProxy.new(logger) }
   let(:prefix) { "" }
@@ -63,7 +65,7 @@ RSpec.describe Moleculer::Support::LogProxy do
   end
 
   describe "#level" do
-    subject { Moleculer::Support::LogProxy.new(instance_double(::Logger, level: 1))}
+    subject { Moleculer::Support::LogProxy.new(instance_double(::Logger, level: 1)) }
     it "returns the sub logger level" do
       expect(subject.level).to eq(1)
     end

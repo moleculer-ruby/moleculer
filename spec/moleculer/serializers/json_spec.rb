@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "../../../lib/moleculer/serializers/json"
 RSpec.describe Moleculer::Serializers::Json do
   subject { Moleculer::Serializers::Json.new(Moleculer::Configuration.new) }

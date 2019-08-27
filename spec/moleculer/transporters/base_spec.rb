@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "../../../lib/moleculer/transporters/base"
 
 RSpec.describe Moleculer::Transporters::Base do
@@ -32,5 +34,4 @@ RSpec.describe Moleculer::Transporters::Base do
 
     it_should_behave_like "interface"
   end
-
 end
