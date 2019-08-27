@@ -2,11 +2,9 @@ PATH
   remote: .
   specs:
     moleculer (0.3.0)
-      activesupport (>= 3.2)
       awesome_print (~> 1.8)
       concurrent-ruby (~> 1.1)
       ougai (~> 1.7)
-      protobuf (~> 3.10)
 
 GEM
   remote: https://rubygems.org/
@@ -81,8 +79,10 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  activesupport (>= 3.2)
   bundler (~> 1.16)
   moleculer!
+  protobuf (~> 3.10)
   rake (~> 10.0)
   redis (~> 4.0)
   rspec (~> 3.0)
