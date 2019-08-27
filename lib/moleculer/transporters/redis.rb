@@ -3,8 +3,6 @@
 require "redis"
 require_relative "base"
 
-# frozen_string_literal: true
-
 module Moleculer
   module Transporters
     ##
