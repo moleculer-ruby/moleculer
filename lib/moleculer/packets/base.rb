@@ -46,7 +46,7 @@ module Moleculer
 
       ##
       # The sender of the packet
-      packet_attr :sender, ->(packet) { packet.config.node_id }
+      packet_attr :sender, -> (packet) { packet.config.node_id }
 
       attr_reader :config
 

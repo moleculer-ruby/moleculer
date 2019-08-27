@@ -4,7 +4,7 @@ require "simplecov"
 require "timecop"
 
 # Turn off logging for specs
-ENV["MOLECULER_LOG_FILE"] = "/dev/null"
+# ENV["MOLECULER_LOG_FILE"] = "/dev/null"
 load File.expand_path("../lib/moleculer/configuration.rb", __dir__)
 
 

@@ -88,8 +88,7 @@ module Moleculer
                 end
               end
             rescue StandardError => e
-              @logger.fatal e
-              exit 1
+              @config.handle_error(e)
             end
             self
           end
@@ -112,7 +111,7 @@ module Moleculer
             packet = @serializer.deserialize(type, message)
             return nil if packet.sender == @node_id
 
-            parsed
+            packet
           end
 
           def message_is_disconnect?(message)
@@ -134,7 +133,7 @@ module Moleculer
 
             return nil if message_is_disconnect?(message)
 
-            type   = Packets.for(@channel.split(".")[1]).to_sym
+            type   = @channel.split(".")[1].downcase.to_sym
             packet = deserialize(type, message)
 
             return nil unless packet
