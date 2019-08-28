@@ -79,7 +79,6 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  activesupport (>= 3.2)
   bundler (~> 1.16)
   moleculer!
   protobuf (~> 3.10)

@@ -26,10 +26,10 @@ module Moleculer
       TYPES[type.downcase.to_sym]
     end
 
-    private
-
     def self.packet_type(klass)
       klass.packet_name.downcase.to_sym
     end
+
+    private_class_method :packet_type
   end
 end
