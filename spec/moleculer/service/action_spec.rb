@@ -46,7 +46,7 @@ RSpec.describe Moleculer::Service::Action do
       let(:error) { StandardError.new("an error occurred") }
       let(:service) do
         Class.new(Moleculer::Service::Base) do
-          def test_action(_)
+          def test_action(_param)
             raise StandardError, "test"
           end
         end
