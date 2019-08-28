@@ -12,6 +12,12 @@ module Moleculer
   ##
   # Encapsulates Moleculer packets
   module Packets
+    def self.packet_type(klass)
+      klass.packet_name.downcase.to_sym
+    end
+
+    private_class_method :packet_type
+
     TYPES = {
       "#{packet_type(Discover)}":   Discover,
       "#{packet_type(Info)}":       Info,
@@ -25,11 +31,5 @@ module Moleculer
     def self.for(type)
       TYPES[type.downcase.to_sym]
     end
-
-    def self.packet_type(klass)
-      klass.packet_name.downcase.to_sym
-    end
-
-    private_class_method :packet_type
   end
 end
