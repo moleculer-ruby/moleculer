@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "packets/disconnect"
 require_relative "packets/discover"
 require_relative "packets/event"
@@ -11,17 +13,23 @@ module Moleculer
   # Encapsulates Moleculer packets
   module Packets
     TYPES = {
-      Discover.packet_name.downcase.to_sym   => Discover,
-      Info.packet_name.downcase.to_sym       => Info,
-      Req.packet_name.downcase.to_sym        => Req,
-      Res.packet_name.downcase.to_sym        => Res,
-      Heartbeat.packet_name.downcase.to_sym  => Heartbeat,
-      Event.packet_name.downcase.to_sym      => Event,
-      Disconnect.packet_name.downcase.to_sym => Disconnect,
+      "#{packet_type(Discover)}":   Discover,
+      "#{packet_type(Info)}":       Info,
+      "#{packet_type(Req)}":        Req,
+      "#{packet_type(Res)}":        Res,
+      "#{packet_type(Heartbeat)}":  Heartbeat,
+      "#{packet_type(Event)}":      Event,
+      "#{packet_type(Disconnect)}": Disconnect,
     }.freeze
 
     def self.for(type)
       TYPES[type.downcase.to_sym]
+    end
+
+    private
+
+    def self.packet_type(klass)
+      klass.packet_name.downcase.to_sym
     end
   end
 end
