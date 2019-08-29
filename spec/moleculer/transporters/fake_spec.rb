@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "../../../lib/moleculer/transporters/fake"
 
 RSpec.describe Moleculer::Transporters::Fake do

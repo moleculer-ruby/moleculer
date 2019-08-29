@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe Moleculer::Node do
   let(:service_1) do
     Class.new(Moleculer::Service::Base) do

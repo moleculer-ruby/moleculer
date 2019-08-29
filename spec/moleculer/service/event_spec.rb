@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe Moleculer::Service::Event do
   let(:config) { Moleculer::Configuration.new }
   let(:broker) { instance_double(Moleculer::Broker, config: config) }
@@ -7,8 +9,8 @@ RSpec.describe Moleculer::Service::Event do
       "event.name",
       service,
       :some_method,
-      some: "options",
-      rescue_event: nil
+      some:         "options",
+      rescue_event: nil,
     )
   end
 
@@ -19,7 +21,7 @@ RSpec.describe Moleculer::Service::Event do
       let(:errors) { [] }
       let(:service) do
         Class.new(Moleculer::Service::Base) do
-          def test_event(_)
+          def test_event(_param)
             raise StandardError, "test error"
           end
         end

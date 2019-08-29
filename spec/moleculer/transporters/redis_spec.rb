@@ -11,6 +11,8 @@ RSpec.describe Moleculer::Transporters::Redis do
     subject.stop
   end
 
+  let(:config) { Moleculer::Configuration.new }
+
   ##
   # this allows us to wait until the transporter as fully connected
   subject do
@@ -21,25 +23,23 @@ RSpec.describe Moleculer::Transporters::Redis do
         super
         sleep 0.1 until subscriber.instance_variable_get(:@started)
       end
-    end.new(Moleculer::Configuration.new)
+    end.new(config)
   end
 
   describe "#publis/scubscribe" do
     let(:packet) do
-      instance_double(Moleculer::Packets::Info,
-                      topic:  "MOL.INFO.test-321",
-                      sender: "test-123",
-                      to_h:   { sender:   "test-123",
-                                ver:      "3",
-                                services: [],
-                                ipList:   [],
-                                config:   {},
-                                hostname: "thehost",
-                                client:   {
-                                  type:        1,
-                                  version:     1,
-                                  langVersion: 1,
-                                } })
+      Moleculer::Packets::Info.new(
+        config,
+        topic:    "MOL.INFO.test-321",
+        node_id:  "test-124",
+        services: {},
+        ip_list:  [],
+        hostname: "thehost",
+      )
+    end
+
+    before :each do
+      allow(packet).to receive(:sender).and_return("not-this-node")
     end
 
     it "is capable of publishing packets and receiving them" do

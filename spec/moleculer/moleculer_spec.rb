@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe Moleculer do
   let(:broker) do
     instance_double(Moleculer::Broker,

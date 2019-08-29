@@ -93,8 +93,7 @@ RSpec.describe Moleculer::Broker do
       before :each do
         @discover_count = 0
         ## Sets up a listener on the fake broker for heartbeats
-        subject.instance_variable_get(:@transporter).subscribe("MOL.DISCOVER.test2") do |packet|
-          packet
+        subject.instance_variable_get(:@transporter).subscribe("MOL.DISCOVER.test2") do
           @discover_count += 1
         end
         allow(registry).to receive(:safe_fetch_node).and_return(nil)
