@@ -2,6 +2,7 @@
 
 require "forwardable"
 
+require_relative "broker/message_processor"
 require_relative "registry"
 require_relative "transporters"
 require_relative "support"
@@ -119,22 +120,6 @@ module Moleculer
 
     def local_node
       @registry.local_node
-    end
-
-    ##
-    # Processes an incoming message and passes it to the appropriate channel for handling
-    #
-    # @param [String] channel the channel in which the message came in on
-    # @param [Hash] message the raw deserialized message
-    def process_message(channel, message)
-      subscribers[channel] << Packets.for(channel.split(".")[1]).new(message) if subscribers[channel]
-    rescue StandardError => e
-      config.handle_error(e)
-    end
-
-    def process_response(packet)
-      context = @contexts.delete(packet.id)
-      context[:future].fulfill(packet.data)
     end
 
     def process_event(packet)
@@ -320,7 +305,7 @@ module Moleculer
     def subscribe_to_res
       @logger.trace "setting up 'RES' subscriber"
       subscribe("MOL.RES.#{node_id}") do |packet|
-        process_response(packet)
+        MessageProcessor.process_rpc_response(@contexts.delete(packet.id), packet)
       end
     end
 
