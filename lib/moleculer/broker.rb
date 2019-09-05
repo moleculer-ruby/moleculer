@@ -3,6 +3,7 @@
 require "forwardable"
 
 require_relative "broker/message_processor"
+require_relative "broker/publisher"
 require_relative "registry"
 require_relative "transporters"
 require_relative "support"
@@ -15,7 +16,7 @@ module Moleculer
   class Broker
     include Moleculer::Support
     extend Forwardable
-    attr_reader :config, :logger
+    attr_reader :config, :logger, :transporter, :registry
 
     def_delegators :@config, :node_id, :heartbeat_interval, :services, :service_prefix
 
@@ -179,32 +180,9 @@ module Moleculer
       end
     end
 
-    def publish(packet_type, message = {})
-      packet = Packets.for(packet_type).new(@config, message.merge(sender: @registry.local_node.id))
-      @transporter.publish(packet)
-    end
 
-    def publish_event(event_data)
-      publish_to_node(:event, event_data.delete(:node), event_data)
-    end
 
-    def publish_heartbeat
-      @logger.trace "publishing hearbeat"
-      publish(:heartbeat)
-    end
 
-    ##
-    # Publishes the discover packet
-    def publish_discover
-      @logger.trace "publishing discover request"
-      publish(:discover)
-    end
-
-    ##
-    # Publish targeted discovery to node
-    def publish_discover_to_node_id(node_id)
-      publish_to_node_id(:discover, node_id)
-    end
 
     ##
     # Publishes the info packet to either all nodes, or the given node
