@@ -150,7 +150,7 @@ module Moleculer
 
       response = action.execute(context, self)
 
-      publish_res(
+      @publisher.publish_res(
         id:      context.id,
         success: true,
         data:    response,
@@ -168,20 +168,6 @@ module Moleculer
       when "INT", "TERM"
         raise Interrupt
       end
-    end
-
-
-
-    def publish_to_node(packet_type, node, message = {})
-      packet = Packets.for(packet_type).new(@config, message.merge(node: node))
-      @transporter.publish(packet)
-    end
-
-    ##
-    # Publishes the provided packet directly to the given node_id
-    def publish_to_node_id(packet_type, node_id, message = {})
-      packet = Packets.for(packet_type).new(@config, message.merge(node_id: node_id))
-      @transporter.publish(packet)
     end
 
     def register_local_node
@@ -262,10 +248,10 @@ module Moleculer
     def subscribe_to_discover
       @logger.trace "setting up 'DISCOVER' subscriber"
       subscribe("MOL.DISCOVER") do |packet|
-        publish_info(packet.sender) unless packet.sender == node_id
+        @publisher.publish_info(packet.sender) unless packet.sender == node_id
       end
       subscribe("MOL.DISCOVER.#{node_id}") do |packet|
-        publish_info(packet.sender, true)
+        @publisher.publish_info(packet.sender, true)
       end
     end
 
@@ -281,7 +267,7 @@ module Moleculer
         else
           # because the node is not registered with the broker, we have to assume that something broke down. we need to
           # force a publish to the node we just received the heartbeat from
-          publish_discover_to_node_id(packet.sender)
+          @publisher.publish_discover_to_node_id(packet.sender)
         end
       end
     end
