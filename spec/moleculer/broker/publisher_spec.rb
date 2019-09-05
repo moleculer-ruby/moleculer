@@ -36,7 +36,15 @@ RSpec.describe Moleculer::Broker::Publisher do
 
   describe "#publish_discover" do
     it "publishes an discover packet to the transporter" do
-      subject.publish_heartbeat
+      subject.publish_discover
+      expect(transporter).to have_received(:publish)
+        .with(instance_of(Moleculer::Packets::Discover))
+    end
+  end
+
+  describe "#publish_discover_to_node_id" do
+    it "publishes an discover packet to the transporter" do
+      subject.publish_discover_to_node_id("test")
       expect(transporter).to have_received(:publish)
         .with(instance_of(Moleculer::Packets::Discover))
     end
@@ -47,6 +55,22 @@ RSpec.describe Moleculer::Broker::Publisher do
       subject.publish_info
       expect(transporter).to have_received(:publish)
         .with(instance_of(Moleculer::Packets::Info))
+    end
+  end
+
+  describe "#publish_req" do
+    it "publishes an info packet to the transporter" do
+      subject.publish_req({})
+      expect(transporter).to have_received(:publish)
+        .with(instance_of(Moleculer::Packets::Req))
+    end
+  end
+
+  describe "#publish_res" do
+    it "publishes an info packet to the transporter" do
+      subject.publish_res(id: "anid", success: true, data: {}, meta: {})
+      expect(transporter).to have_received(:publish)
+        .with(instance_of(Moleculer::Packets::Res))
     end
   end
 end

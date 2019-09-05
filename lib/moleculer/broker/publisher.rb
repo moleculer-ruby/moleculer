@@ -34,6 +34,7 @@ module Moleculer
 
       ##
       # Publish targeted discovery to node
+      # @param node_id [String] the node to publish the discover packet to
       def publish_discover_to_node_id(node_id)
         publish_to_node_id(:discover, node_id)
       end
@@ -43,6 +44,7 @@ module Moleculer
       # @param node_id [String] the node id to publish to
       # @param force [Boolean] allows an info packet to be published to a node even if the node is not listed in the
       #                        node registry
+      # TODO: refactor this into more than one method to reduce the logic tree
       def publish_info(node_id = nil, force = false)
         return publish(:info, @broker.registry.local_node.to_h) unless node_id
 
@@ -56,10 +58,16 @@ module Moleculer
         end
       end
 
+      ##
+      # Publishes an RPC request
+      # @param request_data [Hash] the request data to publish to the node
       def publish_req(request_data)
         publish_to_node(:req, request_data.delete(:node), request_data)
       end
 
+      ##
+      # Publishes an RPC response to the requesting node
+      # @param response_data [Hash] the response data to publish
       def publish_res(response_data)
         publish_to_node(:res, response_data.delete(:node), response_data)
       end
@@ -67,12 +75,19 @@ module Moleculer
       private
 
       def publish(packet_type, message = {})
-        packet = Packets.for(packet_type).new(@broker.config, message.merge(sender: @broker.registry.local_node.id))
-        @broker.transporter.publish(packet)
+        publish_packet_for(packet_type, message.merge(sender: @broker.registry.local_node.id))
       end
 
       def publish_to_node(packet_type, node, message = {})
-        packet = Packets.for(packet_type).new(@broker.config, message.merge(node: node))
+        publish(packet_type, message.merge(node: node))
+      end
+
+      def publish_to_node_id(packet_type, node_id, message = {})
+        publish(packet_type, message.merge(node_id: node_id))
+      end
+
+      def publish_packet_for(packet_type, message)
+        packet = Packets.for(packet_type).new(@broker.config, message)
         @broker.transporter.publish(packet)
       end
     end
