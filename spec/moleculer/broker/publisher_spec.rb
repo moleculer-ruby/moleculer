@@ -7,18 +7,46 @@ RSpec.describe Moleculer::Broker::Publisher do
   let(:broker) do
     double(Moleculer::Broker,
            config:      Moleculer::Configuration.new,
-           transporter: transporter)
+           transporter: transporter,
+           logger:      double(Moleculer::Support::LogProxy, trace: true),
+           registry:    double(Moleculer::Registry, local_node: double(Moleculer::Node,
+                                                                       id:   "test",
+                                                                       to_h: { services: [], hostname: "" })))
   end
 
   subject { Moleculer::Broker::Publisher.new(broker) }
 
   describe "#publish_event" do
-    let(:event) { { event: "test.event", data: {}, broadcast: false} }
+    let(:event) { { event: "test.event", data: {}, broadcast: false } }
 
     it "publishes an event packet to the transporter" do
       subject.publish_event(event)
       expect(transporter).to have_received(:publish)
         .with(instance_of(Moleculer::Packets::Event))
+    end
+  end
+
+  describe "#publish_heartbeat" do
+    it "publishes a heartbeat packet to the transporter" do
+      subject.publish_heartbeat
+      expect(transporter).to have_received(:publish)
+        .with(instance_of(Moleculer::Packets::Heartbeat))
+    end
+  end
+
+  describe "#publish_discover" do
+    it "publishes an discover packet to the transporter" do
+      subject.publish_heartbeat
+      expect(transporter).to have_received(:publish)
+        .with(instance_of(Moleculer::Packets::Discover))
+    end
+  end
+
+  describe "#publish_info" do
+    it "publishes an info packet to the transporter" do
+      subject.publish_info
+      expect(transporter).to have_received(:publish)
+        .with(instance_of(Moleculer::Packets::Info))
     end
   end
 end

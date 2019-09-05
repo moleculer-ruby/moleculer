@@ -32,6 +32,7 @@ module Moleculer
       @registry    = Registry.new(@config)
       @transporter = Transporters.for(@config.transporter).new(@config)
       @contexts    = Concurrent::Map.new
+      @publisher   = Publisher.new(self)
     end
 
     ##
@@ -100,8 +101,8 @@ module Moleculer
       @transporter.start
       register_local_node
       start_subscribers
-      publish_discover
-      publish_info
+      @publisher.publish_discover
+      @publisher.publish_info
       start_heartbeat
       self
     end
@@ -169,28 +170,7 @@ module Moleculer
       end
     end
 
-    ##
-    # Publishes the info packet to either all nodes, or the given node
-    def publish_info(node_id = nil, force = false)
-      return publish(:info, @registry.local_node.to_h) unless node_id
 
-      node = @registry.safe_fetch_node(node_id)
-      if node
-        publish_to_node(:info, node, @registry.local_node.to_h)
-      elsif force
-        ## in rare cases there may be a lack of synchronization between brokers, if we can't find the node in the
-        # registry we will attempt to force publish it (if force is true)
-        publish_to_node_id(:info, node_id, @registry.local_node.to_h)
-      end
-    end
-
-    def publish_req(request_data)
-      publish_to_node(:req, request_data.delete(:node), request_data)
-    end
-
-    def publish_res(response_data)
-      publish_to_node(:res, response_data.delete(:node), response_data)
-    end
 
     def publish_to_node(packet_type, node, message = {})
       packet = Packets.for(packet_type).new(@config, message.merge(node: node))
