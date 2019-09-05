@@ -19,6 +19,7 @@ module Moleculer
     attr_reader :config, :logger, :transporter, :registry
 
     def_delegators :@config, :node_id, :heartbeat_interval, :services, :service_prefix
+    def_delegators :@publisher, :publish_event
 
     ##
     # @param config [Moleculer::Config] the broker configuration
@@ -159,18 +160,6 @@ module Moleculer
       )
     end
 
-    ##
-    # @return [Proc] returns the rescue_action if defined on the configuration
-    def rescue_action
-      config.rescue_action
-    end
-
-    ##
-    # @return [Proc] returns the rescue_event if defined on the configuration
-    def rescue_event
-      config.rescue_event
-    end
-
     private
 
     def handle_signal(sig)
@@ -179,10 +168,6 @@ module Moleculer
         raise Interrupt
       end
     end
-
-
-
-
 
     ##
     # Publishes the info packet to either all nodes, or the given node
