@@ -21,14 +21,12 @@ module Moleculer
       ##
       # Publishes a heartbeat packet to all nodes
       def publish_heartbeat
-        @broker.logger.trace "publishing heartbeat"
         publish(:heartbeat)
       end
 
       ##
       # Publishes the discover packet to all nodes
       def publish_discover
-        @broker.logger.trace "publishing discover request"
         publish(:discover)
       end
 
@@ -88,6 +86,8 @@ module Moleculer
 
       def publish_packet_for(packet_type, message)
         packet = Packets.for(packet_type).new(@broker.config, message)
+        @broker.logger.trace("publishing '#{packet_type}'")
+        @broker.logger.trace(packet.to_h)
         @broker.transporter.publish(packet)
       end
     end

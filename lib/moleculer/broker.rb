@@ -199,7 +199,7 @@ module Moleculer
     def start_heartbeat
       @logger.trace "starting heartbeat timer"
       Concurrent::TimerTask.new(execution_interval: heartbeat_interval) do
-        publish_heartbeat
+        @publisher.publish_heartbeat
         @registry.expire_nodes
       end.execute
     end

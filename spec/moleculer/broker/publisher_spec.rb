@@ -60,7 +60,7 @@ RSpec.describe Moleculer::Broker::Publisher do
 
   describe "#publish_req" do
     it "publishes an info packet to the transporter" do
-      subject.publish_req({})
+      subject.publish_req(id: "anid", action: "test", data: {}, meta: {}, params: {})
       expect(transporter).to have_received(:publish)
         .with(instance_of(Moleculer::Packets::Req))
     end
