@@ -5,7 +5,6 @@ module Moleculer
     ##
     # Handles the publishing of messages to the transporter
     class Publisher
-
       # @param broker [Broker] the broker instance
       def initialize(broker)
         @broker = broker
