@@ -42,7 +42,7 @@ module Moleculer
             next if Support::HashUtil.fetch(a, :name) =~ /^\$/
 
             define_method("action_#{seq}".to_sym) do |ctx|
-              @broker.send(:publish_req,
+              @broker.send(:req,
                            id:         ctx.id,
                            action:     ctx.action.name,
                            params:     ctx.params,
@@ -63,7 +63,7 @@ module Moleculer
           Support::HashUtil.fetch(service_info, :events).values.each do |a|
             name = Support::HashUtil.fetch(a, :name)
             define_method("event_#{seq}".to_sym) do |data|
-              @broker.send(:publish_event,
+              @broker.send(:event,
                            event:     name,
                            data:      data,
                            broadcast: false,

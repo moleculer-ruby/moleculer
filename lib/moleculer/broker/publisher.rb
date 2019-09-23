@@ -13,26 +13,26 @@ module Moleculer
       ##
       # Publishes an event
       # @param event_data [Hash] the event data to publish
-      def publish_event(event_data)
+      def event(event_data)
         publish_to_node(:event, event_data.delete(:node), event_data)
       end
 
       ##
       # Publishes a heartbeat packet to all nodes
-      def publish_heartbeat
+      def heartbeat
         publish(:heartbeat)
       end
 
       ##
       # Publishes the discover packet to all nodes
-      def publish_discover
+      def discover
         publish(:discover)
       end
 
       ##
       # Publish targeted discovery to node
       # @param node_id [String] the node to publish the discover packet to
-      def publish_discover_to_node_id(node_id)
+      def discover_to_node_id(node_id)
         publish_to_node_id(:discover, node_id)
       end
 
@@ -42,7 +42,7 @@ module Moleculer
       # @param force [Boolean] allows an info packet to be published to a node even if the node is not listed in the
       #                        node registry
       # TODO: refactor this into more than one method to reduce the logic tree
-      def publish_info(node_id = nil, force = false)
+      def info(node_id = nil, force = false)
         return publish(:info, @broker.registry.local_node.to_h) unless node_id
 
         node = @broker.registry.safe_fetch_node(node_id)
@@ -58,14 +58,14 @@ module Moleculer
       ##
       # Publishes an RPC request
       # @param request_data [Hash] the request data to publish to the node
-      def publish_req(request_data)
+      def req(request_data)
         publish_to_node(:req, request_data.delete(:node), request_data)
       end
 
       ##
       # Publishes an RPC response to the requesting node
       # @param response_data [Hash] the response data to publish
-      def publish_res(response_data)
+      def res(response_data)
         publish_to_node(:res, response_data.delete(:node), response_data)
       end
 

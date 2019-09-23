@@ -19,7 +19,7 @@ module Moleculer
     attr_reader :config, :logger, :transporter, :registry
 
     def_delegators :@config, :node_id, :heartbeat_interval, :services, :service_prefix
-    def_delegators :@publisher, :publish_event
+    def_delegators :@publisher, :event
 
     ##
     # @param config [Moleculer::Config] the broker configuration
@@ -101,8 +101,8 @@ module Moleculer
       @transporter.start
       register_local_node
       start_subscribers
-      @publisher.publish_discover
-      @publisher.publish_info
+      @publisher.discover
+      @publisher.info
       start_heartbeat
       self
     end
@@ -150,7 +150,7 @@ module Moleculer
 
       response = action.execute(context, self)
 
-      @publisher.publish_res(
+      @publisher.res(
         id:      context.id,
         success: true,
         data:    response,
@@ -199,7 +199,7 @@ module Moleculer
     def start_heartbeat
       @logger.trace "starting heartbeat timer"
       Concurrent::TimerTask.new(execution_interval: heartbeat_interval) do
-        @publisher.publish_heartbeat
+        @publisher.heartbeat
         @registry.expire_nodes
       end.execute
     end
@@ -248,10 +248,10 @@ module Moleculer
     def subscribe_to_discover
       @logger.trace "setting up 'DISCOVER' subscriber"
       subscribe("MOL.DISCOVER") do |packet|
-        @publisher.publish_info(packet.sender) unless packet.sender == node_id
+        @publisher.info(packet.sender) unless packet.sender == node_id
       end
       subscribe("MOL.DISCOVER.#{node_id}") do |packet|
-        @publisher.publish_info(packet.sender, true)
+        @publisher.info(packet.sender, true)
       end
     end
 
@@ -267,7 +267,7 @@ module Moleculer
         else
           # because the node is not registered with the broker, we have to assume that something broke down. we need to
           # force a publish to the node we just received the heartbeat from
-          @publisher.publish_discover_to_node_id(packet.sender)
+          @publisher.discover_to_node_id(packet.sender)
         end
       end
     end
