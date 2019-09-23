@@ -22,7 +22,6 @@ module Moleculer
       end
 
       def publish(packet)
-        @logger.debug "publishing packet to '#{packet.topic}'", packet.to_h
         @logger.debug "processing #{@@subscriptions[packet.topic].length} callbacks for '#{packet.topic}'"
         @@subscriptions[packet.topic].each { |c| c.call(packet) }
       end
