@@ -24,11 +24,9 @@ module Moleculer
       def publish(packet)
         @logger.debug "publishing packet to '#{packet.topic}'", packet.to_h
         @@subscriptions[packet.topic].collect  do |c|
-          Thread.new do
-            @logger.debug "processing #{@@subscriptions[packet.topic].index(c) +1} of #{@@subscriptions[packet.topic].length} callbacks for '#{packet.topic}'"
-            c.call(packet)
-          end
-        end.last.join
+          @logger.debug "processing #{@@subscriptions[packet.topic].index(c) +1} of #{@@subscriptions[packet.topic].length} callbacks for '#{packet.topic}'"
+          c.call(packet)
+        end
       end
 
       def start
