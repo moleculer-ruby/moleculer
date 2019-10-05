@@ -109,7 +109,7 @@ module Moleculer
 
     def stop
       @logger.info "stopping"
-      publish(:disconnect)
+      @publisher.disconnect
       @transporter.stop
       exit 0
     end

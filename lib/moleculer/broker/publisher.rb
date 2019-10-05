@@ -30,6 +30,12 @@ module Moleculer
       end
 
       ##
+      # Disconnects publishes a disconnect pseudo packet
+      def disconnect
+        publish(:disconnect)
+      end
+
+      ##
       # Publish targeted discovery to node
       # @param node_id [String] the node to publish the discover packet to
       def discover_to_node_id(node_id)
