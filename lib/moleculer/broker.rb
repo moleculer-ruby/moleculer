@@ -19,7 +19,7 @@ module Moleculer
     attr_reader :config, :logger, :transporter, :registry
 
     def_delegators :@config, :node_id, :heartbeat_interval, :services, :service_prefix
-    def_delegators :@publisher, :event
+    def_delegators :@publisher, :event, :req
 
     ##
     # @param config [Moleculer::Config] the broker configuration
