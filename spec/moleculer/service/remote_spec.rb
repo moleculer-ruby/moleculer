@@ -27,4 +27,27 @@ RSpec.describe Moleculer::Service::Base do
       end
     end
   end
+
+  describe "actions" do
+    let(:instance) do
+      Moleculer::Service.from_remote_info({
+        name:    "test",
+        actions: { test: { name: "test" } },
+        events:  {},
+      }, "node").new(broker)
+    end
+
+    before :each do
+      allow(broker).to receive(:req)
+    end
+
+    it "returns #{Moleculer::Service::Action::REMOTE_IDENTIFIER} when a remote action is executed" do
+      expect(instance.action_0(double(Moleculer::Context,
+                                      id: "test", action: double(Moleculer::Service::Action, name: "test"),
+                                      params: {},
+                                      meta: {},
+                                      timeout: 1,
+                                      request_id: "test"))).to eq(Moleculer::Service::Action::REMOTE_IDENTIFIER)
+    end
+  end
 end
