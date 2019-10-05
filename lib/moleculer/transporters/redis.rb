@@ -1,7 +1,7 @@
+# frozen_string_literal: true
+
 require "redis"
 require_relative "base"
-
-# frozen_string_literal: true
 
 module Moleculer
   module Transporters
@@ -55,13 +55,13 @@ module Moleculer
         # Represents a subscription
         class Subscription
           def initialize(config:, channel:, block:)
-            @connection  = ::Redis.new(url: config.transporter)
-            @channel     = channel
-            @block       = block
-            @logger      = config.logger.get_child("[REDIS.TRANSPORTER.SUBSCRIPTION.#{channel}]")
-            @serializer  = Serializers.for(config.serializer).new(config)
-            @node_id     = config.node_id
-            @config      = config
+            @connection = ::Redis.new(url: config.transporter)
+            @channel    = channel
+            @block      = block
+            @logger     = config.logger.get_child("[REDIS.TRANSPORTER.SUBSCRIPTION.#{channel}]")
+            @serializer = Serializers.for(config.serializer).new(config)
+            @node_id    = config.node_id
+            @config     = config
 
             # it is necessary to send some sort of message to signal the subscriber to disconnect and shutdown
             # this is an internal message
@@ -86,9 +86,8 @@ module Moleculer
                     process_packet(packet)
                   end
                 end
-              rescue StandardError => error
-                @logger.fatal error
-                exit 1
+              rescue StandardError => e
+                @config.handle_error(e)
               end
             end
             self
@@ -108,11 +107,11 @@ module Moleculer
 
           private
 
-          def deserialize(message)
-            parsed = @serializer.deserialize(message)
-            return nil if parsed["sender"] == @node_id
+          def deserialize(type, message)
+            packet = @serializer.deserialize(type, message)
+            return nil if packet.sender == @node_id
 
-            parsed
+            packet
           end
 
           def message_is_disconnect?(message)
@@ -134,14 +133,12 @@ module Moleculer
 
             return nil if message_is_disconnect?(message)
 
-            packet_type = Packets.for(@channel.split(".")[1])
+            type   = @channel.split(".")[1].downcase.to_sym
+            packet = deserialize(type, message)
 
-            parsed = deserialize(message)
+            return nil unless packet
 
-            return nil unless parsed
-
-
-            packet_type.new(@config, parsed)
+            packet
           rescue StandardError => e
             @config.handle_error(e)
           end

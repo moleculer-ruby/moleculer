@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe Moleculer::Broker do
   let(:registry) { subject.instance_variable_get(:@registry) }
 
@@ -33,9 +35,9 @@ RSpec.describe Moleculer::Broker do
 
   subject do
     Moleculer::Broker.new(Moleculer::Configuration.new(
-                            node_id:   "test1",
-                            services:  [service_1, service_2],
-                            log_level: "trace",
+                            node_id:     "test1",
+                            services:    [service_1, service_2],
+                            log_level:   "trace",
                             transporter: "fake://localhost",
                           ))
   end
@@ -62,19 +64,18 @@ RSpec.describe Moleculer::Broker do
 
     let(:remote_broker) do
       Moleculer::Broker.new(Moleculer::Configuration.new(
-        node_id: "test2",
-        services: [],
-        log_level: "trace",
-        transporter: "fake://localhost",
-        heartbeat_interval: 0.1,
-        ))
+                              node_id:            "test2",
+                              services:           [],
+                              log_level:          "trace",
+                              transporter:        "fake://localhost",
+                              heartbeat_interval: 0.1,
+                            ))
     end
 
     describe "with registered node" do
       before :each do
         sleep 0.1 until registry.safe_fetch_node("test2")
       end
-
 
       let(:node) { subject.instance_variable_get(:@registry).fetch_node("test2") }
 
@@ -86,27 +87,22 @@ RSpec.describe Moleculer::Broker do
         sleep 0.1 until @beat
         expect(node).to have_received(:beat)
       end
-
     end
-
 
     describe "without registered node" do
       before :each do
         @discover_count = 0
         ## Sets up a listener on the fake broker for heartbeats
-        subject.instance_variable_get(:@transporter).subscribe("MOL.DISCOVER.test2") do |packet|
-          packet
+        subject.instance_variable_get(:@transporter).subscribe("MOL.DISCOVER.test2") do
           @discover_count += 1
         end
         allow(registry).to receive(:safe_fetch_node).and_return(nil)
       end
 
-
       it "should republish the discover request to the remote broker" do
         sleep 0.1 until @discover_count > 0
         expect(@discover_count > 0).to be_truthy
       end
-
     end
   end
 end

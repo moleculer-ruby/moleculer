@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe Moleculer::Service::Action do
   let(:config) { Moleculer::Configuration.new }
   let(:broker) do
@@ -12,7 +14,7 @@ RSpec.describe Moleculer::Service::Action do
     describe "correctly defined method" do
       let(:service) do
         Class.new(Moleculer::Service::Base) do
-          def test_action(_)
+          def test_action(_param)
             {}
           end
         end
@@ -26,7 +28,7 @@ RSpec.describe Moleculer::Service::Action do
     describe "returning an invalid response" do
       let(:service) do
         Class.new(Moleculer::Service::Base) do
-          def test_action(_)
+          def test_action(_param)
             "not a hash"
           end
         end
@@ -35,7 +37,8 @@ RSpec.describe Moleculer::Service::Action do
       it "raises an exception if a hash is not returned" do
         allow(broker.config.logger).to receive(:error)
         subject.execute(context, broker)
-        expect(broker.config.logger).to have_received(:error).with(instance_of(Moleculer::Errors::InvalidActionResponse))
+        expect(broker.config.logger).to have_received(:error)
+          .with(instance_of(Moleculer::Errors::InvalidActionResponse))
       end
     end
 
@@ -43,7 +46,7 @@ RSpec.describe Moleculer::Service::Action do
       let(:error) { StandardError.new("an error occurred") }
       let(:service) do
         Class.new(Moleculer::Service::Base) do
-          def test_action(_)
+          def test_action(_param)
             raise StandardError, "test"
           end
         end

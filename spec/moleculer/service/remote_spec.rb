@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe Moleculer::Service::Base do
   subject do
     Class.new(Moleculer::Service::Remote) do
@@ -7,9 +9,9 @@ RSpec.describe Moleculer::Service::Base do
 
   let!(:broker) do
     Moleculer::Broker.new(Moleculer::Configuration.new(
-        service_prefix: "test",
-        services:       [subject],
-        ))
+                            service_prefix: "test",
+                            services:       [subject],
+                          ))
   end
 
   before :each do
