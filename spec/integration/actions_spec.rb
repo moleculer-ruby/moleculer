@@ -1,7 +1,11 @@
+# frozen_string_literal: true
+
 require_relative "integration_spec_helper"
 
 RSpec.describe "moleculer actions" do
-  it "Should" do
-    expect(broker.call("local.test", {})).to eq("test")
+  describe "remote actions" do
+    it "returns a result from remote actions" do
+      expect(broker.call("remote.test", {})).to eq(result: "remote action result")
+    end
   end
 end
