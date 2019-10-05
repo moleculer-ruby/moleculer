@@ -7,6 +7,8 @@ module Moleculer
     class Action
       include Support
 
+      REMOTE_IDENTIFIER = :__REMOTE__
+
       # @!attribute [r] name
       #   @return [String] the name of the action
       attr_reader :name, :service
@@ -35,7 +37,9 @@ module Moleculer
       def execute(context, broker)
         response = @service.new(broker).public_send(@method, context)
         # rubocop disabled because in this case we need a specific error handling format
-        raise Errors::InvalidActionResponse.new(response) unless response.is_a? Hash # rubocop:disable Style/RaiseArgs
+        # TODO: I don't like this, but it makes it so we can treat remote service requests differently than normal
+        #       requests without defining a remote action class. This probably needs to be refactored later
+        raise Errors::InvalidActionResponse.new(response) unless response.is_a?(Hash) || response == REMOTE_IDENTIFIER # rubocop:disable Style/RaiseArgs
 
         response
       rescue StandardError => e

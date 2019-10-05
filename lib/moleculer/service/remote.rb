@@ -51,7 +51,7 @@ module Moleculer
                            node:       self.class.node,
                            request_id: ctx.request_id,
                            stream:     false)
-              {}
+              Action::REMOTE_IDENTIFIER
             end
             action(Support::HashUtil.fetch(a, :name), "action_#{seq}".to_sym)
             seq += 1
