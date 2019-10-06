@@ -14,29 +14,17 @@ module IntegrationHelpers
   end
   alias broker local
 
-  def create_broker(node_id, *services)
+  def create_broker(node_id, transporter, serializer, *services)
     Moleculer::Broker.new(Moleculer::Configuration.new(
                             node_id:     node_id,
                             services:    services,
-                            transporter: "fake://localhost",
+                            transporter: "#{transporter}://localhost",
                             log_file:    STDOUT,
+                            serializer:  serializer,
                           ))
   end
 end
 
 RSpec.configure do |c|
   c.include IntegrationHelpers
-
-  c.before :all do
-    @remote = create_broker("remote", RemoteService)
-    @local  = create_broker("local", LocalService)
-    @remote.start
-    @local.start
-    @local.wait_for_services("local", "remote")
-  end
-
-  c.after :all do
-    @remote.stop
-    @local.stop
-  end
 end
