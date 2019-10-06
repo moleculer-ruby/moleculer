@@ -14,7 +14,6 @@ module Moleculer
       # @param packet [Moleculer::Packets::Base] the packet to serialize
       def serialize(packet)
         hash = packet.to_h
-        hash = serialize_custom_fields(hash)
         hash.to_json
       end
 
@@ -25,9 +24,9 @@ module Moleculer
       # @param message [String] the message to deserialize
       def deserialize(type, message)
         hash = JSON.parse(message)
-        hash = deserialize_custom_fields(hash)
         Packets.for(type).new(@config, hash)
       end
     end
+
   end
 end
