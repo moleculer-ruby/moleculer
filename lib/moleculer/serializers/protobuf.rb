@@ -5,9 +5,18 @@ require_relative "base"
 
 module Moleculer
   module Serializers
+    ##
+    # Protobuf serializer
     module Protobuf
       ##
-      # Protobuf serializer
+      # because of the way the Protobuf compiler works, we need to fudge this to comply with how Moleculer expects
+      # the serializer class standard
+      def self.new(*args)
+        Serializer.new(*args)
+      end
+
+      ##
+      # @private
       class Serializer < Serializers::Base
         PROTOBUF_PACKET_MAP = {
           Moleculer::Packets::Disconnect => Packets::PacketDisconnect,
