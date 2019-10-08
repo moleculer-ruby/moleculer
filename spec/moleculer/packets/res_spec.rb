@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
-require_relative "./base_packet_behavior"
+require_relative "base_packet_behavior"
+require_relative "targeted_packet_behavior"
+
 
 RSpec.describe Moleculer::Packets::Res do
   let(:broker) do
@@ -15,4 +17,5 @@ RSpec.describe Moleculer::Packets::Res do
   subject { Moleculer::Packets::Res.new(broker.config, id: "1", success: true, data: {}) }
 
   include_examples "base packet"
+  include_examples "targeted packet"
 end
