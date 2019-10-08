@@ -30,4 +30,15 @@ RSpec.describe Moleculer::Packets::Base do
       end
     end
   end
+
+  describe "==" do
+    context "equal packets" do
+      subject { Moleculer::Packets::Base.new(broker.config, ver: "4", sender: "not-node") }
+      let(:right) { Moleculer::Packets::Base.new(broker.config, ver: "4", sender: "not-node") }
+
+      it "should be equal" do
+        expect(subject).to eq(right)
+      end
+    end
+  end
 end
