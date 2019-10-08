@@ -19,7 +19,7 @@ module Moleculer
     attr_reader :config, :logger, :transporter, :registry
 
     def_delegators :@config, :node_id, :heartbeat_interval, :services, :service_prefix
-    def_delegators :@publisher, :event
+    def_delegators :@publisher, :event, :req
 
     ##
     # @param config [Moleculer::Config] the broker configuration
@@ -62,7 +62,8 @@ module Moleculer
         future:    future,
       }
 
-      action.execute(context, self)
+      result = action.execute(context, self)
+      future.fulfill(result) if result != Service::Action::REMOTE_IDENTIFIER
 
       future.value!(context.timeout)
     end
@@ -95,21 +96,25 @@ module Moleculer
       end
     end
 
+    ##
+    # Starts the broker by starting the transports, setting up all the subscribers, and starting the heartbeat
     def start
-      @logger.info "starting"
-      @logger.info "using transporter '#{@config.transporter}'"
-      @transporter.start
-      register_local_node
-      start_subscribers
-      @publisher.discover
-      @publisher.info
-      start_heartbeat
+      Thread.new do
+        @logger.info "starting"
+        @logger.info "using transporter '#{@config.transporter}'"
+        @transporter.start
+        register_local_node
+        start_subscribers
+        @publisher.discover
+        @publisher.info
+        start_heartbeat
+      end
       self
     end
 
     def stop
       @logger.info "stopping"
-      publish(:disconnect)
+      @publisher.disconnect
       @transporter.stop
       exit 0
     end
