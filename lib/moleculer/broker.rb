@@ -63,7 +63,7 @@ module Moleculer
       }
 
       result = action.execute(context, self)
-      future.fulfill(result) if result != Service::Action::REMOTE_IDENTIFIER
+      future.fulfill(HashUtil.stringify_keys(result)) if result != Service::Action::REMOTE_IDENTIFIER
 
       future.value!(context.timeout)
     end
@@ -88,7 +88,7 @@ module Moleculer
         start
 
         while (readable_io = IO.select([self_read]))
-          signal           = readable_io.first[0].gets.strip
+          signal = readable_io.first[0].gets.strip
           handle_signal(signal)
         end
       rescue Interrupt
@@ -156,13 +156,13 @@ module Moleculer
       response = action.execute(context, self)
 
       @publisher.res(
-        id:      context.id,
-        success: true,
-        data:    response,
-        error:   {},
-        meta:    context.meta,
-        stream:  false,
-        node:    node,
+        id:          context.id,
+        success:     true,
+        data:        response,
+        error:       {},
+        meta:        context.meta,
+        stream:      false,
+        target_node: node.id,
       )
     end
 

@@ -24,6 +24,18 @@ module Moleculer
         hash.fetch(key)
       end
 
+      ##
+      # Stringifies the keys of a hash
+      #
+      # @param hash [Hash] the hash whose keys to stringify
+      def stringify_keys(hash)
+        hash.keys.each do |key|
+          value = hash[key].delete(value)
+          value = stringify_keys(value) if value.is_a? Hash
+          hash[hash[key].to_s] = value
+        end
+      end
+
       private
 
       def fetch_with_string(hash, key, default)
