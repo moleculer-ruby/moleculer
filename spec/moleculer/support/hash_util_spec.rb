@@ -27,4 +27,10 @@ RSpec.describe Moleculer::Support::HashUtil do
       expect(subject.fetch(hash, :not_there, "foo")).to eq "foo"
     end
   end
+
+  describe "::stringify_keys" do
+    it "recursively stringifies keys" do
+      expect(subject.stringify_keys(foo: { bar: "baz" })).to eq("foo" => { "bar" => "baz" })
+    end
+  end
 end
