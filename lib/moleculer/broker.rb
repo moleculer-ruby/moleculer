@@ -96,15 +96,19 @@ module Moleculer
       end
     end
 
+    ##
+    # Starts the broker by starting the transports, setting up all the subscribers, and starting the heartbeat
     def start
-      @logger.info "starting"
-      @logger.info "using transporter '#{@config.transporter}'"
-      @transporter.start
-      register_local_node
-      start_subscribers
-      @publisher.discover
-      @publisher.info
-      start_heartbeat
+      Thread.new do
+        @logger.info "starting"
+        @logger.info "using transporter '#{@config.transporter}'"
+        @transporter.start
+        register_local_node
+        start_subscribers
+        @publisher.discover
+        @publisher.info
+        start_heartbeat
+      end
       self
     end
 
