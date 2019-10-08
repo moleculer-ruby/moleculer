@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "base"
 
 module Moleculer
@@ -11,10 +13,9 @@ module Moleculer
       packet_attr :error, nil
       packet_attr :meta, {}
       packet_attr :stream, false
-      packet_attr :node_id, nil
 
       def topic
-        "#{super}.#{node_id}"
+        "#{super}.#{sender}"
       end
 
       def to_h
