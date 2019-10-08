@@ -64,8 +64,11 @@ module Moleculer
       # @param other [Base] the object to compare against
       def ==(other)
         return false unless other.is_a?(Base)
+        return false unless other.class == self.class
 
-        @data == other.instance_variable_get(:@data)
+        self.class.packet_accessors.select do |k, _|
+          send(k) == other.send(k)
+        end
       end
 
       ##
