@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "string_util"
 
 module Moleculer
@@ -30,10 +32,11 @@ module Moleculer
       # @param hash [Hash] the hash whose keys to stringify
       def stringify_keys(hash)
         hash.keys.each do |key|
-          value = hash[key].delete(value)
-          value = stringify_keys(value) if value.is_a? Hash
-          hash[hash[key].to_s] = value
+          value                = hash.delete(key)
+          value                = stringify_keys(value) if value.is_a? Hash
+          hash[key.to_s] = value
         end
+        hash
       end
 
       private
