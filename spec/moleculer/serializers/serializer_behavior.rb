@@ -9,9 +9,12 @@ end
 
 RSpec.shared_examples "deserialize packet" do |data, packet|
   it "should deserialize the #{packet.name} class" do
-    serialized_packet = subject.serialize(packet.new(config, data))
+    original_packet = packet.new(config, data)
+    serialized_packet = subject.serialize(original_packet)
     expect { subject.deserialize(packet.name.split("::").last.downcase.to_sym, serialized_packet) }.to_not raise_error
     expect(subject.deserialize(packet.name.split("::").last.downcase.to_sym, serialized_packet)).to be_a packet
+    deserialized_packet = subject.deserialize(packet.name.split("::").last.downcase.to_sym, serialized_packet)
+    expect(deserialized_packet).to eq(original_packet)
   end
 end
 
