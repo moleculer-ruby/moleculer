@@ -14,7 +14,7 @@ RSpec.describe Moleculer::Packets::Res do
                           ))
   end
 
-  subject { Moleculer::Packets::Res.new(broker.config, id: "1", success: true, data: {}) }
+  subject { Moleculer::Packets::Res.new(broker.config, id: "1", success: true, data: {}, target_node: "other") }
 
   include_examples "base packet"
   include_examples "targeted packet"

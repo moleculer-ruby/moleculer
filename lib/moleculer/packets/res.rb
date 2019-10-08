@@ -1,22 +1,18 @@
 # frozen_string_literal: true
 
-require_relative "base"
+require_relative "targeted_base"
 
 module Moleculer
   module Packets
     ##
     # Represents a RES packet
-    class Res < Base
+    class Res < TargetedBase
       packet_attr :id
       packet_attr :success
       packet_attr :data
       packet_attr :error, nil
       packet_attr :meta, {}
       packet_attr :stream, false
-
-      def topic
-        "#{super}.#{sender}"
-      end
 
       def to_h
         super.merge(
