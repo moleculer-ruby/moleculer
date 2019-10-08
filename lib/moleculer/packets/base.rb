@@ -60,6 +60,15 @@ module Moleculer
       end
 
       ##
+      # Compares one packet to another. Packets are equal if the internal data is equal
+      # @param other [Base] the object to compare against
+      def ==(other)
+        return false unless other.is_a?(Base)
+
+        @data == other.instance_variable_get(:@data)
+      end
+
+      ##
       # The publishing topic for the packet. This is used to publish packets to the moleculer network. Override as
       # needed.
       #
