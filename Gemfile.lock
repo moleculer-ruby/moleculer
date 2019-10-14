@@ -4,6 +4,7 @@ PATH
     moleculer (0.3.0)
       awesome_print (~> 1.8)
       concurrent-ruby (~> 1.1)
+      msgpack (~> 1.3)
       ougai (~> 1.7)
 
 GEM
@@ -25,8 +26,9 @@ GEM
     json (2.2.0)
     middleware (0.1.0)
     minitest (5.11.3)
-    oj (3.9.0)
-    ougai (1.8.0)
+    msgpack (1.3.1)
+    oj (3.9.2)
+    ougai (1.8.2)
       oj (~> 3.4)
     parallel (1.17.0)
     parser (2.6.3.0)
