@@ -6,8 +6,8 @@ require "moleculer/version"
 Gem::Specification.new do |spec|
   spec.name          = "moleculer"
   spec.version       = Moleculer::VERSION
-  spec.authors       = ["fugufish", "reecebisel"]
-  spec.email         = ["therealfugu@gmail.com"]
+  spec.authors       = %w[fugufish reecebisel]
+  spec.email         = %w[therealfugu@gmail.com reecebisel@gmail.com]
 
   spec.summary       = %q{This is a Ruby implementation of the Moleculer framework.}
   spec.description   = %q{This is a Ruby implementation of the Moleculer framework.}
@@ -38,8 +38,8 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "awesome_print",       "~> 1.8"
   spec.add_dependency "concurrent-ruby",     "~> 1.1"
-  spec.add_dependency "ougai",               "~> 1.7"
   spec.add_dependency "msgpack",             "~> 1.3"
+  spec.add_dependency "ougai",               "~> 1.7"
 
   spec.add_development_dependency "activesupport", [">= 3.2", "< 6.0"]
   spec.add_development_dependency "bundler",       "~> 1.16"
