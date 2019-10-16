@@ -6,7 +6,7 @@ require "moleculer/version"
 Gem::Specification.new do |spec|
   spec.name          = "moleculer"
   spec.version       = Moleculer::VERSION
-  spec.authors       = ["fugufish"]
+  spec.authors       = ["fugufish", "reecebisel"]
   spec.email         = ["therealfugu@gmail.com"]
 
   spec.summary       = %q{This is a Ruby implementation of the Moleculer framework.}
