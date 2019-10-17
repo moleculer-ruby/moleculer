@@ -3,7 +3,6 @@
 require_relative "base_packet_behavior"
 require_relative "targeted_packet_behavior"
 
-
 RSpec.describe Moleculer::Packets::Res do
   let(:broker) do
     Moleculer::Broker.new(Moleculer::Configuration.new(
