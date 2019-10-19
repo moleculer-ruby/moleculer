@@ -40,53 +40,25 @@ module Moleculer
         end
       end
 
-      # @!attribute [r] services
-      #   @return [Array<Moleculer::Services::Remote|Moleculer::Services::Base>] an array of the services the endpoint
-      #           provides
-      # @!attribute [r] config
-      #   @return [Moleculer::Support::OpenStruct] the configuration of the node
-      # @!attribute [r] ip_list
-      #   @return [Array<String>] a list of the node's used IP addresses
-      # @!attribute [r] hostname
-      #   @return [String] the hostname of the node
-      # @!attribute [r] client
-      #   @return [Moleculer::Packets::Info::Client] the client data for the node
-      attr_reader :services,
-                  :config,
-                  :ip_list,
-                  :hostname,
-                  :client
-
-      ##
-      # @param data [Hash] the packet data
-      # @options data [Array<Hash>|Moleculer::Services::Base] services the services information
-      # @options data [Hash] config the configuration data for the node
-      # @options data [Array<String>] ip_list the list of ip addresses for the node
-      # @options data [String] hostname the hostname  of the node
-      # @options data [Hash] client the client data for the node
-      def initialize(config, data = {})
-        super(config, data)
-        @services = HashUtil.fetch(data, :services)
-        @ip_list  = HashUtil.fetch(data, :ip_list, [])
-        @hostname = HashUtil.fetch(data, :hostname)
-        @client   = Client.new(HashUtil.fetch(data, :client, {}))
-        node      = HashUtil.fetch(data, :node, nil)
-        @node_id  = HashUtil.fetch(data, :node_id, node&.id)
-      end
+      packet_attr :services
+      packet_attr :config
+      packet_attr :ip_list
+      packet_attr :hostname
+      packet_attr :client
 
       def topic
-        return "#{super}.#{@node_id}" if @node_id
+        return "#{super}.#{@config.node_id}" if @config.node_id
 
         super
       end
 
       def to_h
         super.merge(
-          services: @services,
+          services: services,
           config:   config_for_hash,
-          ipList:   @ip_list,
-          hostname: @hostname,
-          client:   @client.to_h,
+          ipList:   ip_list,
+          hostname: hostname,
+          client:   client.to_h,
         )
       end
 

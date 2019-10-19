@@ -3,18 +3,18 @@
 require_relative "./base_packet_behavior"
 
 RSpec.describe Moleculer::Packets::Info do
-  let(:broker) do
-    Moleculer::Broker.new(Moleculer::Configuration.new(
-                            node_id:     "test1",
-                            services:    [],
-                            log_level:   "trace",
-                            transporter: "fake://localhost",
-                            log_file:    "test",
-                          ))
+  let(:config) do
+    Moleculer::Configuration.new(
+      node_id:     "test1",
+      services:    [],
+      log_level:   "trace",
+      transporter: "fake://localhost",
+      log_file:    "test",
+    )
   end
 
   subject do
-    Moleculer::Packets::Info.new(broker.config,
+    Moleculer::Packets::Info.new(config,
                                  services: [],
                                  ip_list:  [],
                                  hostname: "test",

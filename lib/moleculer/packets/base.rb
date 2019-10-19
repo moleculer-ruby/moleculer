@@ -82,7 +82,7 @@ module Moleculer
 
       def method_missing(meth, *args, &block)
         accessor = self.class.packet_accessors[meth]
-        unless accessor.nil?
+        if self.class.packet_accessors.key?(meth)
           return @data[meth] unless @data[meth].nil?
           return accessor.call(self) if accessor.is_a? Proc
           return accessor unless accessor == :__not_defined__
