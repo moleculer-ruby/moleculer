@@ -50,6 +50,8 @@ module Moleculer
           new_hash
         end
 
+        ##
+        # Returns a new HashWithIndifferentAccess with all keys stringified
         def stringify_keys
           new_hash = clone
           new_hash.keys.each do |key|
@@ -62,17 +64,26 @@ module Moleculer
           new_hash
         end
 
+        ##
+        # Returns a hash where all keys are camelized
         def to_camelized_hash
           new_hash = {}
           each do |key, value|
             unless key.is_a? Symbol
-              new_hash[key] = value
+            new_hash[key] = value
+            next
             end
 
             value = self.class.from_hash(value).to_camelized_hash if value.is_a? Hash
             new_hash[StringUtil.camelize(key.to_s)] = value
           end
           new_hash
+        end
+
+        ##
+        # Returns the camelized hash as JSON excluding values where the keys are objects
+        def to_json(*args)
+          to_camelized_hash.select { |k, _| k.is_a? String }.to_json(*args)
         end
       end
 
