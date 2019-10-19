@@ -8,6 +8,73 @@ module Moleculer
     # A module of functional methods for working with hashes
     module HashUtil
       extend self
+
+      ##
+      # This is a hacked together clone of ActiveSupports hash with indifferent access
+      class HashWithIndifferentAccess < Hash
+        ##
+        # Create a HashWithIndifferentAccess from a normal hash
+        #
+        # @param obj [Hash] the Hash to convert into a HashWithIndifferentAccess
+        def self.from_hash(obj)
+          self[with_normalized_keys(obj)]
+        end
+
+        ##
+        # @private
+        def self.with_normalized_keys(hash)
+          new_hash = hash.clone
+          new_hash.each do |key, value|
+            next unless key.is_a?(String) || key.is_a?(Symbol)
+
+            symbolized_key = StringUtil.underscore(key.to_s).to_sym
+
+            new_hash                 = wipe(new_hash, key)
+            new_hash[symbolized_key] = value.is_a?(Hash) ? self.class.from_hash(value) : value
+          end
+          new_hash
+        end
+
+        ##
+        # @private
+        def self.wipe(hash, key)
+          stringified = key.to_s
+          camlelized  = StringUtil.camelize(stringified)
+          underscored = StringUtil.underscore(stringified)
+          new_hash    = hash.clone
+
+          new_hash.delete(camlelized.to_sym)
+          new_hash.delete(underscored.to_sym)
+          new_hash.delete(camlelized)
+          new_hash.delete(underscored)
+          new_hash
+        end
+
+        def stringify_keys
+          new_hash = clone
+          new_hash.keys.each do |key|
+            next unless key.is_a? Symbol
+
+            value              = new_hash.delete(key)
+            value              = from_hash(value).stringify_keys if value.is_a? Hash
+            new_hash[key.to_s] = value
+          end
+          new_hash
+        end
+
+        def to_camelized_hash
+          new_hash = clone
+          new_hash.keys.each do |key|
+            next unless key.is_a? Symbol
+
+            value              = new_hash.delete(key)
+            value              = from_hash(value).stringify_keys if value.is_a? Hash
+            new_hash[key.to_s] = value
+          end
+          new_hash
+        end
+      end
+
       ##
       # Works like fetch, but instead indifferently uses strings and symbols. It will try both snake case and camel
       # case versions of the key.
@@ -27,16 +94,31 @@ module Moleculer
       end
 
       ##
-      # Stringifies the keys of a hash
+      # Returns a new hash with the keys stringified
       #
       # @param hash [Hash] the hash whose keys to stringify
       def stringify_keys(hash)
-        hash.keys.each do |key|
-          value                = hash.delete(key)
-          value                = stringify_keys(value) if value.is_a? Hash
-          hash[key.to_s] = value
+        new_hash = hash.clone
+        new_hash.keys.each do |key|
+          value              = new_hash.delete(key)
+          value              = stringify_keys(value) if value.is_a? Hash
+          new_hash[key.to_s] = value
         end
         hash
+      end
+
+      ##
+      # Returns a new hash with the keys symbolized
+      #
+      # @param hash [Hash] the hash whose keys to symbolize
+      def symbolize_keys(hash)
+        new_hash = hash.clone
+        new_hash.keys.each do |key|
+          value                = new_hash.delete(key)
+          value                = symbolize_keys(value) if value.is_a? Hash
+          new_hash[key.to_sym] = value
+        end
+        new_hash
       end
 
       private
