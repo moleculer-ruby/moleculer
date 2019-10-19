@@ -7,32 +7,23 @@ module Moleculer
     ##
     # Represents a EVENT packet
     class Event < Base
-      attr_reader :event,
-                  :data,
-                  :broadcast,
-                  :groups
-
-      def initialize(config, data = {})
-        super(config, data)
-
-        @event     = HashUtil.fetch(data, :event)
-        @data      = HashUtil.fetch(data, :data)
-        @broadcast = HashUtil.fetch(data, :broadcast)
-        @groups    = HashUtil.fetch(data, :groups, [])
-        @node      = HashUtil.fetch(data, :node, nil)
-      end
+      packet_attr :event
+      packet_attr :data
+      packet_attr :broadcast, false
+      packet_attr :groups, []
+      packet_attr :node, nil
 
       def to_h
         super.merge(
-          event:     @event,
-          data:      @data,
-          broadcast: @broadcast,
-          groups:    @groups,
+          event:     event,
+          data:      data,
+          broadcast: broadcast,
+          groups:    groups,
         )
       end
 
       def topic
-        "#{super}.#{@node.id}"
+        "#{super}.#{@config.node_id}"
       end
     end
   end

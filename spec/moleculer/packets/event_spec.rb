@@ -3,13 +3,16 @@
 require_relative "./base_packet_behavior"
 
 RSpec.describe Moleculer::Packets::Event do
+  let(:config) do
+    Moleculer::Configuration.new(
+      node_id:     "test1",
+      services:    [],
+      log_level:   "trace",
+      transporter: "fake://localhost",
+      )
+  end
   let(:broker) do
-    Moleculer::Broker.new(Moleculer::Configuration.new(
-                            node_id:     "test1",
-                            services:    [],
-                            log_level:   "trace",
-                            transporter: "fake://localhost",
-                          ))
+    Moleculer::Broker.new(config)
   end
 
   let(:node) { double("node", id: 1) }
@@ -20,7 +23,7 @@ RSpec.describe Moleculer::Packets::Event do
 
   describe "#topic" do
     it "includes the node id" do
-      expect(subject.topic).to eq("MOL.EVENT.1")
+      expect(subject.topic).to eq("MOL.EVENT.test1")
     end
   end
 end

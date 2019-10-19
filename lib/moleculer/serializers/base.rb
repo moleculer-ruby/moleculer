@@ -13,22 +13,24 @@ module Moleculer
       private
 
       def deserialize_custom_fields(hash)
-        hash  = deserialize_custom_field(:data, hash)
-        hash  = deserialize_custom_field(:services, hash)
-        hash  = deserialize_custom_field(:config, hash)
-        hash  = deserialize_custom_field(:params, hash)
-        hash.merge(ip_list: hash.delete(:ipList)) if hash[:ipList]
-        hash
+        new_hash = Support::HashUtil::HashWithIndifferentAccess.from_hash(hash)
+        new_hash.merge!(deserialize_custom_field(:data, new_hash))
+        new_hash.merge!(deserialize_custom_field(:services, new_hash))
+        new_hash.merge!(deserialize_custom_field(:config, new_hash))
+        new_hash.merge!(deserialize_custom_field(:params, new_hash))
+        new_hash.merge(ip_list: new_hash) if new_hash[:ipList]
+        new_hash
       end
 
       def serialize_custom_fields(hash)
-        hash  = serialize_custom_field(:data, hash)
-        hash  = serialize_custom_field(:services, hash)
-        hash  = serialize_custom_field(:config, hash)
-        hash  = serialize_custom_field(:params, hash)
-        hash  = serialize_custom_field(:meta, hash)
-        hash.merge(ipList: hash.delete(:ip_list)) if hash[:ip_list]
-        hash
+        new_hash = Support::HashUtil::HashWithIndifferentAccess.from_hash(hash)
+        new_hash.merge!(serialize_custom_field(:data, new_hash))
+        new_hash.merge!(serialize_custom_field(:services, new_hash))
+        new_hash.merge!(serialize_custom_field(:config, new_hash))
+        new_hash.merge!(serialize_custom_field(:params, new_hash))
+        new_hash.merge!(serialize_custom_field(:meta, new_hash))
+        new_hash.merge(ipList: new_hash) if new_hash[:ip_list]
+        new_hash
       end
 
       def serialize_custom_field(key, hash)
