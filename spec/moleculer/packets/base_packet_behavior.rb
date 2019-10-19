@@ -10,7 +10,7 @@ RSpec.shared_examples "base packet" do
 
     describe "#sender" do
       it "defaults to broker.config#node_id" do
-        expect(subject.sender).to eq broker.config.node_id
+        expect(subject.sender).to eq config.node_id
       end
     end
   end

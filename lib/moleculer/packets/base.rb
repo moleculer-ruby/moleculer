@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "../support"
+require_relative "../errors/missing_value"
 
 module Moleculer
   module Packets
@@ -22,16 +23,6 @@ module Moleculer
         ##
         # Sets an accessor that fetches @data attributes
         def packet_attr(name, default = :__not_defined__)
-          class_eval <<-ATTR, __FILE__, __LINE__ + 1
-            def #{name}
-              default = self.class.packet_accessors[:#{name}]
-              if default != :__not_defined__
-                 return HashUtil.fetch(@data, :#{name}, default) unless default.is_a? Proc
-                 return HashUtil.fetch(@data, :#{name}, default.call(self))
-              end
-              return HashUtil.fetch(@data, :#{name})
-            end
-          ATTR
           packet_accessors[name] = default
         end
 
@@ -55,7 +46,7 @@ module Moleculer
       # @options data [String] :ver the protocol version, defaults to `'3'`
       # @options  data [String] :sender the packet sender, defaults to `Moleculer#node_id`
       def initialize(config, data = {})
-        @data   = data
+        @data   = HashUtil::HashWithIndifferentAccess.from_hash(data)
         @config = config
       end
 
@@ -85,6 +76,25 @@ module Moleculer
           ver:    ver,
           sender: sender,
         }
+      end
+
+      private
+
+      def method_missing(meth, *args, &block)
+        accessor = self.class.packet_accessors[meth]
+        if accessor
+          return @data[meth] if @data[meth]
+          return accessor.call(self) if accessor.is_a? Proc
+          return accessor unless accessor == :__not_defined__
+
+          raise Errors::MissingValue, meth
+        end
+
+        super
+      end
+
+      def respond_to_missing?(meth, include_private = false)
+        self.class.packet_accessors[meth] || super
       end
     end
   end
