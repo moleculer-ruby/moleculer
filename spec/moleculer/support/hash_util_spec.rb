@@ -51,6 +51,9 @@ RSpec.describe Moleculer::Support::HashUtil do
         "testTwo" => 2,
         testThree: 3,
         test_four: 4,
+        test_five: {
+          subTest: 1,
+        },
         obj => 5,
       )
     end
@@ -61,6 +64,9 @@ RSpec.describe Moleculer::Support::HashUtil do
         test_two: 2,
         test_three: 3,
         test_four: 4,
+        test_five: {
+          sub_test: 1,
+        },
         obj => 5,
       )
     end
@@ -72,7 +78,25 @@ RSpec.describe Moleculer::Support::HashUtil do
           "test_two"   => 2,
           "test_three" => 3,
           "test_four"  => 4,
+          "test_five"  => {
+            "sub_test" => 1,
+          },
           obj          => 5,
+        )
+      end
+    end
+
+    describe "to_camelized_hash" do
+      it "returns a hash with camelized values" do
+        expect(subject.to_camelized_hash).to include(
+          "testOne"   => 1,
+          "testTwo"   => 2,
+          "testThree" => 3,
+          "testFour"  => 4,
+          "testFive" => {
+            "subTest" => 1
+          },
+          obj         => 5,
         )
       end
     end

@@ -11,7 +11,7 @@ module Moleculer
 
       ##
       # This is a hacked together clone of ActiveSupports hash with indifferent access
-      class HashWithIndifferentAccess < Hash
+      class HashWithIndifferentAccess < Concurrent::Hash
         ##
         # Create a HashWithIndifferentAccess from a normal hash
         #
@@ -30,7 +30,7 @@ module Moleculer
             symbolized_key = StringUtil.underscore(key.to_s).to_sym
 
             new_hash                 = wipe(new_hash, key)
-            new_hash[symbolized_key] = value.is_a?(Hash) ? self.class.from_hash(value) : value
+            new_hash[symbolized_key] = value.is_a?(Hash) ? from_hash(value) : value
           end
           new_hash
         end
@@ -56,20 +56,21 @@ module Moleculer
             next unless key.is_a? Symbol
 
             value              = new_hash.delete(key)
-            value              = from_hash(value).stringify_keys if value.is_a? Hash
+            value              = self.class.from_hash(value).stringify_keys if value.is_a? Hash
             new_hash[key.to_s] = value
           end
           new_hash
         end
 
         def to_camelized_hash
-          new_hash = clone
-          new_hash.keys.each do |key|
-            next unless key.is_a? Symbol
+          new_hash = {}
+          each do |key, value|
+            unless key.is_a? Symbol
+              new_hash[key] = value
+            end
 
-            value              = new_hash.delete(key)
-            value              = from_hash(value).stringify_keys if value.is_a? Hash
-            new_hash[key.to_s] = value
+            value = self.class.from_hash(value).to_camelized_hash if value.is_a? Hash
+            new_hash[StringUtil.camelize(key.to_s)] = value
           end
           new_hash
         end
