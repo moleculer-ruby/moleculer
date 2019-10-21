@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "base"
 
 module Moleculer
@@ -5,37 +7,25 @@ module Moleculer
     ##
     # Represents a RES packet
     class Res < Base
-      attr_reader :id,
-                  :success,
-                  :data,
-                  :error,
-                  :meta,
-                  :stream
-
-      def initialize(config, data)
-        super(config, data)
-
-        @id      = HashUtil.fetch(data, :id)
-        @success = HashUtil.fetch(data, :success)
-        @data    = HashUtil.fetch(data, :data)
-        @error   = HashUtil.fetch(data, :error, nil)
-        @meta    = HashUtil.fetch(data, :meta)
-        @stream  = HashUtil.fetch(data, :stream, false)
-        @node    = HashUtil.fetch(data, :node, nil)
-      end
+      packet_attr :id
+      packet_attr :success
+      packet_attr :data
+      packet_attr :error, nil
+      packet_attr :meta, {}
+      packet_attr :stream, false
 
       def topic
-        "#{super}.#{@node.id}"
+        "#{super}.#{sender}"
       end
 
       def to_h
         super.merge(
-          id:      @id,
-          success: @success,
-          data:    @data,
-          error:   @error,
-          meta:    @meta,
-          stream:  @stream,
+          id:      id,
+          success: success,
+          data:    data,
+          error:   error,
+          meta:    meta,
+          stream:  stream,
         )
       end
     end
