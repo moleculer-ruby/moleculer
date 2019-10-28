@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "socket"
 require_relative "base"
 
@@ -46,6 +48,14 @@ module Moleculer
       packet_attr :ip_list
       packet_attr :hostname
       packet_attr :client
+
+      def initialize(config, data = {})
+        super config, data
+          .dup
+          .merge(
+            client: Client.new(Support::HashUtil::HashWithIndifferentAccess.from_hash(data).fetch(:client)),
+          )
+      end
 
       def topic
         return "#{super}.#{@config.node_id}" if @config.node_id

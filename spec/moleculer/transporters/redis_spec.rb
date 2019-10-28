@@ -35,6 +35,7 @@ RSpec.describe Moleculer::Transporters::Redis do
         services: {},
         ip_list:  [],
         hostname: "thehost",
+        client:   {},
       )
     end
 
