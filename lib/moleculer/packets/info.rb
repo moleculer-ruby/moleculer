@@ -24,9 +24,10 @@ module Moleculer
                     :lang_version
 
         def initialize(data)
-          @type         = HashUtil.fetch(data, :type, nil)
-          @version      = HashUtil.fetch(data, :version, nil)
-          @lang_version = HashUtil.fetch(data, :lang_version, nil)
+          dt            = Support::HashUtil::HashWithIndifferentAccess.from_hash(data)
+          @type         = dt.fetch(:type, nil)
+          @version      = dt.fetch(:version, nil)
+          @lang_version = dt.fetch(:lang_version, nil)
         end
 
         ##
