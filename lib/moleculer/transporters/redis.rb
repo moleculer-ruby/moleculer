@@ -14,7 +14,7 @@ module Moleculer
       class Publisher
         def initialize(config)
           @uri        = config.transporter
-          @logger     = config.logger.get_child("[REDIS.TRANSPORTER.PUBLISHER]")
+          @logger     = config.logger.get_child("[REDIS.TRANSPORTER.PUBLISHER.#{config.node_id}]")
           @serializer = Serializers.for(config.serializer).new(config)
         end
 
@@ -22,7 +22,7 @@ module Moleculer
         # Publishes the packet to the packet's topic
         def publish(packet)
           topic = packet.topic
-          @logger.debug "publishing packet to '#{topic}'", packet.to_h
+          @logger.trace "publishing packet to '#{topic}'", packet.to_h
           connection.publish(topic, @serializer.serialize(packet))
         end
 
@@ -58,7 +58,7 @@ module Moleculer
             @connection = ::Redis.new(url: config.transporter)
             @channel    = channel
             @block      = block
-            @logger     = config.logger.get_child("[REDIS.TRANSPORTER.SUBSCRIPTION.#{channel}]")
+            @logger     = config.logger.get_child("[REDIS.TRANSPORTER.SUBSCRIPTION.#{config.node_id}.#{channel}]")
             @serializer = Serializers.for(config.serializer).new(config)
             @node_id    = config.node_id
             @config     = config
@@ -80,6 +80,7 @@ module Moleculer
                   end
 
                   on.message do |_, message|
+                    @logger.trace "received message #{message}"
                     packet = process_message(message)
                     next unless packet
 
@@ -108,8 +109,12 @@ module Moleculer
           private
 
           def deserialize(type, message)
+            @logger.trace "attempting to deserialize packet #{type}"
             packet = @serializer.deserialize(type, message)
-            return nil if packet.sender == @node_id
+            if packet.sender == @node_id
+              @logger.warn "sender was THIS node"
+              return nil
+            end
 
             packet
           end
@@ -134,6 +139,7 @@ module Moleculer
             return nil if message_is_disconnect?(message)
 
             type   = @channel.split(".")[1].downcase.to_sym
+            @logger.trace "received packet type #{type}"
             packet = deserialize(type, message)
 
             return nil unless packet
@@ -152,7 +158,7 @@ module Moleculer
         def initialize(config)
           @config        = config
           @uri           = config.transporter
-          @logger        = config.logger.get_child("[REDIS.TRANSPORTER]")
+          @logger        = config.logger.get_child("[REDIS.TRANSPORTER.#{@config.node_id}]")
           @subscriptions = Concurrent::Array.new
           @started       = false
         end

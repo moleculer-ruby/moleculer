@@ -91,8 +91,7 @@ module Moleculer
 
       def publish_packet_for(packet_type, message)
         packet = Packets.for(packet_type).new(@broker.config, message)
-        @broker.logger.trace("publishing '#{packet_type}'")
-        @broker.logger.trace(packet.to_h)
+        @broker.logger.trace("publishing '#{packet_type}'", packet.to_h)
         @broker.transporter.publish(packet)
       end
     end

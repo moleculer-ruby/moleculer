@@ -31,7 +31,7 @@ RSpec.describe Moleculer::Packets::Info do
       },
       config:   {
         heartbeatInterval: 5,
-        logLevel:          :debug,
+        logLevel:          :debugo,
         transporter:       "fake://localhost",
         serializer:        :json,
         servicePrefix:     nil,

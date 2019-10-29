@@ -28,7 +28,7 @@ module Moleculer
 
       @config.broker = self
 
-      @logger      = @config.logger.get_child("[BROKER]")
+      @logger      = @config.logger.get_child("[BROKER.#{@config.node_id}]")
       @registry    = Registry.new(@config)
       @transporter = Transporters.for(@config.transporter).new(@config)
       @contexts    = Concurrent::Map.new

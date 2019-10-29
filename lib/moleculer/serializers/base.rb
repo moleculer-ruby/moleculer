@@ -7,7 +7,7 @@ module Moleculer
     class Base
       def initialize(config)
         @config = config
-        @logger = config.logger.get_child("[SERIALIZER]")
+        @logger = config.logger.get_child("[SERIALIZER.#{@config.node_id}]")
       end
 
       private
