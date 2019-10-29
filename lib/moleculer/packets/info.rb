@@ -9,6 +9,7 @@ module Moleculer
     # Represents an INFO packet
     class Info < Base
       include Support
+      include HashUtil
 
       ##
       # Represents the client information for a given node
@@ -35,11 +36,11 @@ module Moleculer
         ##
         # @return [Hash] the object prepared for conversion to JSON for transmission
         def to_h
-          {
-            type:        @type,
-            version:     @version,
-            langVersion: @lang_version,
-          }
+          Support::HashUtil::HashWithIndifferentAccess.from_hash(
+            type:         @type,
+            version:      @version,
+            lang_version: @lang_version,
+          ).to_camelized_hash
         end
       end
 
@@ -53,7 +54,7 @@ module Moleculer
         super config, data
           .dup
           .merge(
-            client: Client.new(Support::HashUtil::HashWithIndifferentAccess.from_hash(data).fetch(:client)),
+            client: Client.new(HashWithIndifferentAccess.from_hash(data).fetch(:client)),
           )
       end
 
@@ -64,18 +65,19 @@ module Moleculer
       end
 
       def to_h
-        super.merge(
+        super.merge(HashWithIndifferentAccess.from_hash(
           services: services,
-          config:   config_for_hash,
+          config:   HashWithIndifferentAccess.from_hash(config_for_hash),
           ipList:   ip_list,
           hostname: hostname,
           client:   client.to_h,
-        )
+        ).to_camelized_hash)
       end
 
       private
 
       def config_for_hash
+        # TODO: Add from pairs method
         Hash[config.to_h.reject { |a, _| a == :log_file }]
       end
     end

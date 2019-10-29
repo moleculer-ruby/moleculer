@@ -23,7 +23,13 @@ RSpec.shared_examples "base packet" do
 
   describe "#to_h" do
     it "returns the version and sender" do
-      expect(subject.to_h).to include(ver: "3", sender: subject.sender)
+      expect(subject.to_h).to include("ver" => "3", "sender" => subject.sender)
+    end
+  end
+
+  describe "::new" do
+    it "correctly processes an incoming packet" do
+      expect(subject.class.new(config, subject.to_h).to_h).to include(valid_hash)
     end
   end
 end

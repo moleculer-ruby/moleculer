@@ -20,6 +20,7 @@ module IntegrationHelpers
                             services:    services,
                             transporter: "#{transporter}://localhost",
                             log_file:    STDOUT,
+                            log_level:   :trace,
                             serializer:  serializer,
                           ))
   end

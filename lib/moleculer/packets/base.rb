@@ -72,10 +72,10 @@ module Moleculer
       end
 
       def to_h
-        {
+        Support::HashUtil::HashWithIndifferentAccess.from_hash(
           ver:    ver,
           sender: sender,
-        }
+        ).to_camelized_hash
       end
 
       private
