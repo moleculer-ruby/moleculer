@@ -64,6 +64,14 @@ RSpec.describe Moleculer::Support::HashUtil do
       end
     end
 
+    describe "#merge" do
+      it "returns a new hash that has been deep converted" do
+        expect(subject.merge(
+                 test_six: 6,
+               ).to_camelized_hash).to include("testSix" => 6)
+      end
+    end
+
     describe "#to_json" do
       it "returns json that can be used for moleculer messages" do
         expect(subject.to_json).to eq({

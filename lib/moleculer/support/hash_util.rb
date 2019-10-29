@@ -64,6 +64,10 @@ module Moleculer
           new_hash
         end
 
+        def merge(other)
+          super(self.class.from_hash(other))
+        end
+
         ##
         # Returns a hash where all keys are camelized
         def to_camelized_hash
