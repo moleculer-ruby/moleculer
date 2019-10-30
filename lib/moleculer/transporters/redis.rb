@@ -54,6 +54,8 @@ module Moleculer
         ##
         # Represents a subscription
         class Subscription
+          ##
+          # @param [Moleculer::Configuration]
           def initialize(config:, channel:, block:)
             @connection = ::Redis.new(url: config.transporter)
             @channel    = channel

@@ -156,7 +156,7 @@ module Moleculer
       @actions          = ActionList.new(@config.heartbeat_interval)
       @events           = EventList.new(@config.heartbeat_interval)
       @services         = Concurrent::Hash.new
-      @logger           = @config.logger.get_child("[REGISTRY]")
+      @logger           = @config.logger.get_child("[REGISTRY.#{config.node_id}]")
       @remove_semaphore = Concurrent::Semaphore.new(1)
     end
 
@@ -175,7 +175,7 @@ module Moleculer
         @logger.info "registering LOCAL node '#{node.id}'"
         @local_node = node
       end
-      @logger.info "registering node #{node.id}" unless node.local?
+      @logger.info "registering REMOTE node #{node.id}" unless node.local?
       @nodes.add_node(node)
       update_actions(node)
       update_events(node)

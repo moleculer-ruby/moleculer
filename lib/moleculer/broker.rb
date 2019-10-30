@@ -187,6 +187,7 @@ module Moleculer
     end
 
     def register_or_update_remote_node(info_packet)
+      @logger.trace "registering node for info packet", info_packet
       node = Node.from_remote_info(info_packet)
       @registry.register_node(node)
     end
@@ -229,9 +230,11 @@ module Moleculer
     def subscribe_to_info
       @logger.trace "setting up 'INFO' subscribers"
       subscribe("MOL.INFO.#{node_id}") do |packet|
+        @logger.trace "received INFO packet targeted at #{node_id}"
         register_or_update_remote_node(packet)
       end
       subscribe("MOL.INFO") do |packet|
+        @logger.trace "received INFO packet"
         register_or_update_remote_node(packet)
       end
     end
