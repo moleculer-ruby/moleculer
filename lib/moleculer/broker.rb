@@ -135,7 +135,7 @@ module Moleculer
 
     def process_response(packet)
       context = @contexts.delete(packet.id)
-      context[:future].fulfill(packet.data)
+      context[:future].fulfill(Support::Hash.deep_symbolize(packet.data))
     end
 
     def process_event(packet)
