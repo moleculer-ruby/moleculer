@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe Moleculer::Service::Action do
   let(:config) { Moleculer::Configuration.new }
   let(:broker) do
@@ -13,13 +15,13 @@ RSpec.describe Moleculer::Service::Action do
       let(:service) do
         Class.new(Moleculer::Service::Base) do
           def test_action(_)
-            {}
+            { "test_hash" => 1 }
           end
         end
       end
 
       it "returns a valid response" do
-        expect(subject.execute(context, broker)).to eq({})
+        expect(subject.execute(context, broker)).to eq(test_hash: 1)
       end
     end
 

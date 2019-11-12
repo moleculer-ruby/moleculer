@@ -5,7 +5,6 @@ module Moleculer
     ##
     # Represents an action
     class Action
-      include Support
 
       # @!attribute [r] name
       #   @return [String] the name of the action
@@ -30,14 +29,14 @@ module Moleculer
       ##
       # @param context [Moleculer::Context] the execution context
       #
-      # @return [Moleculer::Support::Hash] returns a hash which will be converted into json for the response.
+      # @return [::Hash] returns a hash which will be converted into json for the response.
       # @raise [Errors::InvalidActionResponse] thrown when the result of calling the action does not return a hash
       def execute(context, broker)
         response = @service.new(broker).public_send(@method, context)
         # rubocop disabled because in this case we need a specific error handling format
         raise Errors::InvalidActionResponse.new(response) unless response.is_a? Hash # rubocop:disable Style/RaiseArgs
 
-        response
+        Support::Hash.deep_symbolize(response)
       rescue StandardError => e
         broker.config.handle_error(e)
       end
