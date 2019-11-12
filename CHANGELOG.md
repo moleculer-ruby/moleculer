@@ -2,6 +2,9 @@
 ### Breaking Changes
 * Actions now return a symbolized hash result
 
+### Bugfixes
+* Fixes a bug where local actions could not be called correctly
+
 ## 0.3.0
 ### Breaking Changes
 * `rescue_event` and `rescue_action` have been removed and replaced with a more generic `rescue_from`
