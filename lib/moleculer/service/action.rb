@@ -50,7 +50,7 @@ module Moleculer
         {
           name:    "#{@service.full_name}.#{name}",
           rawName: name,
-          cache:   Hash.fetch(@options, :cache, false),
+          cache:   Support::Hash.fetch(@options, :cache, false),
           metrics: {
             params: false,
             meta:   true,

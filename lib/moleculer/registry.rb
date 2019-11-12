@@ -293,7 +293,7 @@ module Moleculer
     end
 
     def fetch_next_nodes_for_event(event_name)
-      service_names = Hash.fetch(@events, event_name, {}).keys
+      service_names = Support::Hash.fetch(@events, event_name, {}).keys
       node_names    = service_names.map { |s| @services[s] }
       nodes         = node_names.map { |names| names.map { |name| @nodes[name] } }
       nodes.map { |node_list| node_list.min_by { |a| a[:last_called_at] }[:node] }

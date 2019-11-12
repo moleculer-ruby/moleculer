@@ -15,11 +15,11 @@ module Moleculer
       def initialize(config, data = {})
         super(config, data)
 
-        @event     = Hash.fetch(data, :event)
-        @data      = Hash.fetch(data, :data)
-        @broadcast = Hash.fetch(data, :broadcast)
-        @groups    = Hash.fetch(data, :groups, [])
-        @node      = Hash.fetch(data, :node, nil)
+        @event     = Support::Hash.fetch(data, :event)
+        @data      = Support::Hash.fetch(data, :data)
+        @broadcast = Support::Hash.fetch(data, :broadcast)
+        @groups    = Support::Hash.fetch(data, :groups, [])
+        @node      = Support::Hash.fetch(data, :node, nil)
       end
 
       def to_h
