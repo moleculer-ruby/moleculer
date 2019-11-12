@@ -8,6 +8,23 @@ module Moleculer
     # A module of functional methods for working with hashes
     module Hash
       extend self
+
+      ##
+      # Returns a new hash with the keys symbolized
+      #
+      # @param hash [::Hash] the hash to symbolize
+      #
+      # @return [::Hash] copy of the hash with the keys symbolized
+      def symbolize(hash)
+        ::Hash[hash.collect { |k, v|
+          if k.is_a?(String)
+            [k.to_sym, v]
+          else
+            [k, v]
+          end
+        }]
+      end
+
       ##
       # Works like fetch, but instead indifferently uses strings and symbols. It will try both snake case and camel
       # case versions of the key.

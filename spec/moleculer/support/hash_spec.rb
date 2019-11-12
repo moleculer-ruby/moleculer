@@ -1,21 +1,34 @@
+# frozen_string_literal: true
+
 RSpec.describe Moleculer::Support::Hash do
   subject { Moleculer::Support::Hash }
+  let!(:obj) do
+    double
+  end
 
-  describe "::fetch" do
-    let!(:obj) do
-      double
-    end
+  let(:hash) do
+    {
+      "test_one" => 1,
+      "testTwo" => 2,
+      testThree: 3,
+      test_four: 4,
+      obj => 5,
+    }
+  end
 
-    let(:hash) do
-      {
-        "test_one" => 1,
-        "testTwo" => 2,
+  describe "::symbolize" do
+    it "returns a new has with the keys symbolized" do
+      expect(subject.symbolize(hash)).to include(
+        test_one: 1,
+        testTwo: 2,
         testThree: 3,
         test_four: 4,
-        obj => 5
-      }
+        obj => 5,
+      )
     end
+  end
 
+  describe "::fetch" do
     it "fetches correctly" do
       expect(subject.fetch(hash, :testOne)).to eq 1
       expect(subject.fetch(hash, :test_two)).to eq 2
