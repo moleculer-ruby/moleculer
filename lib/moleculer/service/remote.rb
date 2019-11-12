@@ -8,7 +8,7 @@ module Moleculer
     # @param [Hash] service_info remote service information
     def self.from_remote_info(service_info, service_node)
       Class.new(Remote) do
-        service_name Support::HashUtil.fetch(service_info, :name)
+        service_name Support::Hash.fetch(service_info, :name)
         fetch_actions(service_info)
         fetch_events(service_info)
         node service_node
@@ -38,8 +38,8 @@ module Moleculer
 
         def fetch_actions(service_info)
           seq = 0
-          Support::HashUtil.fetch(service_info, :actions).values.each do |a|
-            next if Support::HashUtil.fetch(a, :name) =~ /^\$/
+          Support::Hash.fetch(service_info, :actions).values.each do |a|
+            next if Support::Hash.fetch(a, :name) =~ /^\$/
 
             define_method("action_#{seq}".to_sym) do |ctx|
               @broker.send(:publish_req,
@@ -53,15 +53,15 @@ module Moleculer
                            stream:     false)
               {}
             end
-            action(Support::HashUtil.fetch(a, :name), "action_#{seq}".to_sym)
+            action(Support::Hash.fetch(a, :name), "action_#{seq}".to_sym)
             seq += 1
           end
         end
 
         def fetch_events(service_info)
           seq = 0
-          Support::HashUtil.fetch(service_info, :events).values.each do |a|
-            name = Support::HashUtil.fetch(a, :name)
+          Support::Hash.fetch(service_info, :events).values.each do |a|
+            name = Support::Hash.fetch(a, :name)
             define_method("event_#{seq}".to_sym) do |data|
               @broker.send(:publish_event,
                            event:     name,

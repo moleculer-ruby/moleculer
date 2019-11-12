@@ -15,13 +15,13 @@ module Moleculer
       def initialize(config, data)
         super(config, data)
 
-        @id      = HashUtil.fetch(data, :id)
-        @success = HashUtil.fetch(data, :success)
-        @data    = HashUtil.fetch(data, :data)
-        @error   = HashUtil.fetch(data, :error, nil)
-        @meta    = HashUtil.fetch(data, :meta)
-        @stream  = HashUtil.fetch(data, :stream, false)
-        @node    = HashUtil.fetch(data, :node, nil)
+        @id      = Hash.fetch(data, :id)
+        @success = Hash.fetch(data, :success)
+        @data    = Hash.fetch(data, :data)
+        @error   = Hash.fetch(data, :error, nil)
+        @meta    = Hash.fetch(data, :meta)
+        @stream  = Hash.fetch(data, :stream, false)
+        @node    = Hash.fetch(data, :node, nil)
       end
 
       def topic

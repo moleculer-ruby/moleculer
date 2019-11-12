@@ -1,5 +1,5 @@
-RSpec.describe Moleculer::Support::HashUtil do
-  subject { Moleculer::Support::HashUtil }
+RSpec.describe Moleculer::Support::Hash do
+  subject { Moleculer::Support::Hash }
 
   describe "::fetch" do
     let!(:obj) do

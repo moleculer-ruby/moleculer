@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 require_relative "string_util"
 
 module Moleculer
   module Support
     ##
     # A module of functional methods for working with hashes
-    module HashUtil
+    module Hash
       extend self
       ##
       # Works like fetch, but instead indifferently uses strings and symbols. It will try both snake case and camel
