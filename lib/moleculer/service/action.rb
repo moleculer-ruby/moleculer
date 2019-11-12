@@ -39,7 +39,8 @@ module Moleculer
         # rubocop disabled because in this case we need a specific error handling format
         # TODO: I don't like this, but it makes it so we can treat remote service requests differently than normal
         #       requests without defining a remote action class. This probably needs to be refactored later
-        raise Errors::InvalidActionResponse.new(response) unless response.is_a?(Hash) || response == REMOTE_IDENTIFIER # rubocop:disable Style/RaiseArgs
+        return response if response == REMOTE_IDENTIFIER
+        raise Errors::InvalidActionResponse.new(response) unless response.is_a?(Hash) # rubocop:disable Style/RaiseArgs
 
         Support::Hash.deep_symbolize(response)
       rescue StandardError => e
