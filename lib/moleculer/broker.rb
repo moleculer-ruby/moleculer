@@ -58,7 +58,8 @@ module Moleculer
         future:    future,
       }
 
-      action.execute(context, self)
+      result = action.execute(context, self)
+      future.fulfill(result) if result != Service::Action::REMOTE_IDENTIFIER
 
       future.value!(context.timeout)
     end
