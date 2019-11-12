@@ -6,6 +6,16 @@ RSpec.describe Moleculer::Support::Hash do
     double
   end
 
+  let!(:child_hash) do
+    {
+      "test_one" => 1,
+      "testTwo" => 2,
+      testThree: 3,
+      test_four: 4,
+      obj => 5,
+    }
+  end
+
   let(:hash) do
     {
       "test_one" => 1,
@@ -13,6 +23,7 @@ RSpec.describe Moleculer::Support::Hash do
       testThree: 3,
       test_four: 4,
       obj => 5,
+      child_hash: child_hash,
     }
   end
 
@@ -24,6 +35,26 @@ RSpec.describe Moleculer::Support::Hash do
         testThree: 3,
         test_four: 4,
         obj => 5,
+        child_hash: child_hash,
+      )
+    end
+  end
+
+  describe "deep_symbolize" do
+    it "returns a new has with the keys symbolized" do
+      expect(subject.deep_symbolize(hash)).to include(
+        test_one: 1,
+        testTwo: 2,
+        testThree: 3,
+        test_four: 4,
+        obj => 5,
+        child_hash: {
+          test_one: 1,
+          testTwo: 2,
+          testThree: 3,
+          test_four: 4,
+          obj => 5,
+        },
       )
     end
   end

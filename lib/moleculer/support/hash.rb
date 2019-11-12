@@ -16,13 +16,30 @@ module Moleculer
       #
       # @return [::Hash] copy of the hash with the keys symbolized
       def symbolize(hash)
-        ::Hash[hash.collect { |k, v|
+        ::Hash[hash.collect do |k, v|
           if k.is_a?(String)
             [k.to_sym, v]
           else
             [k, v]
           end
-        }]
+        end]
+      end
+
+      ##
+      # Returns a new hash with the keys symbolized, symbolizes keys of child hashes
+      #
+      # @param hash [::Hash] the hash to symbolize
+      #
+      # @return [::Hash] copy of the hash with the keys symbolized
+      def deep_symbolize(hash)
+        ::Hash[hash.collect do |k, v|
+          new_child = v.is_a?(::Hash) ? deep_symbolize(v) : nil
+          if k.is_a?(String)
+            [k.to_sym, new_child || v]
+          else
+            [k, new_child || v]
+          end
+        end]
       end
 
       ##
