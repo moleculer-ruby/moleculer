@@ -6,13 +6,9 @@ module Moleculer
     ##
     # Represents an INFO packet
     class Info < Base
-      include Support
-
       ##
       # Represents the client information for a given node
       class Client
-        include Support
-
         # @!attribute [r] type
         #   @return [String] type of client implementation (nodejs, java, ruby etc.)
         # @!attribute [r] version
@@ -93,7 +89,7 @@ module Moleculer
       private
 
       def config_for_hash
-        Hash[config.to_h.reject { |a, _| a == :log_file }]
+        ::Hash[config.to_h.reject { |a, _| a == :log_file }]
       end
     end
   end
