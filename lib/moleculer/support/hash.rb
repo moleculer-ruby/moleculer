@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 require_relative "string_util"
 
 module Moleculer
   module Support
     ##
     # A module of functional methods for working with hashes
-    module HashUtil
+    module Hash
       extend self
       ##
       # Works like fetch, but instead indifferently uses strings and symbols. It will try both snake case and camel
@@ -19,9 +21,9 @@ module Moleculer
       # @return [Object] the value at the given key
       def fetch(hash, key, default = :__no_default__)
         return fetch_with_string(hash, key, default) if key.is_a?(String) || key.is_a?(Symbol)
-        return hash.fetch(key, default) if default != :__no_default__
+        return Support::Hash.fetch(key, default) if default != :__no_default__
 
-        hash.fetch(key)
+        Support::Hash.fetch(key)
       end
 
       private

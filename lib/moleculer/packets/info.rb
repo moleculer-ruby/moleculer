@@ -24,9 +24,9 @@ module Moleculer
                     :lang_version
 
         def initialize(data)
-          @type         = HashUtil.fetch(data, :type, nil)
-          @version      = HashUtil.fetch(data, :version, nil)
-          @lang_version = HashUtil.fetch(data, :lang_version, nil)
+          @type         = Support::Hash.fetch(data, :type, nil)
+          @version      = Support::Hash.fetch(data, :version, nil)
+          @lang_version = Support::Hash.fetch(data, :lang_version, nil)
         end
 
         ##
@@ -66,12 +66,12 @@ module Moleculer
       # @options data [Hash] client the client data for the node
       def initialize(config, data = {})
         super(config, data)
-        @services = HashUtil.fetch(data, :services)
-        @ip_list  = HashUtil.fetch(data, :ip_list)
-        @hostname = HashUtil.fetch(data, :hostname)
-        @client   = Client.new(HashUtil.fetch(data, :client, {}))
-        node      = HashUtil.fetch(data, :node, nil)
-        @node_id  = HashUtil.fetch(data, :node_id, node&.id)
+        @services = Support::Hash.fetch(data, :services)
+        @ip_list  = Support::Hash.fetch(data, :ip_list)
+        @hostname = Support::Hash.fetch(data, :hostname)
+        @client   = Client.new(Support::Hash.fetch(data, :client, {}))
+        node      = Support::Hash.fetch(data, :node, nil)
+        @node_id  = Support::Hash.fetch(data, :node_id, node&.id)
       end
 
       def topic
