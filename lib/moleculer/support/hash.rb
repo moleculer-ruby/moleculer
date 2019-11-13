@@ -17,11 +17,7 @@ module Moleculer
       # @return [::Hash] copy of the hash with the keys symbolized
       def symbolize(hash)
         ::Hash[hash.collect do |k, v|
-          if k.is_a?(String)
-            [k.to_sym, v]
-          else
-            [k, v]
-          end
+          [symbolized_key(k), v]
         end]
       end
 
@@ -34,11 +30,7 @@ module Moleculer
       def deep_symbolize(hash)
         ::Hash[hash.collect do |k, v|
           new_child = v.is_a?(::Hash) ? deep_symbolize(v) : nil
-          if k.is_a?(String)
-            [k.to_sym, new_child || v]
-          else
-            [k, new_child || v]
-          end
+          [symbolized_key(k), new_child || v]
         end]
       end
 
@@ -61,6 +53,10 @@ module Moleculer
       end
 
       private
+
+      def symbolized_key(key)
+        key.is_a?(String) ? key.to_sym : key
+      end
 
       def fetch_with_string(hash, key, default)
         ret = get_camel(hash, key).nil? ? get_underscore(hash, key) : get_camel(hash, key)
