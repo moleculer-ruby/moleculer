@@ -58,7 +58,7 @@ module Moleculer
           ipList:   ip_list,
           hostname: hostname,
           client:   client.to_h,
-          )
+        )
       end
 
       private

@@ -23,16 +23,9 @@ module Moleculer
         # Sets an accessor that fetches @data attributes
         def packet_attr(name, default = :__not_defined__)
           define_method name do
-            if default != :__not_defined__
-              return Support::Hash.fetch(@data, name, default) unless default.is_a? Proc
+            return Support::Hash.fetch(@data, name) if default != :__not_defined__
 
-              begin
-                return Support::Hash.fetch(@data, name)
-              rescue KeyError
-                return default.call(self)
-              end
-            end
-            return Support::Hash.fetch(@data, name)
+            fetch_with_default(@data, name, default)
           end
         end
 
@@ -74,6 +67,18 @@ module Moleculer
           ver:    ver,
           sender: sender,
         }
+      end
+
+      private
+
+      def fetch_with_default(hash, key, default)
+        return Support::Hash.fetch(hash, key, default) unless default.is_a? Proc
+
+        begin
+          return Support::Hash.fetch(key, name)
+        rescue KeyError
+          return default.call(self)
+        end
       end
     end
   end
