@@ -246,7 +246,7 @@ module Moleculer
     end
 
     def publish_to_node(packet_type, node, message = {})
-      packet = Packets.for(packet_type).new(@config, message.merge(node: node))
+      packet = Packets.for(packet_type).new(@config, message.merge(node: node, node_id: node.id))
       @transporter.publish(packet)
     end
 

@@ -43,7 +43,7 @@ module Moleculer
       packet_attr :hostname
       packet_attr :client, {}
       packet_attr :node, nil
-      packet_attr :node_id, ->(packet) { packet.node.id }
+      packet_attr :node_id, ->(packet) { packet.sender || packet.node.id }
 
       def topic
         return "#{super}.#{node_id}" if node_id
