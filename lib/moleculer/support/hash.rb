@@ -47,7 +47,7 @@ module Moleculer
       # @return [Object] the value at the given key
       def fetch(hash, key, default = :__no_default__)
         return fetch_with_string(hash, key, default) if key.is_a?(String) || key.is_a?(Symbol)
-        return Support::Hash.fetch(key, default) if default != :__no_default__
+        return Support::Hash.fetch(key, default)     if default != :__no_default__
 
         Support::Hash.fetch(key)
       end
