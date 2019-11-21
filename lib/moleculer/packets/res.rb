@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "base"
 
 module Moleculer
@@ -5,12 +7,13 @@ module Moleculer
     ##
     # Represents a RES packet
     class Res < Base
-      attr_reader :id,
-                  :success,
-                  :data,
-                  :error,
-                  :meta,
-                  :stream
+      packet_attr :id
+      packet_attr :data
+      packet_attr :success
+      packet_attr :error, nil
+      packet_attr :meta
+      packet_attr :stream, false
+      packet_attr :node, nil
 
       def initialize(config, data)
         super(config, data)
