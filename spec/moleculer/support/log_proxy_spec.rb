@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 RSpec.shared_examples "basic logger" do
   subject { Moleculer::Support::LogProxy.new(logger) }
   let(:prefix) { "" }
-  let(:log_line) { "#{prefix} test \n#{{ foo: 'bar' }.ai}".strip }
+  let(:log_line) { "#{prefix} test #{{ foo: 'bar' }}".strip }
 
   it "passes fatal to the logger" do
     subject.fatal("test", foo: "bar")
@@ -38,7 +40,7 @@ RSpec.describe Moleculer::Support::LogProxy do
 
       it "passes trace to the logger" do
         subject.trace("test", foo: "bar")
-        expect(logger).to have_received(:trace).with("#{prefix}test \n#{{ foo: 'bar' }.ai}")
+        expect(logger).to have_received(:trace).with("#{prefix}test {:foo=>\"bar\"}")
       end
     end
   end
@@ -49,7 +51,7 @@ RSpec.describe Moleculer::Support::LogProxy do
 
       it "passes trace as debug to the logger" do
         subject.trace("test", foo: "bar")
-        expect(logger).to have_received(:debug).with("#{prefix}test \n#{{ foo: 'bar' }.ai}")
+        expect(logger).to have_received(:debug).with("#{prefix}test {:foo=>\"bar\"}")
       end
     end
   end
@@ -63,7 +65,7 @@ RSpec.describe Moleculer::Support::LogProxy do
   end
 
   describe "#level" do
-    subject { Moleculer::Support::LogProxy.new(instance_double(::Logger, level: 1))}
+    subject { Moleculer::Support::LogProxy.new(instance_double(::Logger, level: 1)) }
     it "returns the sub logger level" do
       expect(subject.level).to eq(1)
     end

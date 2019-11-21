@@ -58,7 +58,8 @@ module Moleculer
         future:    future,
       }
 
-      action.execute(context, self)
+      result = action.execute(context, self)
+      future.fulfill(result) if result != Service::Action::REMOTE_IDENTIFIER
 
       future.value!(context.timeout)
     end
@@ -134,7 +135,7 @@ module Moleculer
 
     def process_response(packet)
       context = @contexts.delete(packet.id)
-      context[:future].fulfill(packet.data)
+      context[:future].fulfill(Support::Hash.deep_symbolize(packet.data))
     end
 
     def process_event(packet)

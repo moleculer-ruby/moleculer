@@ -1,11 +1,39 @@
+# frozen_string_literal: true
+
 require_relative "string_util"
 
 module Moleculer
   module Support
     ##
     # A module of functional methods for working with hashes
-    module HashUtil
+    module Hash
       extend self
+
+      ##
+      # Returns a new hash with the keys symbolized
+      #
+      # @param hash [::Hash] the hash to symbolize
+      #
+      # @return [::Hash] copy of the hash with the keys symbolized
+      def symbolize(hash)
+        ::Hash[hash.collect do |k, v|
+          [symbolized_key(k), v]
+        end]
+      end
+
+      ##
+      # Returns a new hash with the keys symbolized, symbolizes keys of child hashes
+      #
+      # @param hash [::Hash] the hash to symbolize
+      #
+      # @return [::Hash] copy of the hash with the keys symbolized
+      def deep_symbolize(hash)
+        ::Hash[hash.collect do |k, v|
+          new_child = v.is_a?(::Hash) ? deep_symbolize(v) : nil
+          [symbolized_key(k), new_child || v]
+        end]
+      end
+
       ##
       # Works like fetch, but instead indifferently uses strings and symbols. It will try both snake case and camel
       # case versions of the key.
@@ -19,12 +47,16 @@ module Moleculer
       # @return [Object] the value at the given key
       def fetch(hash, key, default = :__no_default__)
         return fetch_with_string(hash, key, default) if key.is_a?(String) || key.is_a?(Symbol)
-        return hash.fetch(key, default) if default != :__no_default__
+        return Support::Hash.fetch(key, default)     if default != :__no_default__
 
         hash.fetch(key)
       end
 
       private
+
+      def symbolized_key(key)
+        key.is_a?(String) ? key.to_sym : key
+      end
 
       def fetch_with_string(hash, key, default)
         ret = get_camel(hash, key).nil? ? get_underscore(hash, key) : get_camel(hash, key)

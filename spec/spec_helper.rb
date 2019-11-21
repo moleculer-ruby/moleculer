@@ -22,4 +22,3 @@ RSpec.configure do |config|
   end
 end
 
-RSpec.shared_examples "base s"

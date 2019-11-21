@@ -26,10 +26,10 @@ module Moleculer
             def #{name}
               default = self.class.packet_accessors[:#{name}]
               if default != :__not_defined__
-                 return HashUtil.fetch(@data, :#{name}, default) unless default.is_a? Proc
-                 return HashUtil.fetch(@data, :#{name}, default.call(self))
+                 return Support::Hash.fetch(@data, :#{name}, default) unless default.is_a? Proc
+                 return Support::Hash.fetch(@data, :#{name}, default.call(self))
               end
-              return HashUtil.fetch(@data, :#{name})
+              return Support::Hash.fetch(@data, :#{name})
             end
           ATTR
           packet_accessors[name] = default

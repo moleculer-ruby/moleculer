@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "../errors/invalid_action_response"
 require_relative "../support"
 module Moleculer
@@ -5,7 +7,7 @@ module Moleculer
     ##
     # Represents an action
     class Action
-      include Support
+      REMOTE_IDENTIFIER = :__REMOTE__
 
       # @!attribute [r] name
       #   @return [String] the name of the action
@@ -30,14 +32,17 @@ module Moleculer
       ##
       # @param context [Moleculer::Context] the execution context
       #
-      # @return [Moleculer::Support::Hash] returns a hash which will be converted into json for the response.
+      # @return [::Hash] returns a hash which will be converted into json for the response.
       # @raise [Errors::InvalidActionResponse] thrown when the result of calling the action does not return a hash
       def execute(context, broker)
         response = @service.new(broker).public_send(@method, context)
         # rubocop disabled because in this case we need a specific error handling format
-        raise Errors::InvalidActionResponse.new(response) unless response.is_a? Hash # rubocop:disable Style/RaiseArgs
+        # TODO: I don't like this, but it makes it so we can treat remote service requests differently than normal
+        #       requests without defining a remote action class. This probably needs to be refactored later
+        return response if response == REMOTE_IDENTIFIER
+        raise Errors::InvalidActionResponse.new(response) unless response.is_a?(Hash) # rubocop:disable Style/RaiseArgs
 
-        response
+        Support::Hash.deep_symbolize(response)
       rescue StandardError => e
         broker.config.handle_error(e)
       end
@@ -50,7 +55,7 @@ module Moleculer
         {
           name:    "#{@service.full_name}.#{name}",
           rawName: name,
-          cache:   HashUtil.fetch(@options, :cache, false),
+          cache:   Support::Hash.fetch(@options, :cache, false),
           metrics: {
             params: false,
             meta:   true,
