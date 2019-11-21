@@ -49,7 +49,7 @@ module Moleculer
         return fetch_with_string(hash, key, default) if key.is_a?(String) || key.is_a?(Symbol)
         return Support::Hash.fetch(key, default)     if default != :__no_default__
 
-        Support::Hash.fetch(key)
+        ::Hash.fetch(key)
       end
 
       private
