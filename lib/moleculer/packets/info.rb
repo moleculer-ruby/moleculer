@@ -45,6 +45,11 @@ module Moleculer
       packet_attr :node, nil
       packet_attr :node_id, ->(packet) { packet.sender || packet.node.id }
 
+      def initialize(*args)
+        super
+        @client = Client.new(client)
+      end
+
       def topic
         return "#{super}.#{node_id}" if node_id
 
@@ -57,7 +62,7 @@ module Moleculer
           config:   config_for_hash,
           ipList:   ip_list,
           hostname: hostname,
-          client:   client.to_h,
+          client:   @client.to_h,
         )
       end
 
