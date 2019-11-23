@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "base"
 
 module Moleculer
@@ -17,7 +19,7 @@ module Moleculer
       packet_attr :id
       packet_attr :node, nil
 
-      def to_h # rubocop:disable Metrics/MethodLength
+      def to_h
         super.merge(
           id:         id,
           action:     action,
