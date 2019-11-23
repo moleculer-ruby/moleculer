@@ -12,7 +12,7 @@ RSpec.shared_examples "moleculer events" do |transporter, serializer|
     @broker.wait_for_services("local", "remote")
   end
 
-  after :each do
+  before :each do
     CallTracker.reset
   end
 
