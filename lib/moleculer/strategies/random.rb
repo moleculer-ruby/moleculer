@@ -5,7 +5,7 @@ module Moleculer
     ##
     # Returns an action on a random node
     class Random
-      def select(store)
+      def select(list)
         list[rand(list.length) - 1]
       end
     end

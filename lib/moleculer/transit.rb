@@ -110,6 +110,20 @@ module Moleculer
               ), node_id)
     end
 
+    def send_action(action, context)
+      publish(Packets::REQ.new(
+                action:     action.name,
+                node_id:    action.node_id,
+                params:     context.params,
+                meta:       context.meta,
+                timeout:    context.options[:timeout],
+                level:      context.level,
+                metrics:    context.meta,
+                parent_id:  context.parent_id,
+                request_id: context.request_id,
+              ), action.node_id)
+    end
+
     def process_node_info(packet)
       @registry.process_node_info(packet)
     end

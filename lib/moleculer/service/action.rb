@@ -9,6 +9,7 @@ module Moleculer
 
       def initialize(service, name, method, options)
         @service  = service
+        @broker   = service.broker
         @raw_name = name
         @method   = method
         @options  = options
@@ -31,11 +32,14 @@ module Moleculer
       # call against the broker
       #
       # @param ctx [Moleculer::Context]
-      # @param options [::Hash] call options
       #
       # @return [any] result of the call
-      def call(ctx, options)
-        @service.public_send(@method, ctx) if ctx.local && @method
+      def call(ctx)
+        if @method == :__remote__
+          @broker.send_action(self, ctx)
+        else
+          @service.public_send(@method, ctx)
+        end
       end
 
       ##

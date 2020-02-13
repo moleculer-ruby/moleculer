@@ -60,6 +60,11 @@ module Moleculer
         @event_catalog.get_items_by_groups_for_node(name, groups, @node_id, broadcast)
       end
 
+      def get_action_endpoint(name, node_id)
+        endpoint   = @action_catalog.get_item_for_node(name, node_id) if @options[:prefer_local]
+        endpoint ||= @action_catalog.get_item(name)
+      end
+
       ##
       # @return [Moleculer::Node] the local moleculer node
       def local_node

@@ -5,6 +5,7 @@ require_relative "local_event_bus"
 require_relative "../serializers"
 require_relative "../logger"
 require_relative "../transit"
+require_relative "../context"
 
 module Moleculer
   module Broker
@@ -27,6 +28,7 @@ module Moleculer
         @registry    = Registry.new(self, @options[:registry])
         @transporter = resolve_transporter(@options[:transporter])
         @transit     = Transit.new(self, @options[:transit])
+        @contexts    = Concurrent::Hash.new
       end
 
       def emit(event_name, payload: nil, groups: [])
@@ -48,15 +50,33 @@ module Moleculer
         true
       end
 
+      def call(action_name, params = nil, options = {})
+        endpoint = get_action_endpoint(action_name, options[:node_id])
+        context  = Context.new(params: params, broker: self, endpoint: endpoint, options: options)
+        endpoint.call(context)
+        Timeout.timeout(@options[:request_timeout]) do
+          wait_for_context(context)
+        end
+        @contexts.delete(context.request_id)
+      rescue TimeoutError
+        @contexts.delete(context.request_id)
+        raise Errors::RequestTimeoutError, action
+      end
+
       def start
         @transit.connect
       end
 
       def stop; end
 
+      def send_action(endpoint, context)
+        @transit.send_action(endpoint, context)
+      end
+
       def send_event(name, payload, groups, broadcast, node_id)
         @transit.send_event(name, payload, groups, broadcast, node_id)
       end
+
 
       def wait_for_services(*_services)
         true
@@ -67,6 +87,17 @@ module Moleculer
       end
 
       private
+
+      def get_action_endpoint(action_name, node_id)
+        endpoint = @registry.get_action_endpoint(action_name, node_id)
+        raise Errors::ServiceNotFound, action_name, node_id unless endpoint
+
+        endpoint
+      end
+
+      def wait_for_context(context)
+        sleep 0.1 until @contexts[context.request_id]
+      end
 
       def emit_to_endpoints(endpoints, payload, groups)
         call_event_endpoints(endpoints, payload, groups, false)

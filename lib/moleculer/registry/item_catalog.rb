@@ -27,6 +27,18 @@ module Moleculer
         reset_for_node(node)
       end
 
+      def get_item(name)
+        @strategy.select(get_items(name))
+      end
+
+      def get_items(name)
+        @store[name]&.select { |item| item.name == name } || []
+      end
+
+      def get_item_for_node(name, node_id)
+        get_items(name).select { |item| item.node_id == node_id }.first
+      end
+
       def get_items_by_groups_for_node(name, groups, node_id, broadcast)
         get_items_by_groups(name, groups, broadcast).select { |item| item.node_id == node_id }
       end
@@ -41,7 +53,6 @@ module Moleculer
 
         @strategy.select(@store)
       end
-
 
       private
 
