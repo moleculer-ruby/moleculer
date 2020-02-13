@@ -62,7 +62,7 @@ module Moleculer
         @pending_requests.delete(context.request_id)
         raise Errors::RequestTimeoutError, action
       rescue => e
-        @pending_requests.delete(context.request_id)
+        @pending_requests.delete(context.request_id) if context
         raise e
       end
 
