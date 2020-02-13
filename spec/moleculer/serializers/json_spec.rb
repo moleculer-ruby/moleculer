@@ -2,7 +2,7 @@
 
 require_relative "../../../lib/moleculer/serializers/json"
 require_relative "../../../lib/moleculer/transit"
-require_relative "../../../lib/moleculer/packet"
+require_relative "../../../lib/moleculer/packets"
 
 RSpec.describe Moleculer::Serializers::Json do
   let(:broker) { double(Moleculer::Broker) }
