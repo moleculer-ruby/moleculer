@@ -24,9 +24,15 @@ module Moleculer
         @local_bus   = LocalEventBus.new
         @logger      = get_logger("BROKER")
         @serializer  = resolve_serializer(@options[:serializer])
-        @registry    = Registry.new(self)
+        @registry    = Registry.new(self, @options[:registry])
         @transporter = resolve_transporter(@options[:transporter])
         @transit     = Transit.new(self, @options[:transit])
+      end
+
+      def emit(event_name, payload: nil, groups: [])
+        endpoints = @registry.get_event_endpoints(event_name, groups, false)
+        emit_to_endpoints(endpoints, payload, groups)
+        true
       end
 
       def broadcast(event_name, payload: nil, groups: [])
@@ -37,7 +43,7 @@ module Moleculer
 
       def broadcast_local(event_name, payload: nil, groups: [])
         @local_bus.emit(event_name) if event_name =~ /^\$/
-        endpoints = @registry.get_local_event_endpoints(event_name, groups)
+        endpoints = @registry.get_local_event_endpoints(event_name, groups, true)
         broadcast_to_endpoints(endpoints, payload, groups)
         true
       end
@@ -62,11 +68,19 @@ module Moleculer
 
       private
 
+      def emit_to_endpoints(endpoints, payload, groups)
+        call_event_endpoints(endpoints, payload, groups, false)
+      end
+
       def broadcast_to_endpoints(endpoints, payload, groups)
+        call_event_endpoints(endpoints, payload, groups, true)
+      end
+
+      def call_event_endpoints(endpoints, payload, groups, broadcast)
         endpoints.each do |endpoint|
           @logger.debug("Broadcast '#{endpoint.name}'." \
                           "#{(!groups.empty? ? " to '#{groups.join(', ')}' group(s)" : '')}.")
-          endpoint.call(payload, groups, true)
+          endpoint.call(payload, groups, broadcast)
         end
       end
 

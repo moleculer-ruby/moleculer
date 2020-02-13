@@ -5,11 +5,12 @@ module Moleculer
     ##
     # Moleculer catalogs track nodes, services, actions and events
     class ItemCatalog
-      def initialize(registry, type)
+      def initialize(registry, type, strategy)
         @registry = registry
         @broker   = @registry.broker
         @logger   = @registry.logger
         @store    = Concurrent::Hash.new
+        @strategy = strategy
         @type     = type
       end
 
@@ -26,18 +27,21 @@ module Moleculer
         reset_for_node(node)
       end
 
-      def get_items_by_groups(name, groups)
+      def get_items_by_groups_for_node(name, groups, node_id, broadcast)
+        get_items_by_groups(name, groups, broadcast).select { |item| item.node_id == node_id }
+      end
+
+      def get_items_by_groups(name, groups, broadcast)
         items = if !groups.empty?
                   select_from_groups(groups)
                 else
                   @store.values
                 end
-        items.flatten.select { |item| item.name == name }
+        return items.flatten.select { |item| item.name == name } if broadcast
+
+        @strategy.select(@store)
       end
 
-      def get_items_by_groups_for_node(name, groups, node_id)
-        get_items_by_groups(name, groups).select { |item| item.node_id == node_id }
-      end
 
       private
 

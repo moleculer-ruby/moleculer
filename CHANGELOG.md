@@ -1,9 +1,19 @@
 ## 0.4.0
-### Breaking Changes
-* Actions now return a symbolized hash result
+### Features
 
-### Bugfixes
-* Fixes a bug where local actions could not be called correctly
+* Event groups support.
+* implemented broadcast and broadcast_local
+* strategy support (implemented Random strategy)
+
+## Breaking Changes
+
+* Broker now is located at `Broker::Base`
+
+## Bug Fixes
+
+* fixes issues with heartbeat and service registration not working forcing re-discover requests
+* fixes various concurrency related issues
+* fixes local event call failures
 
 ## 0.3.0
 ### Breaking Changes

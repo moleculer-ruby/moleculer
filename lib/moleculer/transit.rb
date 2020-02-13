@@ -105,7 +105,7 @@ module Moleculer
       publish(Packets::EVENT.new(
                 event:     name,
                 data:      payload,
-                groups:    groups,
+                groups:    groups.empty? ? nil : groups,
                 broadcast: broadcast,
               ), node_id)
     end

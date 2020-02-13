@@ -13,13 +13,13 @@ module Moleculer
 
       ##
       # @param broker [Moleculer::Broker] the moleculer service broker
-      def initialize(broker, options = {})
+      def initialize(broker, options)
         @broker          = broker
         @logger          = @broker.get_logger("registry")
-        @options         = (options[:registry] || {}).dup
-        @event_catalog   = ItemCatalog.new(self, :events)
-        @action_catalog  = ItemCatalog.new(self, :actions)
-        @service_catalog = ItemCatalog.new(self, :services)
+        @options         = options
+        @event_catalog   = ItemCatalog.new(self, :events, @options[:strategy].new)
+        @action_catalog  = ItemCatalog.new(self, :actions, @options[:strategy].new)
+        @service_catalog = ItemCatalog.new(self, :services, @options[:strategy].new)
         @node_catalog    = NodeCatalog.new(self)
         register_node(create_local_node)
       end
@@ -52,12 +52,12 @@ module Moleculer
         @event_catalog.unregister_items_for_node(node)
       end
 
-      def get_event_endpoints(name, groups)
-        @event_catalog.get_items_by_groups(name, groups)
+      def get_event_endpoints(name, groups, broadcast = true)
+        @event_catalog.get_items_by_groups(name, groups, broadcast)
       end
 
-      def get_local_event_endpoints(name, groups)
-        @event_catalog.get_items_by_groups_for_node(name, groups, @node_id)
+      def get_local_event_endpoints(name, groups, broadcast)
+        @event_catalog.get_items_by_groups_for_node(name, groups, @node_id, broadcast)
       end
 
       ##

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "../utils/utils"
+require_relative "../strategies"
 
 
 module Moleculer
@@ -42,7 +43,7 @@ module Moleculer
         disable_balancer:     false,
 
         registry:             {
-          strategy:     "RoundRobin",
+          strategy:     Strategies::Random,
           prefer_local: true,
         },
 
