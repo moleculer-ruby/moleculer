@@ -28,7 +28,7 @@ module Moleculer
         @registry    = Registry.new(self, @options[:registry])
         @transporter = resolve_transporter(@options[:transporter])
         @transit     = Transit.new(self, @options[:transit])
-        @contexts    = Concurrent::Hash.new
+        @pending_requests = Concurrent::Hash.new
       end
 
       def emit(event_name, payload: nil, groups: [])
@@ -57,10 +57,13 @@ module Moleculer
         Timeout.timeout(@options[:request_timeout]) do
           wait_for_context(context)
         end
-        @contexts.delete(context.request_id)
+        process_response(@pending_requests.delete(context.request_id))
       rescue TimeoutError
-        @contexts.delete(context.request_id)
+        @pending_requests.delete(context.request_id)
         raise Errors::RequestTimeoutError, action
+      rescue => e
+        @pending_requests.delete(context.request_id)
+        raise e
       end
 
       def start
@@ -86,7 +89,17 @@ module Moleculer
         super(tags.unshift(@node_id))
       end
 
+      def add_response(response)
+        @pending_requests[response.payload[:id]] = response.payload
+      end
+
       private
+
+      def process_response(response)
+        raise Errors.recreate_error(response[:error]) unless response[:success]
+
+        response[:data]
+      end
 
       def get_action_endpoint(action_name, node_id)
         endpoint = @registry.get_action_endpoint(action_name, node_id)
@@ -96,7 +109,7 @@ module Moleculer
       end
 
       def wait_for_context(context)
-        sleep 0.1 until @contexts[context.request_id]
+        sleep 0.1 until @pending_requests[context.request_id]
       end
 
       def emit_to_endpoints(endpoints, payload, groups)

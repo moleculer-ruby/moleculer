@@ -38,6 +38,8 @@ module Moleculer
           @transit.process_node_info(message)
         when Packets::HEARTBEAT
           @transit.process_heartbeat(message)
+        when Packets::RES
+          @transit.process_response(message)
         end
       end
     end
@@ -80,6 +82,7 @@ module Moleculer
         { type: Packets::DISCOVER },
         { type: Packets::DISCOVER, node_id: @node_id },
         { type: Packets::EVENT, node_id: @node_id },
+        { type: Packets::RES, node_id: @node_id },
         { type: Packets::HEARTBEAT },
         { type: Packets::INFO, node_id: @node_id },
         { type: Packets::INFO },
@@ -120,7 +123,7 @@ module Moleculer
                 level:      context.level,
                 metrics:    context.meta,
                 parent_id:  context.parent_id,
-                request_id: context.request_id,
+                id:         context.request_id,
               ), action.node_id)
     end
 
@@ -130,6 +133,10 @@ module Moleculer
 
     def process_heartbeat(packet)
       @registry.process_heartbeat(packet)
+    end
+
+    def process_response(packet)
+      @broker.add_response(packet)
     end
 
     def publish(packet, sender)
