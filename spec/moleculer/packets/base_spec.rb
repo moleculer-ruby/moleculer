@@ -17,7 +17,7 @@ RSpec.describe Moleculer::Packets::Base do
 
   describe "#type" do
     it "returns the class name of the packet " do
-      expect(subject.type).to eq(described_class.name)
+      expect(subject.type).to eq(described_class.name.split("::")[-1])
     end
   end
 end
