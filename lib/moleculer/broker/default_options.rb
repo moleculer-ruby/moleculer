@@ -3,12 +3,13 @@
 require_relative "../utils/utils"
 require_relative "../strategies"
 
-
 module Moleculer
   module Broker
     ##
     # Encapsulate all of the brokers configurations
     module DefaultOptions
+      attr_reader :options, :node_id, :services, :namespace
+
       ##
       # Default broker options
       DEFAULT_OPTIONS = {
@@ -26,9 +27,9 @@ module Moleculer
           factor:   2,
           # check: err => err && !!err.retryable
         },
-        serializer: "Json",
-        transporter: {
-            url: "redis://localhost"
+        serializer:           "Json",
+        transporter:          {
+          url: "redis://localhost",
         },
 
         max_call_level:       0,
@@ -77,6 +78,18 @@ module Moleculer
         hot_reload:           false,
 
       }.freeze
+
+      def initialize(options = {})
+        @options   = DEFAULT_OPTIONS.merge(options)
+        @node_id   = @options[:node_id]
+        @services  = @options[:services]
+        @namespace = @options[:namespace]
+        super
+      end
+
     end
+
+
+
   end
 end
