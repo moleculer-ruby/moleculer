@@ -10,11 +10,18 @@ module Moleculer
         super
       end
 
+      ##
+      # Starts the broker
       def start
         @transit.connect
+        @started = true
       end
 
-      def stop; end
+      ##
+      # Stops the broker
+      def stop
+        @transit.disconnect
+      end
     end
   end
 end
