@@ -48,4 +48,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rspec-mocks"
   spec.add_development_dependency "redis"
   spec.add_development_dependency "hiredis"
+  spec.add_development_dependency "yard",  "~>0.9"
 end

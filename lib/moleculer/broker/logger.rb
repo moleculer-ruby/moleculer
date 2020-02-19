@@ -7,10 +7,12 @@ module Moleculer
     ##
     # Broker logging abilities
     module Logger
+      # @return [::Logger] the broker logger
       attr_reader :logger
 
       include Moleculer::Logger
 
+      # @private
       def initialize(*)
         @logger = get_logger("BROKER")
       end

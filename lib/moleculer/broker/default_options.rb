@@ -79,6 +79,8 @@ module Moleculer
 
       }.freeze
 
+      ##
+      # @param options [::Hash] moleculer options
       def initialize(options = {})
         @options   = DEFAULT_OPTIONS.merge(options)
         @node_id   = @options[:node_id]

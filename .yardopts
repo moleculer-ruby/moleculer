@@ -1,1 +1,8 @@
 --markup=markdown
+--no-private
+--verbose
+--load ./docs/templates/plugin.rb
+--asset docs/images:images
+-
+README.md
+docs/Guide.md

@@ -10,10 +10,11 @@ require_relative "transporter"
 require_relative "registry"
 require_relative "transit"
 
+
 module Moleculer
   module Broker
     ##
-    # Service Broker class
+    # The Moleculer service broker
     class Base
       include Logger
       include Controls
