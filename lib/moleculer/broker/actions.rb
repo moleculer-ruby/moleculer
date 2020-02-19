@@ -57,8 +57,8 @@ module Moleculer
         context  = Context.new(params: params, broker: self, endpoint: endpoint, options: options)
         call_endpoint(context, endpoint)
       rescue StandardError => e
-        handle_error(e, retries, context.request_id)
-        call(action_name, params, options.merge(retries: retries - 1))
+        handle_error(e, retries, context.request_id, options[:fallback_response]) ||
+          call(action_name, params, options.merge(retries: retries - 1))
       end
 
       # @private
@@ -75,11 +75,13 @@ module Moleculer
 
       private
 
-      def handle_error(error, retries, request_id)
+      def handle_error(error, retries, request_id, fallback_response)
         return if error.is_a?(Errors::RetryableError) && (retries - 1).positive?
 
         @pending_requests.delete(request_id)
-        raise error
+        raise error unless fallback_response
+
+        fallback_response
       end
 
       def get_action_endpoint(action_name, node_id)

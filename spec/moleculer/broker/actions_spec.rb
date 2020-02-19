@@ -18,6 +18,20 @@ RSpec.describe Moleculer::Broker::Base do
   end
 
   describe "#call" do
+    context "with fallback_response" do
+      before :each do
+        allow(action).to receive(:call) do
+          raise StandardError, "test"
+        end
+      end
+
+      subject { Moleculer::Broker::Base.new(request_timeout: 0.01) }
+
+      it "returns the fallback response when one is defined" do
+        expect(subject.call("test", nil, fallback_response: "default")).to eq("default")
+      end
+    end
+
     context "normal action call" do
       before :each do
         allow(action).to receive(:call) do |context|
