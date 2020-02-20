@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require "concurrent/hash"
-require_relative "../context"
+require_relative "action_context"
 
 module Moleculer
   module Broker
@@ -54,10 +54,16 @@ module Moleculer
       def call(action_name, params = {}, options = {})
         retries  = options[:retries] || @options.dig(:retry_policy, :retries) || 0
         endpoint = get_action_endpoint(action_name, options[:node_id])
-        context  = Context.new(params: params, broker: self, endpoint: endpoint, options: options)
+        context  = ActionContext.new(
+          params:   params,
+          broker:   self,
+          endpoint: endpoint,
+          meta:     options[:meta],
+          options:  options
+        )
         call_endpoint(context, endpoint)
       rescue StandardError => e
-        handle_error(e, retries, context.request_id, options[:fallback_response]) ||
+        handle_error(e, retries, context&.request_id, options[:fallback_response]) ||
           call(action_name, params, options.merge(retries: retries - 1))
       end
 
@@ -78,7 +84,7 @@ module Moleculer
       def handle_error(error, retries, request_id, fallback_response)
         return if error.is_a?(Errors::RetryableError) && (retries - 1).positive?
 
-        @pending_requests.delete(request_id)
+        @pending_requests.delete(request_id) if request_id
         raise error unless fallback_response
 
         fallback_response

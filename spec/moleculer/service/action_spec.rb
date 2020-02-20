@@ -8,7 +8,7 @@ RSpec.describe Moleculer::Service::Action do
 
   describe "#call" do
     context "local call" do
-      let(:context) { double(Moleculer::Context, local: true) }
+      let(:context) { double(Moleculer::ActionContext, local: true) }
 
       it "calls the method assigned to the action on the service" do
         subject.call(context, {})
@@ -17,7 +17,7 @@ RSpec.describe Moleculer::Service::Action do
     end
 
     context "remote call" do
-      let(:context) { double(Moleculer::Context, local: false, params: { foo: "bar" }) }
+      let(:context) { double(Moleculer::ActionContext, local: false, params: { foo: "bar" }) }
 
       it "calls out to the broker" do
         subject.call(context, {})

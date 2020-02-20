@@ -31,7 +31,7 @@ module Moleculer
       # Calls the action, if the action is a local call it will call the method on the service, otherwise it will
       # call against the broker
       #
-      # @param ctx [Moleculer::Context]
+      # @param ctx [Moleculer::ActionContext]
       #
       # @return [any] result of the call
       def call(ctx)

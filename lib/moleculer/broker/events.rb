@@ -9,8 +9,10 @@ module Moleculer
     attr_reader :local_bus
 
     ###
-    # Event related broker functionality
+    # The broker has a built-in event bus to support Event-driven architecture and to send events to local and remote
+    # services.
     module Events
+      # @private
       def initialize(*)
         @local_bus = LocalEventBus.new
         super
@@ -29,6 +31,18 @@ module Moleculer
         true
       end
 
+      ##
+      # Sends balanced events
+      #
+      # @param event_name [String] the name of the event
+      # @param payload [Hash] the payload to send with the event
+      # @param groups [Array<String>] the groups to send the events to
+      #
+      # @example Emit an event
+      #   broker.emit("user.created", { username: "foobard" });
+      #
+      # @example Emit an event to specific groups
+      #   broker.emit("user.created", { username: "foobard" }, ["mail", "payments"]);
       def emit(event_name, payload: nil, groups: [])
         endpoints = registry.get_event_endpoints(event_name, groups, false)
         emit_to_endpoints(endpoints, payload, groups)
