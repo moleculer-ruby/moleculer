@@ -5,7 +5,7 @@ module Moleculer
     ##
     # Represents a service event
     class Event
-      attr_reader :name, :service, :options
+      attr_reader :name, :service, :options, :broker
 
       def initialize(service, name, method, options)
         @service = service

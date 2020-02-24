@@ -19,6 +19,15 @@ module Moleculer
         @parent_id  = parent_id
         @request_id = SecureRandom.hex(24)
       end
+
+
+      def call(action_name, params = {}, options = {})
+        broker.call(
+          action_name,
+          params,
+          options.merge(meta: (@options[:meta] || {}).merge(options[:meta]), parent_context: self),
+        )
+      end
     end
   end
 end

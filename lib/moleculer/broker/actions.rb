@@ -52,14 +52,15 @@ module Moleculer
       # @example Direct call: get health info from the `node-21` node
       #    broker.call("$node.health", null, { node_id: "node-21" })
       def call(action_name, params = {}, options = {})
-        retries  = options[:retries] || @options.dig(:retry_policy, :retries) || 0
-        endpoint = get_action_endpoint(action_name, options[:node_id])
-        context  = ActionContext.new(
+        retries   = options[:retries] || @options.dig(:retry_policy, :retries) || 0
+        endpoint  = get_action_endpoint(action_name, options[:node_id])
+        context   = options.delete(:parent_context)
+        context ||= ActionContext.new(
           params:   params,
           broker:   self,
           endpoint: endpoint,
           meta:     options[:meta],
-          options:  options
+          options:  options,
         )
         call_endpoint(context, endpoint)
       rescue StandardError => e
@@ -80,6 +81,26 @@ module Moleculer
       end
 
       private
+
+      def create_context(params, endpoint, options)
+        if options.delete(:context)
+          ActionContext.new(
+            params:   params,
+            broker:   self,
+            endpoint: endpoint,
+            meta:     options.delete(:meta),
+            options:  options,
+          )
+        else
+          ActionContext.new(
+            params:    params,
+            endpoint:  endpoint,
+            meta:      options.delete(:meta),
+            options:   options,
+            parent_id: id,
+          )
+        end
+      end
 
       def handle_error(error, retries, request_id, fallback_response)
         return if error.is_a?(Errors::RetryableError) && (retries - 1).positive?

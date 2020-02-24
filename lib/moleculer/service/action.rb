@@ -5,7 +5,7 @@ module Moleculer
     ##
     # Represents a service action
     class Action
-      attr_reader :service, :option
+      attr_reader :service, :option, :broker
 
       def initialize(service, name, method, options)
         @service  = service
