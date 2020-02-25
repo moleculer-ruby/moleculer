@@ -4,10 +4,13 @@
 * Event groups support.
 * implemented broadcast and broadcast_local
 * strategy support (implemented Random strategy)
+* sub call support
+* distributed timeout across sub calls
 
 ## Breaking Changes
 
 * Broker now is located at `Broker::Base`
+* Events now receive a `Context` object instead of raw parameters
 
 ## Bug Fixes
 
