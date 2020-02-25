@@ -16,13 +16,13 @@ module IntegrationHelpers
   alias broker local
 
   def create_broker(node_id, transporter, serializer, *services)
-     Moleculer::Broker.new(
-        node_id:     node_id,
-        services:    services,
-        transporter: transporter,
-        log_file:    STDOUT,
-        log_level:   :debug,
-        serializer:  serializer,
+    Moleculer::Broker.new(
+      node_id:     node_id,
+      services:    services,
+      transporter: transporter,
+      log_file:    STDOUT,
+      log_level:   :debug,
+      serializer:  serializer,
     )
   end
 end

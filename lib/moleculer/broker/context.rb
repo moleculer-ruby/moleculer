@@ -26,6 +26,8 @@ module Moleculer
       attr_reader :request_id
       # @return [Context] the parent context
       attr_reader :parent_context
+      # @return [Integer] Request level (in nested-calls). The first level is 1.
+      attr_reader :level
 
       # @!method emit(event_name, payload = nil, groups = [])
       # @return [Boolean]
@@ -49,8 +51,9 @@ module Moleculer
       # @param endpoint [Moleculer::Service::Endpoint] the endpoint for this context
       # @param meta [Hash] request metadata
       # @param locals [Hash] local data
+      # @param level [Integer] Request level (in nested-calls). The first level is 1.
       # @param options [Hash] context options
-      def initialize(params: {}, endpoint:, meta: {}, locals: {}, options:, parent_context: nil)
+      def initialize(params: {}, endpoint:, meta: {}, locals: {}, options:, parent_context: nil, level: 1)
         @id             = SecureRandom.hex(24)
         @params         = params
         @endpoint       = endpoint
@@ -59,6 +62,7 @@ module Moleculer
         @meta           = meta
         @locals         = locals
         @parent_context = parent_context
+        @level          = level
       end
 
       ##
@@ -74,6 +78,12 @@ module Moleculer
         end
 
         broker.call(action_name, params, opts)
+      end
+
+      ##
+      # @return [String] the unique id of the parent context
+      def parent_id
+        @parent_context&.id
       end
 
       # @private

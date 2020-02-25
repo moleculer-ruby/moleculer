@@ -16,7 +16,7 @@ module Moleculer
         @node_id       = @broker.node_id
         @logger        = @broker.get_logger("transporter")
         @prefix        = "MOL"
-        @prefix        += "-#{@broker.namespace}" if @broker.namespace
+        @prefix        += "-#{@broker.namespace}" if @broker.namespace && @broker.namespace.length > 0
         @subscriptions  = subscriptions
         connect
       end

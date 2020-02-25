@@ -54,3 +54,5 @@ end
 
 {render_method:Moleculer::Broker::Events#emit}
 
+## Context
+{include:Moleculer::Broker::Context}

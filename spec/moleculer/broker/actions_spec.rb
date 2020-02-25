@@ -19,17 +19,16 @@ RSpec.describe Moleculer::Broker::Base do
 
   describe "#call" do
     context "with parent context" do
-
       let(:parent_context) { double(Moleculer::Broker::Context) }
 
       before :each do
         allow(action).to receive(:call) do |context|
           @context = context
           subject
-              .add_response(double("response", payload: {
-                  id:      context.request_id,
-                  success: true,
-              }))
+            .add_response(double("response", payload: {
+              id:      context.request_id,
+              success: true,
+            }))
         end
       end
 
@@ -38,7 +37,6 @@ RSpec.describe Moleculer::Broker::Base do
         expect(@context.instance_variable_get(:@parent_context)).to eq(parent_context)
       end
     end
-
 
     context "with fallback_response" do
       before :each do
@@ -86,7 +84,6 @@ RSpec.describe Moleculer::Broker::Base do
     end
 
     context "retries" do
-
       context "non retryable errors" do
         before :each do
           allow(action).to receive(:call) do
@@ -97,7 +94,6 @@ RSpec.describe Moleculer::Broker::Base do
         it "does not retry" do
           expect(action).to receive(:call).exactly(1).times
           expect { subject.call("test") }.to raise_exception(StandardError)
-
         end
       end
 
