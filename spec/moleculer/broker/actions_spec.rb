@@ -18,6 +18,28 @@ RSpec.describe Moleculer::Broker::Base do
   end
 
   describe "#call" do
+    context "with parent context" do
+
+      let(:parent_context) { double(Moleculer::Broker::Context) }
+
+      before :each do
+        allow(action).to receive(:call) do |context|
+          @context = context
+          subject
+              .add_response(double("response", payload: {
+                  id:      context.request_id,
+                  success: true,
+              }))
+        end
+      end
+
+      it "creates a child context" do
+        subject.call("test", nil, parent_context: parent_context)
+        expect(@context.instance_variable_get(:@parent_context)).to eq(parent_context)
+      end
+    end
+
+
     context "with fallback_response" do
       before :each do
         allow(action).to receive(:call) do

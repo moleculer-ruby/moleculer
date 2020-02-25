@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require "concurrent/hash"
-require_relative "action_context"
+require_relative "context"
 
 module Moleculer
   module Broker
@@ -52,17 +52,12 @@ module Moleculer
       # @example Direct call: get health info from the `node-21` node
       #    broker.call("$node.health", null, { node_id: "node-21" })
       def call(action_name, params = {}, options = {})
-        retries   = options[:retries] || @options.dig(:retry_policy, :retries) || 0
-        endpoint  = get_action_endpoint(action_name, options[:node_id])
-        context   = options.delete(:parent_context)
-        context ||= ActionContext.new(
-          params:   params,
-          broker:   self,
-          endpoint: endpoint,
-          meta:     options[:meta],
-          options:  options,
-        )
-        call_endpoint(context, endpoint)
+        retries  = options[:retries] || @options.dig(:retry_policy, :retries) || 0
+        endpoint = get_action_endpoint(action_name, options[:node_id])
+        context  = create_context(params, endpoint, options)
+        context.execute do
+          call_endpoint(context, endpoint)
+        end
       rescue StandardError => e
         handle_error(e, retries, context&.request_id, options[:fallback_response]) ||
           call(action_name, params, options.merge(retries: retries - 1))
@@ -83,29 +78,34 @@ module Moleculer
       private
 
       def create_context(params, endpoint, options)
-        if options.delete(:context)
-          ActionContext.new(
+        context = options.delete(:parent_context)
+        if context
+          Context.new(
+            params:         params,
+            endpoint:       endpoint,
+            meta:           options.delete(:meta),
+            options:        options,
+            parent_context: context,
+          )
+        else
+          Context.new(
             params:   params,
-            broker:   self,
             endpoint: endpoint,
             meta:     options.delete(:meta),
             options:  options,
-          )
-        else
-          ActionContext.new(
-            params:    params,
-            endpoint:  endpoint,
-            meta:      options.delete(:meta),
-            options:   options,
-            parent_id: id,
           )
         end
       end
 
       def handle_error(error, retries, request_id, fallback_response)
-        return if error.is_a?(Errors::RetryableError) && (retries - 1).positive?
+        if error.is_a?(Errors::RetryableError) && (retries - 1).positive?
+          @logger.warn("an error occurred trying to make the request, retrying #{retries - 1} more time(s)")
+          @logger.warn(error)
+          return
+        end
 
         @pending_requests.delete(request_id) if request_id
+
         raise error unless fallback_response
 
         fallback_response
