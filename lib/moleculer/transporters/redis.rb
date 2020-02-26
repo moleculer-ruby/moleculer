@@ -28,6 +28,11 @@ module Moleculer
         make_subscriptions
       end
 
+      def disconnect
+        @sub.disconnect!
+        @pub.disconnect!
+      end
+
       def publish(packet, node_id = nil)
         @pub.publish(get_topic_name(packet.type, node_id), serialize(packet))
       end

@@ -46,6 +46,10 @@ module Moleculer
         @event_catalog.register_items_for_node(node)
       end
 
+      def get_services(*services)
+        @service_catalog.get_items(*services)
+      end
+
       def unregister_services_for_node(node)
         @service_catalog.unregister_items_for_node(node)
         @action_catalog.unregister_items_for_node(node)

@@ -53,12 +53,12 @@ module Moleculer
       # @param locals [Hash] local data
       # @param level [Integer] Request level (in nested-calls). The first level is 1.
       # @param options [Hash] context options
-      def initialize(params: {}, endpoint:, meta: {}, locals: {}, options:, parent_context: nil, level: 1)
+      def initialize(params: {}, endpoint:, meta: {}, locals: {}, options:, parent_context: nil, level: 1, request_id: nil)
         @id             = SecureRandom.hex(24)
         @params         = params
         @endpoint       = endpoint
         @options        = options
-        @request_id     = SecureRandom.hex(24)
+        @request_id     = request_id || SecureRandom.hex(24)
         @meta           = meta
         @locals         = locals
         @parent_context = parent_context

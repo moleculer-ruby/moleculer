@@ -21,6 +21,7 @@ module Moleculer
       # Stops the broker
       def stop
         @transit.disconnect
+        @started = false
       end
     end
   end

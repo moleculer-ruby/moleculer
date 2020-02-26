@@ -28,15 +28,19 @@ module Moleculer
       end
 
       def get_item(name)
-        @strategy.select(get_items(name))
+        @strategy.select(get_items_by_name(name))
       end
 
-      def get_items(name)
+      def get_items_by_name(name)
         @store[name]&.select { |item| item.name == name } || []
       end
 
+      def get_items(*items)
+        @store.select { |k, _v| items.include?(k) }
+      end
+
       def get_item_for_node(name, node_id)
-        get_items(name).select { |item| item.node_id == node_id }.first
+        get_items_by_name(name).select { |item| item.node_id == node_id }.first
       end
 
       def get_items_by_groups_for_node(name, groups, node_id, broadcast)

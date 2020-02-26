@@ -42,6 +42,8 @@ module Moleculer
           @transit.process_heartbeat(message)
         when Packets::RES
           @transit.process_response(message)
+        when Packets::REQ
+          @transit.process_request(message)
         end
       end
     end
@@ -87,9 +89,10 @@ module Moleculer
         { type: Packets::DISCOVER },
         { type: Packets::DISCOVER, node_id: node_id },
         { type: Packets::EVENT, node_id: node_id },
-        { type: Packets::RES, node_id: node_id },
         { type: Packets::HEARTBEAT },
         { type: Packets::INFO, node_id: node_id },
+        { type: Packets::REQ, node_id: node_id },
+        { type: Packets::RES, nod_id: node_id },
         { type: Packets::INFO },
         { type: Packets::PING },
         { type: Packets::PING, node_id: node_id },
@@ -120,16 +123,24 @@ module Moleculer
 
     def send_action(action, context)
       publish(Packets::REQ.new(
-                action:     action.name,
-                node_id:    action.node_id,
-                params:     context.params,
-                meta:       context.meta,
-                timeout:    context.options[:timeout],
-                level:      context.level,
-                metrics:    context.meta,
-                parent_id:  context.parent_id,
-                id:         context.request_id,
+                action:    action.name,
+                node_id:   action.node_id,
+                params:    context.params,
+                meta:      context.meta,
+                timeout:   context.options[:timeout] || 0,
+                level:     context.level,
+                metrics:   context.meta,
+                parent_id: context.parent_id,
+                id:        context.request_id,
               ), action.node_id)
+    end
+
+    def send_response(response)
+      publish(Packets::RES.new(
+                id:      response[:id],
+                success: response[:success],
+                data:    response[:data],
+              ), response[:sender])
     end
 
     def send_disconnect
@@ -145,7 +156,23 @@ module Moleculer
     end
 
     def process_response(packet)
-      @broker.add_response(packet)
+      @broker.add_response(packet.payload[:id], packet.payload)
+    end
+
+    def process_request(packet)
+      payload  = packet.payload
+      response = @broker.call(payload[:action], payload[:params],
+                              meta:       payload[:meta],
+                              level:      payload[:level],
+                              timeout:    payload[:timeout],
+                              metrics:    payload[:metrics],
+                              node_id:    payload[:sender],
+                              request_id: payload[:id])
+      send_response(
+        id:      payload[:id],
+        success: true,
+        data:    response,
+      )
     end
 
     def publish(packet, sender)

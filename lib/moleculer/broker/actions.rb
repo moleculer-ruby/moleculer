@@ -18,8 +18,8 @@ module Moleculer
       end
 
       # @private
-      def add_response(response)
-        @pending_requests[response.payload[:id]] = response.payload
+      def add_response(id, payload)
+        @pending_requests[id] = payload
       end
 
       ##
@@ -84,6 +84,7 @@ module Moleculer
             params:         params,
             endpoint:       endpoint,
             meta:           options.delete(:meta),
+            request_id: options.delete(:request_id),
             options:        options,
             parent_context: context,
           )
@@ -92,6 +93,7 @@ module Moleculer
             params:   params,
             endpoint: endpoint,
             meta:     options.delete(:meta),
+            request_id: options.delete(:request_id),
             options:  options,
           )
         end

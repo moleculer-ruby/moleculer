@@ -38,7 +38,8 @@ module Moleculer
         if @method == :__remote__
           @broker.send_action(self, ctx)
         else
-          @service.public_send(@method, ctx)
+          response = @service.public_send(@method, ctx)
+          @broker.add_response(ctx.request_id, data: response, success: true)
         end
       end
 
