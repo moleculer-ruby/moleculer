@@ -64,9 +64,14 @@ module Moleculer
         @event_catalog.get_items_by_groups_for_node(name, groups, @node_id, broadcast)
       end
 
+      ##
+      # Gets an endpoint for hte provided name and node_id
+      #
+      # @return [Moleculer::Service::Action] the action of the given name
       def get_action_endpoint(name, node_id)
-        endpoint   = @action_catalog.get_item_for_node(name, node_id) if @options[:prefer_local]
-        endpoint ||= @action_catalog.get_item(name)
+        return @action_catalog.get_item_for_node(name, node_id) if node_id
+
+        @action_catalog.get_item(name)
       end
 
       ##

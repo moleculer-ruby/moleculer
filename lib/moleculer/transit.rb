@@ -166,7 +166,6 @@ module Moleculer
                               level:      payload[:level],
                               timeout:    payload[:timeout],
                               metrics:    payload[:metrics],
-                              node_id:    payload[:sender],
                               request_id: payload[:id])
       send_response(
         id:      payload[:id],

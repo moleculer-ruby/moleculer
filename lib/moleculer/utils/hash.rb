@@ -1,6 +1,6 @@
 # frozen_string_literal: true
-require "json"
 
+require "json"
 
 require_relative "string"
 
@@ -56,12 +56,21 @@ module Moleculer
 
       private
 
-      def json_convert(value)
+      def json_convert(value, skip_camelization = false)
         case value
         when Array
           value.map { |v| json_convert(v) }
         when ::Hash
-          ::Hash[value.map { |k, v| [camelize_key(json_convert(k)), json_convert(v)] }]
+          ::Hash[value.map do |k, v|
+            key   = k
+            key   = camelize_key(k) unless skip_camelization
+            value = if %w[actions events].include?(k.to_s)
+                      json_convert(v, true)
+                    else
+                      json_convert(v)
+                    end
+            [key, value]
+          end]
         when Integer
           value
         else

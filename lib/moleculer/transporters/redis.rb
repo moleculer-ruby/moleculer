@@ -29,6 +29,7 @@ module Moleculer
       end
 
       def disconnect
+        @disconnecting = true
         @sub.disconnect!
         @pub.disconnect!
       end
@@ -48,6 +49,8 @@ module Moleculer
               handle_message({ topic: topic, message: message }.freeze)
             end
           end
+        rescue StandardError => e
+          raise e unless @disconnecting
         end
       end
     end

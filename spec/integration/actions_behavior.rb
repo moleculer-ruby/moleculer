@@ -22,14 +22,21 @@ RSpec.shared_examples "moleculer actions" do |transporter, serializer|
         it "returns a result from remote actions" do
           expect(@broker.call("remote.test", {})).to eq(result: "remote action result")
         end
+
+        it "correctly passes meta data" do
+          expect(@broker.call("remote.test_with_meta", {}, meta: { foo: "bar" })).to eq(result: { foo: "bar" })
+        end
       end
 
       describe "local actions" do
         it "returns a result from local actions" do
           expect(@broker.call("local.test", {})).to eq(result: "local action result")
         end
+
+        it "correctly passes meta data" do
+          expect(@broker.call("local.test_with_meta", {}, meta: { foo: "bar" })).to eq(result: { foo: "bar" })
+        end
       end
     end
   end
 end
-

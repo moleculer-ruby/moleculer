@@ -5,7 +5,9 @@ require_relative "call_tracker"
 # @private
 class RemoteService < Moleculer::Service::Base
   service_name "remote"
-  action :test, :remote_action
+  action "test", :remote_action
+  action "test_with_meta", :remote_action_with_meta
+
   event  "test-remote-event", :remote_event
 
   attr_reader :event_fired
@@ -17,6 +19,10 @@ class RemoteService < Moleculer::Service::Base
 
   def remote_action(_)
     { result: "remote action result" }
+  end
+
+  def remote_action_with_meta(ctx)
+    { result: ctx.meta }
   end
 
   def remote_event(_)
