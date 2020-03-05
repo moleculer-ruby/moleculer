@@ -127,7 +127,7 @@ module Moleculer
       end
 
       def wait_for_context(context, endpoint)
-        Timeout.timeout(context.options[:timeout] || @options[:request_timeout]) do
+        Timeout.timeout(context.options[:timeout]&.to_f || @options[:request_timeout]) do
           sleep 0.1 until @pending_requests[context.request_id]
         end
       rescue Timeout::Error
