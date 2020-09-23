@@ -4,10 +4,10 @@ module Moleculer
   module Service
     class Callable
       def initialize(service, name:, method:, &block)
-        @service = service
-        @name    = name
-        @method  = method
-        @handler = block
+        @service  = service
+        @name     = name
+        @method   = method
+        @handler  = block
       end
 
       ##
@@ -21,9 +21,15 @@ module Moleculer
         service.public_send(method, *args, **kwargs)
       end
 
+      def schema
+        {
+          name: name
+        }
+      end
+
       private
 
-      attr_reader :service, :name, :method, :handler
+      attr_reader :service, :name, :method, :handler, :raw_name
     end
   end
 end

@@ -9,8 +9,29 @@ module Moleculer
     class Action < Callable
       def initialize(*args, timeout:, cache:, **kwargs, &block)
         super(*args, **kwargs, &block)
-        @timeout = timeout
-        @cache   = cache
+        @timeout  = timeout
+        @cache    = cache
+      end
+
+      def raw_name
+        @name
+      end
+
+      def name
+        "#{service.name}.#{raw_name}"
+      end
+
+      def schema
+        super.merge(
+          cache: cache,
+          raw_name: raw_name,
+          name: name,
+          params: {},
+          metrics: {
+            params: false,
+            meta: false
+          }
+        )
       end
 
       private

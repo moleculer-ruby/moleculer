@@ -10,5 +10,10 @@ RSpec.describe Moleculer::Service::Event do
         group: "test"
       }
     end
+    let(:expected_schema) do
+      {
+        name: "test"
+      }
+    end
   end
 end

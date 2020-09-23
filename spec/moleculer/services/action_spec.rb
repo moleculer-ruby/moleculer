@@ -12,5 +12,17 @@ RSpec.describe Moleculer::Service::Action do
         method: :test
       }
     end
+    let(:expected_schema) do
+      {
+        name: "service.test",
+        raw_name: "test",
+        cache: false,
+        params: {},
+        metrics: {
+          meta: false,
+          params: false
+        }
+      }
+    end
   end
 end

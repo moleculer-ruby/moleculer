@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.shared_examples Moleculer::Service::Callable do
-  let(:service) { double(Moleculer::Service::Base) }
+  let(:service) { double(Moleculer::Service::Base, name: "service") }
 
   let(:default_params) do
     {
@@ -42,6 +42,21 @@ RSpec.shared_examples Moleculer::Service::Callable do
 
         subject.call("foo", "bar", foo: :bar)
       end
+    end
+  end
+
+  describe "#schema" do
+    subject do
+      callable_class.new(
+        service,
+        **default_params.merge(params).merge(method: :test)
+      )
+    end
+
+    it "returns the correct schema" do
+      expect(subject.schema).to eq({
+        name: "test"
+      }.merge(expected_schema))
     end
   end
 end
