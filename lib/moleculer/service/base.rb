@@ -129,7 +129,7 @@ module Moleculer
       end
 
       def actions_schema
-        @action_schema ||= actions.transform_values(&:schema)
+        @actions_schema ||= actions.transform_values(&:schema)
       end
 
       def actions
