@@ -20,8 +20,62 @@ RSpec.describe Moleculer::Service::Base do
         },
       )
 
+      metadata(
+        meta: :data,
+      )
+
       def test_action(_ctx); end
     end.new(double("broker"))
+  end
+
+  describe "::metadata" do
+    context "getter" do
+      subject do
+        Class.new(Moleculer::Service::Base) do
+          service_name "test"
+
+          metadata(
+            setting_1: true,
+          )
+        end
+      end
+
+      it "returns the metadata" do
+        expect(subject.metadata).to eq({
+          setting_1: true,
+        })
+      end
+
+      context "with parent" do
+        let(:parent) do
+          Class.new(Moleculer::Service::Base) do
+            service_name "test"
+
+            metadata(
+              setting_1: true,
+              setting_3: "setting_three",
+            )
+          end
+        end
+
+        let(:subject) do
+          Class.new(parent) do
+            metadata({
+              setting_2: "child_setting",
+              setting_3: :setting_3,
+            })
+          end
+        end
+
+        it "merges the parent setting with the child setting" do
+          expect(subject.metadata).to eq({
+            setting_1: true,
+            setting_2: "child_setting",
+            setting_3: :setting_3,
+          })
+        end
+      end
+    end
   end
 
   describe "::settings" do
@@ -148,6 +202,9 @@ RSpec.describe Moleculer::Service::Base do
               insecure: false,
             },
           },
+        },
+        metadata:  {
+          meta: :data,
         },
       })
     end

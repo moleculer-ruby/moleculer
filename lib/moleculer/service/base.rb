@@ -31,8 +31,14 @@ module Moleculer
           @settings
         end
 
-        def metadata
-          @metadata ||= {}
+        def metadata(value = nil)
+          if value || @metadata.nil?
+            @metadata = value || {}
+            ancestors.each do |ancestor|
+              @metadata = ancestor.metadata.merge(@metadata) if ancestor.respond_to?(:metadata)
+            end
+          end
+          @metadata
         end
 
         def dependencies
@@ -114,7 +120,7 @@ module Moleculer
           version:   version,
           full_name: full_name,
           settings:  settings_schema,
-          # metadata: metadata,
+          metadata:  metadata,
           actions:   actions_schema,
           events:    events_schema,
         }
@@ -171,6 +177,10 @@ module Moleculer
         end
 
         sets
+      end
+
+      def metadata
+        self.class.metadata
       end
     end
   end
