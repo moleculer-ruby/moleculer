@@ -10,7 +10,41 @@
 # See https://docs.rubocop.org/rubocop/configuration
 AllCops:
   NewCops: enable
+Layout/ArgumentAlignment:
+  EnforcedStyle: with_fixed_indentation
+Layout/MultilineMethodCallIndentation:
+  EnforcedStyle: indented
+Layout/ArrayAlignment:
+  EnforcedStyle: with_fixed_indentation
+Layout/HashAlignment:
+  EnforcedHashRocketStyle: table
+  EnforcedColonStyle: table
+  Safe: true
+Layout/LineLength:
+  AutoCorrect: true
+Layout/FirstHashElementIndentation:
+  EnforcedStyle: consistent
+Style/FrozenStringLiteralComment:
+  Enabled: true
+  Safe: true
+Style/Documentation:
+  Enabled: false
 Style/StringLiterals:
   EnforcedStyle: double_quotes
-Style/FrozenStringLiteralComment:
-  SafeAutoCorrect: true
+Style/SymbolArray:
+  EnforcedStyle: brackets
+Style/WordArray:
+  EnforcedStyle: brackets
+Style/TrailingCommaInArguments:
+  EnforcedStyleForMultiline: consistent_comma
+Style/TrailingCommaInArrayLiteral:
+  EnforcedStyleForMultiline: consistent_comma
+Style/TrailingCommaInHashLiteral:
+  EnforcedStyleForMultiline: consistent_comma
+Style/ClassAndModuleChildren:
+  Enabled: false
+Metrics/MethodLength:
+  Max: 15
+Metrics/ClassLength:
+  Exclude:
+    - "test/**/*"
