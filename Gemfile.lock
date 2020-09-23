@@ -55,6 +55,7 @@ PLATFORMS
 
 DEPENDENCIES
   moleculer!
+  pry
   pry-byebug
   rspec
   simplecov

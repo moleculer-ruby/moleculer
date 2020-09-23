@@ -21,8 +21,14 @@ module Moleculer
           @events
         end
 
-        def settings
-          @settings ||= {}
+        def settings(value = nil)
+          if value || @settings.nil?
+            @settings = value || {}
+            ancestors.each do |ancestor|
+              @settings = ancestor.settings.merge(@settings) if ancestor.respond_to?(:settings)
+            end
+          end
+          @settings
         end
 
         def metadata
@@ -107,7 +113,7 @@ module Moleculer
           name:      service_name,
           version:   version,
           full_name: full_name,
-          # settings: settings,
+          settings:  settings_schema,
           # metadata: metadata,
           actions:   actions_schema,
           events:    events_schema,
@@ -142,6 +148,29 @@ module Moleculer
 
       def events_schema
         @events_schema ||= events.transform_values(&:schema)
+      end
+
+      def settings
+        self.class.settings
+      end
+
+      def settings_schema
+        @settings_schema ||= without_secure_settings(settings).reject { |k, _v| k.to_s[0] == "$" }
+      end
+
+      def without_secure_settings(hash)
+        return hash unless hash[:$secure_settings]
+
+        sets = hash.dup
+
+        hash[:$secure_settings].each do |ss|
+          path = ss.to_s.split(".")
+
+          leaf = path.pop
+          path.inject(sets) { |h, el| h[el.to_sym] }.delete leaf.to_sym
+        end
+
+        sets
       end
     end
   end

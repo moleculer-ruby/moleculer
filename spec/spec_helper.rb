@@ -3,6 +3,7 @@
 require "bundler/setup"
 require "moleculer"
 require "simplecov"
+require "pry-byebug"
 
 # Turn off logging for specs
 ENV["MOLECULER_LOG_FILE"] = "/dev/null"

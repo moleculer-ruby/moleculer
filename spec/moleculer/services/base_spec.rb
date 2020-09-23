@@ -8,8 +8,70 @@ RSpec.describe Moleculer::Service::Base do
       action :test_action
       event  :test_event
 
+      settings(
+        '$secure_settings': [:secure_setting, "deep.secure.setting"],
+        other_setting:      :other,
+        secure_setting:     :secure,
+        deep:               {
+          secure: {
+            setting:  true,
+            insecure: false,
+          },
+        },
+      )
+
       def test_action(_ctx); end
     end.new(double("broker"))
+  end
+
+  describe "::settings" do
+    context "getter" do
+      subject do
+        Class.new(Moleculer::Service::Base) do
+          service_name "test"
+
+          settings(
+            setting_1: true,
+          )
+        end
+      end
+
+      it "returns the settings" do
+        expect(subject.settings).to eq({
+          setting_1: true,
+        })
+      end
+
+      context "with parent" do
+        let(:parent) do
+          Class.new(Moleculer::Service::Base) do
+            service_name "test"
+
+            settings(
+              setting_1: true,
+              setting_3: "setting_three",
+            )
+          end
+        end
+
+        let(:subject) do
+          Class.new(parent) do
+            settings({
+              setting_2: "child_setting",
+              setting_3: :setting_3,
+            })
+          end
+        end
+
+        it "merges the parent setting with the child setting" do
+          expect(subject.settings).to eq({
+            setting_1: true,
+            setting_2: "child_setting",
+            setting_3: :setting_3,
+          })
+        end
+      end
+    end
   end
 
   describe "::full_name" do
@@ -77,6 +139,14 @@ RSpec.describe Moleculer::Service::Base do
         events:    {
           test_event: {
             name: :test_event,
+          },
+        },
+        settings:  {
+          other_setting: :other,
+          deep:          {
+            secure: {
+              insecure: false,
+            },
           },
         },
       })
