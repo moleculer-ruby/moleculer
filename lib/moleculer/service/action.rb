@@ -18,7 +18,7 @@ module Moleculer
       end
 
       def name
-        "#{service.name}.#{raw_name}"
+        "#{service.service_name}.#{raw_name}"
       end
 
       def schema

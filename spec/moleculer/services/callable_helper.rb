@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.shared_examples Moleculer::Service::Callable do
-  let(:service) { double(Moleculer::Service::Base, name: "service") }
+  let(:service) { double(Moleculer::Service::Base, service_name: "service") }
 
   let(:default_params) do
     {

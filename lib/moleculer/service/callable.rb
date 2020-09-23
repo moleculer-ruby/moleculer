@@ -6,7 +6,7 @@ module Moleculer
       def initialize(service, name:, method:, &block)
         @service  = service
         @name     = name
-        @method   = method
+        @method   = method || name unless block_given?
         @handler  = block
       end
 
