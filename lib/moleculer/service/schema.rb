@@ -3,6 +3,13 @@
 module Moleculer
   module Service
     module Schema
+      module ClassMethods
+        def from_schema(_schema)
+          Class.new(self) do
+          end
+        end
+      end
+
       # @return [Hash] the service schema
       def schema
         {
