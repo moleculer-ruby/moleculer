@@ -24,6 +24,9 @@ Layout/LineLength:
   AutoCorrect: true
 Layout/FirstHashElementIndentation:
   EnforcedStyle: consistent
+Layout/LineLength:
+  Max: 80
+  SafeAutoCorrect: true
 
 Style/FrozenStringLiteralComment:
   Enabled: true
@@ -49,6 +52,6 @@ Style/ExtraSpacing:
 
 Metrics/MethodLength:
   Max: 15
-Metrics/ClassLength:
+Metrics/BlockLength:
   Exclude:
-    - "test/**/*"
+    - "spec/**/*"

@@ -35,6 +35,12 @@ module Moleculer
         mod.extend ClassMethods
       end
 
+      def initialize(*)
+        actions.values.each do |action|
+          action.service_instance = self
+        end
+      end
+
       private
 
       def actions_schema

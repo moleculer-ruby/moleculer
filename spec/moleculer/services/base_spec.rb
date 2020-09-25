@@ -28,6 +28,54 @@ RSpec.describe Moleculer::Service::Base do
     end.new(double("broker"))
   end
 
+  describe "::from_schema" do
+    subject { Moleculer::Service::Base }
+
+    let(:schema) do
+      {
+        name:     "users",
+        settings: { a: 5 },
+        metadata: { b: 6 },
+        actions:  {
+          "users.find": {},
+          "users.get":  {},
+        },
+        events:   {
+          "users.created":  {},
+          "userse.deleted": {},
+        },
+      }
+    end
+
+    let(:broker) { double("Broker", call: true) }
+
+    it "defines remote actions" do
+      service = subject.from_schema(schema)
+      expect(service.actions[:"users.find"])
+        .to be_a Moleculer::Service::Actions::Endpoint
+
+      expect(service.actions[:"users.get"])
+        .to be_a Moleculer::Service::Actions::Endpoint
+    end
+
+    it "calls the action with broker#call remote: true" do
+      expect(broker).to receive(:call).with("users.find", {}, remote: true)
+      service = subject.from_schema(schema)
+
+      service.new(broker).send(:actions)[:"users.find"].call({})
+    end
+
+    it "defines remote events" do
+      service = subject.from_schema(schema)
+
+      expect(service.events[:"users.created"])
+        .to be_a Moleculer::Service::Events::Endpoint
+
+      expect(service.events[:"users.updated"])
+        .to be_a Moleculer::Service::Events::Endpoint
+    end
+  end
+
   describe "::metadata" do
     context "getter" do
       subject do

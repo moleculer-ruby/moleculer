@@ -3,6 +3,8 @@
 module Moleculer
   module Service
     class Endpoint
+      attr_accessor :service_instance
+
       def initialize(service, name:, method:, &block)
         @service  = service
         @name     = name
@@ -15,10 +17,10 @@ module Moleculer
       #
       # @param [*Array] args to call the action with
       # @param [**Hash] the keyword args to acall the action with
-      def call(*args, **kwargs)
-        return handler.call(*args, **kwargs) if handler
+      def call(params = {}, **kwargs)
+        return handler.call(service_instance, params, **kwargs) if handler
 
-        service.public_send(method, *args, **kwargs)
+        service_instance.public_send(method, *args, **kwargs)
       end
 
       def schema
