@@ -49,17 +49,18 @@ GEM
     simplecov-html (0.12.2)
     timers (4.3.2)
     wisper (2.0.1)
+    yard (0.9.25)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
   moleculer!
-  pry
   pry-byebug
   rspec
   simplecov
   wisper
+  yard
 
 BUNDLED WITH
    2.1.4
