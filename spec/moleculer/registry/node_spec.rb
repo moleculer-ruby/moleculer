@@ -1,16 +1,36 @@
 # frozen_string_literal: true
 
-RSpec.describe Moleculer::Node do
+RSpec.describe Moleculer::Registry::Node do
   let(:service) do
     Class.new(Moleculer::Service::Base) do
       service_name "local-service"
 
-      action "local-action", :local_action
+      action "local-action", method: :local_action
     end
   end
 
   subject do
-    Moleculer::Node.new(double("broker"))
+    Moleculer::Node.new(double("broker"), id: "node")
+  end
+
+  describe "::from_info_packet" do
+    subject { Moleculer::Registry::Node }
+
+    let(:schema) do
+      {
+        ver:      "4",
+        sender:   "node-1",
+        services: {
+        },
+        config:   {},
+        hostname: "node.host",
+        ip_list:  ["127.0.0.1"],
+        metadata: {},
+      }
+    end
+
+    it "should create a node from the provided schema" do
+    end
   end
 
   describe "#schema" do
