@@ -19,14 +19,15 @@ Layout/ArrayAlignment:
 Layout/HashAlignment:
   EnforcedHashRocketStyle: table
   EnforcedColonStyle: table
-  Safe: true
+  SafeAutoCorrect: true
 Layout/LineLength:
   AutoCorrect: true
 Layout/FirstHashElementIndentation:
   EnforcedStyle: consistent
+
 Style/FrozenStringLiteralComment:
   Enabled: true
-  Safe: true
+  SafeAutoCorrect: true
 Style/Documentation:
   Enabled: false
 Style/StringLiterals:
@@ -43,6 +44,9 @@ Style/TrailingCommaInHashLiteral:
   EnforcedStyleForMultiline: consistent_comma
 Style/ClassAndModuleChildren:
   Enabled: false
+Style/ExtraSpacing:
+  ForceEqualSignAlignment: true
+
 Metrics/MethodLength:
   Max: 15
 Metrics/ClassLength:
