@@ -1,15 +1,19 @@
 Layout/ExtraSpacing:
   ForceEqualSignAlignment: true
 
-Layout/IndentFirstHashElement:
-  EnforcedStyle: consistent
-
 Layout/IndentationWidth:
   IgnoredPatterns: []
 
-Layout/AlignHash:
+Layout/HashAlignment:
   EnforcedColonStyle: table
   EnforcedHashRocketStyle: table
+
+Layout/LineLength:
+  Max: 90
+  IgnoreCopDirectives: true
+
+Layout/EmptyLineAfterMagicComment:
+  Enabled: true
 
 Style/ModuleFunction:
   Enabled: false
@@ -25,23 +29,7 @@ Style/TrailingCommaInArrayLiteral:
 
 Style/FrozenStringLiteralComment:
   Enabled: true
+  SafeAutoCorrect: true
 
 Style/StringLiterals:
     EnforcedStyle: "double_quotes"
-
-Metrics/LineLength:
-  Max: 120
-  IgnoreCopDirectives: true
-
-Metrics/ModuleLength:
-  Enabled: false
-
-Metrics/MethodLength:
-  Enabled: false
-
-Metrics/BlockLength:
-  Enabled: false
-
-Metrics/ParameterLists:
-  Enabled: false
-
