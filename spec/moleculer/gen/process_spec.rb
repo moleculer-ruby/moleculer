@@ -34,7 +34,7 @@ RSpec.describe Moleculer::Gen::Process do
     it "should start the process" do
       subject.start
 
-      expect(subject.running?).to be_truthy
+      expect(subject.alive?).to be_truthy
     end
 
     it "should handle calls" do
