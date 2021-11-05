@@ -23,6 +23,8 @@ RSpec.describe Moleculer::Gen::Process do
         case message
         when :set_result
           @result = args.first
+        when :exception
+          raise "Exception"
         end
       end
     end.new
@@ -47,6 +49,14 @@ RSpec.describe Moleculer::Gen::Process do
       subject.cast(:set_result, 42)
 
       expect(subject.call(:result)).to eq(42)
+    end
+
+    it "should handle exceptions" do
+      subject.start
+      subject.cast(:exception)
+
+      expect(subject.exception).to_not be_nil
+      expect(subject.errored?).to be_truthy
     end
   end
 end
