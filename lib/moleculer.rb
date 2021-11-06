@@ -1,4 +1,4 @@
 # frozen_string_literal: true
 
-require "moleculer/gen"
+require "moleculer/serializers"
 require "moleculer/broker"
