@@ -8,6 +8,7 @@ RSpec.describe Moleculer::Broker do
       broker = Moleculer::Broker.new
       expect(broker).to be_a(Moleculer::Broker)
       expect(broker.started).to be_falsey
+      expect(broker.instance_id).to_not be_empty
     end
   end
 end
