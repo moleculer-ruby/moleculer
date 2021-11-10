@@ -15,6 +15,10 @@ Layout/LineLength:
 Layout/EmptyLineAfterMagicComment:
   Enabled: true
 
+
+Metrics/BlockLength:
+  IgnoredPatterns: ["spec/**/*_spec.rb"]
+
 Style/ModuleFunction:
   Enabled: false
 

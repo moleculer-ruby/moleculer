@@ -41,11 +41,12 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "semantic_logger",        "~> 4.8"
+  spec.add_dependency "semantic_logger", "~> 4.8"
 
+  spec.add_development_dependency "pry-byebug", "~> 3.9"
   spec.add_development_dependency "rspec",      "~> 3.10"
   spec.add_development_dependency "rubocop",    "~> 1.22"
   spec.add_development_dependency "simplecov",  "~> 0.21"
   spec.add_development_dependency "solargraph", "~> 0.44"
-  spec.add_development_dependency "yard",       "~> 0.9"
+  spec.add_development_dependency "yard", "~> 0.9"
 end

@@ -3,6 +3,7 @@
 require "bundler/setup"
 require "moleculer"
 require "simplecov"
+require "pry-byebug"
 
 RSpec.configure do |config|
   SimpleCov.start

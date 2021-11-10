@@ -56,9 +56,28 @@ module Moleculer
     end
 
     ##
+    # Defines an event.
+    #
+    # @param [String] event The event name.
+    # @param [Symbol] method The method to call.
+    # @param [Hash] options The options for the event.
+    def self.event(event, method, options = {})
+      events[event] = {
+        method: method,
+        **options,
+      }
+    end
+
+    ##
     # @return [Hash] The actions for the service.
     def self.actions
       @actions ||= {}
+    end
+
+    ##
+    # @return [Hash] The events for the service.
+    def self.events
+      @events ||= {}
     end
 
     ##
@@ -73,7 +92,7 @@ module Moleculer
       @name    = opts ? opts.name : self.class.name
       @version = opts ? opts.version : self.class.version
       @actions = self.class.actions
-      @events  = {}
+      @events  = self.class.events
     end
 
     ##
@@ -81,10 +100,10 @@ module Moleculer
     # was not found an exception will be raised.
     #
     # @param [String] endpoint The service endpoint.
-    # @param [Hash] context The call context.
+    # @param [Moleculer::Context] context The call context.
     #
     # @return [any] The result of the action.
-    def call(endpoint, context)
+    def call_action(endpoint, context)
       action = actions[endpoint]
 
       raise ActionNotFound, "No action found for endpoint: #{endpoint}" unless action
@@ -92,8 +111,29 @@ module Moleculer
       public_send(action[:method], context)
     end
 
+    ##
+    # Calls the emitted event on the service.
+    #
+    # @param [String] event The event name.
+    # @param [Moleculer::Context] context The call context.
+    def call_event(event, context)
+      e = self.class.events[event]
+      public_send(e[:method], context)
+    end
+
     private
 
     attr_reader :actions
+
+    def dot_to_regex(str)
+      regex = str.gsub(/\./, "\\.").gsub(/\*/, "\\w*")
+      Regexp.new("^#{regex}$")
+    end
+
+    def collect_events(str)
+      this.class.events.select do |event, _|
+        dot_to_regex(str).match?(event)
+      end
+    end
   end
 end
