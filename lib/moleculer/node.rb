@@ -49,5 +49,13 @@ module Moleculer
       end
     end
 
+    ##
+    # Calls the specified action with the provided context
+    #
+    # @param [String] endpoint the name of the action to call
+    # @param [Moleculer::Context] context the context to call the action with
+    def call(endpoint, context)
+      actions[endpoint].call(context)
+    end
   end
 end

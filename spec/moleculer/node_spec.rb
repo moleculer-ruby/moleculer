@@ -53,4 +53,10 @@ RSpec.describe Moleculer::Node do
       expect(subject.events["event_1"]).to_not be_nil
     end
   end
+
+  describe "#call" do
+    it "calls the local endpoint if called" do
+      expect(subject.call("service_1.action_1", {})).to be_truthy
+    end
+  end
 end
