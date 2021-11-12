@@ -21,10 +21,10 @@ RSpec.describe Moleculer::Broker do
 
   describe "#call" do
     it "should call a service" do
-      expect(registry).to receive(:call).with(:test, context)
-      expect(Moleculer::Context).to receive(:new).with(subject, {a: 1, b: 2}).and_return(context)
+      expect(registry).to receive(:call).with("test", context)
+      expect(Moleculer::Context).to receive(:new).with(subject, { a: 1, b: 2 }).and_return(context)
 
-      subject.call(:test, {a: 1, b: 2})
+      subject.call("test", { a: 1, b: 2 })
     end
   end
 end

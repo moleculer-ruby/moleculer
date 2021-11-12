@@ -40,6 +40,7 @@ module Moleculer
         services: (opts[:services] || []),
         local:    true,
       )
+      @registry    = Registry.new(self, local_node)
 
       set_semantic_logger(opts[:logger] || $stdout)
     end

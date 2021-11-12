@@ -4,6 +4,9 @@ module Moleculer
   ##
   # @private
   class Registry
+    ##
+    # @param [Moleculer::Broker] broker the service broker
+    # @param [Moleculer::Node] local_node the local node
     def initialize(broker, local_node)
       @broker     = broker
       @local_node = local_node
