@@ -3,19 +3,14 @@
 require "spec_helper"
 
 RSpec.describe Moleculer::Broker do
-  let(:service) do
-    Class.new(Moleculer::Service::Base) do
-      name "math"
+  let(:registry) { double(Moleculer::Registry) }
+  let(:context) { double(Moleculer::Context) }
 
-      action "sum", :sum
-
-      def sum(ctx)
-        ctx.params[:a] + ctx.params[:b]
-      end
-    end
+  before :each do
+    allow(Moleculer::Registry).to receive(:new).and_return(registry)
+    allow(Moleculer::Context).to receive(:new).and_return(context)
   end
 
-  subject { Moleculer::Broker.new(services: [service]) }
   describe "#initialize" do
     it "should create a broker with defaults" do
       expect(subject).to be_a(Moleculer::Broker)
@@ -26,7 +21,10 @@ RSpec.describe Moleculer::Broker do
 
   describe "#call" do
     it "should call a service" do
-      expect(subject.call("math.sum", { a: 1, b: 2 })).to eq(3)
+      expect(registry).to receive(:call).with(:test, context)
+      expect(Moleculer::Context).to receive(:new).with(subject, {a: 1, b: 2}).and_return(context)
+
+      subject.call(:test, {a: 1, b: 2})
     end
   end
 end

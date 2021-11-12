@@ -3,9 +3,9 @@
 require "socket"
 require "securerandom"
 
-require_relative "node/local"
 require_relative "transit"
 require_relative "event_emitter"
+require_relative "registry"
 
 module Moleculer
   ##
@@ -35,9 +35,10 @@ module Moleculer
       @node_id     = opts[:node_id] || "#{Socket.gethostname}-#{Process.pid}}"
       @instance_id = SecureRandom.uuid
       @local_bus   = EventEmitter.new
-      @local_node  = LocalNode.new(
+      @local_node  = Node.new(
         id:       @node_id,
         services: (opts[:services] || []),
+        local:    true,
       )
 
       set_semantic_logger(opts[:logger] || $stdout)
@@ -58,24 +59,18 @@ module Moleculer
     #
     # @return [any] the result of the action.
     def call(endpoint, params = {})
-      call_local_node(endpoint, params)
-    end
+      logger.info("calling '#{endpoint}'", params)
 
-    ##
-    # Calls a service action on the local node.
-    #
-    # @param [String] endpoint The endpoint of the service.
-    # @param [Hash] params The params to pass to the action
-    def call_local_node(endpoint, params = {})
-      logger.info("calling '#{endpoint}' locally", params: params)
-      context = Context.new(self, params)
-
-      local_node.call(endpoint, context)
+      registry.call(endpoint, create_context(params))
     end
 
     private
 
-    attr_reader :options, :local_bus, :transit, :local_node
+    attr_reader :options, :local_bus, :transit, :local_node, :registry
+
+    def create_context(params)
+      Context.new(self, params)
+    end
 
     # rubocop:disable Naming/AccessorMethodName
     def set_semantic_logger(logger)
