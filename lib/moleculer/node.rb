@@ -73,7 +73,7 @@ module Moleculer
     attr_reader :client
 
     ##
-    # @param [Hash] options the node options
+    # @param options [Hash] the node options
     # @option options [String] :id the id of the node
     # @option options [String] :hostname the hostname of the node
     # @option options [Boolean] :local whether the node is local, defaults to `false`
@@ -94,6 +94,7 @@ module Moleculer
       @metadata       = options.fetch(:metadata, {})
       @ip_list        = options.fetch(:ip_list, [])
       @client         = Client.new(options.fetch(:client))
+      @seq            = 0
     end
 
     ##
@@ -133,7 +134,12 @@ module Moleculer
         hostname:    hostname,
         client:      client.to_info,
         metadata:    {},
+        seq:         seq,
       }
     end
+
+    private
+
+    attr_reader :seq
   end
 end

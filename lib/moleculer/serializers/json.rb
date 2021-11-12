@@ -7,12 +7,14 @@ module Moleculer
     ##
     # JSON serializer
     class JSON < Base
-      def serialize(data)
-        data.to_json
+      def serialize(packet)
+        packet
+          .to_h
+          .to_camelback_keys
       end
 
       def deserialize(data)
-        ::JSON.parse(data)
+        ::JSON.parse(data).to_snake_keys
       end
     end
   end

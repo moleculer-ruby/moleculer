@@ -86,6 +86,7 @@ RSpec.describe Moleculer::Node do
       expect(subject.to_info[:client][:type]).to eq("ruby")
       expect(subject.to_info[:client][:version]).to eq("0.4.0")
       expect(subject.to_info[:client][:lang_version]).to eq("3.0.2")
+      expect(subject.to_info[:seq]).to eq(0)
     end
   end
 end
