@@ -37,7 +37,10 @@ RSpec.describe Moleculer::Node do
     end
   end
 
-  subject { Moleculer::Node.new(id: "test", services: [service1, service2]) }
+  subject do
+    Moleculer::Node.new(id: "test", hostname: "test", instance_id: "id",
+                        services: [service1, service2])
+  end
 
   describe "#actions" do
     let(:context) { double(Moleculer::Context, params: { "a" => 1, "b" => 2 }) }

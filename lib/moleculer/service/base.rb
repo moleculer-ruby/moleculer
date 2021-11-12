@@ -123,6 +123,16 @@ module Moleculer
         set_events
       end
 
+      ##
+      # @return [Hash] a hash representation of the service.
+      def to_info
+        {
+          name:    name,
+          version: version,
+          actions: actions.map(&:to_info),
+        }
+      end
+
       private
 
       def set_actions
