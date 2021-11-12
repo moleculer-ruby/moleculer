@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe Moleculer::Node do
+RSpec.describe Moleculer::Node::Base do
   let(:service_1) do
     Class.new(Moleculer::Service::Base) do
       name "service_1"
@@ -37,7 +37,8 @@ RSpec.describe Moleculer::Node do
     end
   end
 
-  subject { Moleculer::Node.new(id: "test", services: [service_1, service_2]) }
+  subject { Moleculer::Node::Base.new(id: "test", services: [service_1, service_2]) }
+
   describe "#actions" do
     let(:context) { double(Moleculer::Context, params: { "a" => 1, "b" => 2 }) }
     it "returns all actions for all services" do

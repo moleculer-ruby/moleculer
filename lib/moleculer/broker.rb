@@ -3,7 +3,7 @@
 require "socket"
 require "securerandom"
 
-require_relative "local_node"
+require_relative "node/local"
 require_relative "transit"
 require_relative "event_emitter"
 
