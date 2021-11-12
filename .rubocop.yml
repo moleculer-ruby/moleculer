@@ -9,7 +9,7 @@ Layout/HashAlignment:
   EnforcedHashRocketStyle: table
 
 Layout/LineLength:
-  Max: 90
+  Max: 100
   IgnoreCopDirectives: true
 
 Layout/EmptyLineAfterMagicComment:
@@ -19,7 +19,7 @@ Metrics/MethodLength:
   Max: 15
 
 Metrics/BlockLength:
-  IgnoredPatterns: ["spec/**/*_spec.rb"]
+  Exclude: ["spec/**/*_spec.rb"]
 
 Style/ModuleFunction:
   Enabled: false

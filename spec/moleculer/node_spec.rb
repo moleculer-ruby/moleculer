@@ -1,43 +1,43 @@
 # frozen_string_literal: true
 
-require "spec_helper"
+require_relative "../spec_helper"
 
 RSpec.describe Moleculer::Node do
-  let(:service_1) do
+  let(:service1) do
     Class.new(Moleculer::Service::Base) do
       name "service_1"
 
-      action "action_1", :action_1
-      event "event_1", :event_1
+      action "action_1", :action1
+      event "event_1", :event1
 
-      def action_1(_ctx)
+      def action1(_ctx)
         true
       end
 
-      def event_2(_ctx)
+      def event1(_ctx)
         true
       end
     end
   end
 
-  let(:service_2) do
+  let(:service2) do
     Class.new(Moleculer::Service::Base) do
       name "service_2"
 
-      action "action_2", :action_2
-      event "event_2", :event_2
+      action "action_2", :action2
+      event "event_2", :event2
 
-      def action_2(_ctx)
+      def action2(_ctx)
         true
       end
 
-      def event_2(_ctx)
+      def event2(_ctx)
         true
       end
     end
   end
 
-  subject { Moleculer::Node.new(id: "test", services: [service_1, service_2]) }
+  subject { Moleculer::Node.new(id: "test", services: [service1, service2]) }
 
   describe "#actions" do
     let(:context) { double(Moleculer::Context, params: { "a" => 1, "b" => 2 }) }
@@ -57,6 +57,7 @@ RSpec.describe Moleculer::Node do
   describe "#call" do
     let(:context) { double(Moleculer::Context, params: { "a" => 1, "b" => 2 }) }
     it "calls the local endpoint if called" do
+      # noinspection RubyMismatchedArgumentType
       expect(subject.call("service_1.action_1", context)).to be_truthy
     end
   end
