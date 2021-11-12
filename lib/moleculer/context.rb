@@ -4,12 +4,11 @@ module Moleculer
   ##
   # Call and event context
   class Context
-    attr_reader :params
+    attr_reader :params, :broker
 
-    def initialize(broker, params = {}, options = {})
+    def initialize(broker, params = {})
       @broker  = broker
       @params  = params
-      @options = options
     end
   end
 end
