@@ -33,7 +33,6 @@ RSpec.describe Moleculer::Service::Base do
       end
     end
 
-
     describe "#actions" do
       let(:context) { double(Moleculer::Context, params: { "a" => 1, "b" => 2 }) }
       it "returns the actions" do
@@ -54,6 +53,13 @@ RSpec.describe Moleculer::Service::Base do
       it "the returned Proc calls #call_event" do
         expect(subject).to receive(:an_event).with(context)
         subject.events["an_event"].call(context)
+      end
+    end
+
+    describe "#to_info" do
+      it "returns the hash representing the service" do
+        expect(subject.to_info).to include({name: "test", version: 1})
+        expect(subject.to_info[:actions]).to_not be_empty
       end
     end
   end

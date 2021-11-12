@@ -59,7 +59,7 @@ module Moleculer
       ##
       # Defines an action endpoint.
       #
-      # @param [String] endpoint The endpoint of the action. Example `"add"`
+      # @param [String] name The endpoint of the action. Example `"add"`
       # @param [Symbol] handler The method the action is to call. Example `:add`
       # @param [Hash] options The options for the action.
       # @option options [Hash] :params The params for the action. Example `{a: "number"}`
@@ -69,8 +69,8 @@ module Moleculer
       # @option options [Symbol] :error The error options for the action. Example `nil`
       def self.action(endpoint, handler, options = {})
         actions[endpoint] = options.merge({
-                                            endpoint: "#{name}.endpoint",
-                                            handler:  handler,
+                                            name:    name,
+                                            handler: handler,
                                           })
       end
 
@@ -129,7 +129,7 @@ module Moleculer
         {
           name:    name,
           version: version,
-          actions: actions.map(&:to_info),
+          actions: actions.values.map(&:to_info),
         }
       end
 
@@ -139,14 +139,14 @@ module Moleculer
         @actions = self.class.actions.each_with_object({}) do |(key, options), hsh|
           hsh["#{name}.#{key}"] = Action.new(
             options.merge({
-                            service:  self,
-                            endpoint: "#{name}.#{options[:endpoint]}",
-                            handler:  options[:handler],
-                            params:   options[:params] || {},
-                            cache:    options[:cache] || false,
-                            before:   options[:before] || nil,
-                            after:    options[:after] || nil,
-                            error:    options[:error] || nil,
+                            service: self,
+                            name:    "#{name}.#{options[:name]}",
+                            handler: options[:handler],
+                            params:  options[:params] || {},
+                            cache:   options[:cache] || false,
+                            before:  options[:before] || nil,
+                            after:   options[:after] || nil,
+                            error:   options[:error] || nil,
                           }),
           )
         end
