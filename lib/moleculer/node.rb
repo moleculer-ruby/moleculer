@@ -69,6 +69,10 @@ module Moleculer
     attr_reader :ip_list
 
     ##
+    # @return [Client] the client information for the node
+    attr_reader :client
+
+    ##
     # @param [Hash] options the node options
     # @option options [String] :id the id of the node
     # @option options [String] :hostname the hostname of the node

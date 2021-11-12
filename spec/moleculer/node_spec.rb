@@ -38,8 +38,17 @@ RSpec.describe Moleculer::Node do
   end
 
   subject do
-    Moleculer::Node.new(id: "test", hostname: "test", instance_id: "id",
-                        services: [service1, service2])
+    Moleculer::Node.new(
+      id:          "test",
+      hostname:    "test",
+      instance_id: "id",
+      services:    [service1, service2],
+      client:      {
+        type:         "ruby",
+        version:      "0.4.0",
+        lang_version: "3.0.2",
+      },
+    )
   end
 
   describe "#actions" do
@@ -62,6 +71,21 @@ RSpec.describe Moleculer::Node do
     it "calls the local endpoint if called" do
       # noinspection RubyMismatchedArgumentType
       expect(subject.call("service_1.action_1", context)).to be_truthy
+    end
+  end
+
+  describe "#to_info" do
+    it "returns a representation of the node as a hash" do
+      expect(subject.to_info).to be_a(Hash)
+      expect(subject.to_info[:sender]).to eq("test")
+      expect(subject.to_info[:hostname]).to eq("test")
+      expect(subject.to_info[:services]).to be_a(Array)
+      expect(subject.to_info[:services].first).to be_a(Hash)
+      expect(subject.to_info[:services].first[:name]).to eq("service_1")
+      expect(subject.to_info[:client]).to be_a(Hash)
+      expect(subject.to_info[:client][:type]).to eq("ruby")
+      expect(subject.to_info[:client][:version]).to eq("0.4.0")
+      expect(subject.to_info[:client][:lang_version]).to eq("3.0.2")
     end
   end
 end
