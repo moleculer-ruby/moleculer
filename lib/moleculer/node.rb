@@ -4,14 +4,6 @@ module Moleculer
   ##
   # A node represents an individual node.
   class Node
-    # @private
-    class Configuration
-      def initialize(name:, hostname:)
-
-      end
-    end
-
-
     ##
     # @return [Hash] metadata of the node, defaults to `{}`
     attr_reader :metadata
@@ -38,17 +30,24 @@ module Moleculer
       @last_heartbeat = Time.now
       @local          = local
       @info           = info
-      @services       = []
+      @services       = services.collect(&:new)
     end
 
     ##
-    # Iterates through the services of the node, returning the actions the service provides.
-    #
-    # @return [Hash] the actions the service provides keyed by the action endpoint
+    # @return [Hash] the actions for all services on this node
     def actions
       services.each_with_object({}) do |service, actions|
         actions.merge!(service.actions)
       end
     end
+
+    ##
+    # @return [Hash] the events for all services on this node
+    def events
+      services.each_with_object({}) do |service, events|
+        events.merge!(service.events)
+      end
+    end
+
   end
 end
