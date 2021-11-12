@@ -2,7 +2,7 @@
 
 module Moleculer
   ##
-  # A node represents an individual node.
+  # @private
   class Node
     ##
     # @return [Hash] metadata of the node, defaults to `{}`
