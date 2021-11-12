@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Moleculer
-  module Messages
+  module Packets
     ##
     # When the node receives an `INFO` packet, it sends an `INFO` packet which contains
     # all mandatory information about the nodes and the loaded services.

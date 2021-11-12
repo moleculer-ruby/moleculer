@@ -4,7 +4,7 @@ require "spec_helper"
 
 RSpec.describe Moleculer::Broker do
   let(:service) do
-    Class.new(Moleculer::Service) do
+    Class.new(Moleculer::Service::Base) do
       name "math"
 
       action "sum", :sum

@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe Moleculer::Service do
+RSpec.describe Moleculer::Service::Base do
   context "defined service" do
     subject do
       Class.new(described_class) do

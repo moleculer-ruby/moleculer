@@ -56,5 +56,9 @@ module Moleculer
     def call(endpoint, context)
       actions[endpoint].call(context)
     end
+
+    def to_info
+      Packets::Info.from_node(self)
+    end
   end
 end

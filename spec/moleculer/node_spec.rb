@@ -4,7 +4,7 @@ require "spec_helper"
 
 RSpec.describe Moleculer::Node do
   let(:service_1) do
-    Class.new(Moleculer::Service) do
+    Class.new(Moleculer::Service::Base) do
       name "service_1"
 
       action "action_1", :action_1
@@ -21,7 +21,7 @@ RSpec.describe Moleculer::Node do
   end
 
   let(:service_2) do
-    Class.new(Moleculer::Service) do
+    Class.new(Moleculer::Service::Base) do
       name "service_2"
 
       action "action_2", :action_2
