@@ -4,6 +4,23 @@ module Moleculer
   ##
   # The `Service` represents a microservice in the Moleculer framework. You can define
   # actions and subscribe to events.
+  #
+  # @example
+  #   class MyService < Moleculer::Service
+  #     name :my_service
+  #     actions :my_action, :my_action
+  #     events "some.event", :some_event
+  #
+  #     def my_action(ctx)
+  #       # do things
+  #     end
+  #
+  #     def some_event(ctx)
+  #       # do things
+  #     end
+  #   end
+  #
+  # @abstract
   class Service
     ##
     # @private
@@ -55,12 +72,13 @@ module Moleculer
 
       private
 
-      attr_reader :event, :handler, :params, :cache, :before, :after, :error
+      attr_reader :service, :event, :handler, :params, :cache, :before, :after, :error
     end
 
     ##
     # Gets or sets the name of the service. If `name` is not specified, the name of is
-    # returned.
+    # returned. The `name` is a mandatory property so it must be defined. It’s the first
+    # part of action name when you call it.
     #
     # @param [String] name The name of the service.
     #
@@ -72,11 +90,13 @@ module Moleculer
 
     ##
     # Gets or sets the version of the service. If `version` is not specified, the version
-    # of is returned.
+    # of is returned. The `version` is an optional property. Use it to run multiple
+    # version from the same service. It is a prefix in the action name. It can be an
+    # `Integer` or a `String`.
     #
-    # @param [Integer] version The version of the service.
+    # @param [Integer|String] version The version of the service.
     #
-    # @return [Integer] The version of the service.
+    # @return [Integer|String] The version of the service.
     def self.version(version = nil)
       @version = version if version
       @version || 1
@@ -115,13 +135,13 @@ module Moleculer
     end
 
     ##
-    # @return [Hash{String => Moleculer::Service::Action}] The actions for the service.
+    # @private
     def self.actions
       @actions ||= {}
     end
 
     ##
-    # @return [Hash{String => Moleculer::Service::Event}] The events for the service.
+    # @private
     def self.events
       @events ||= {}
     end
