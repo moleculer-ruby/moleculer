@@ -37,7 +37,7 @@ RSpec.describe Moleculer::Node do
     end
   end
 
-  subject { Moleculer::Node.new({}, services: [service_1, service_2]) }
+  subject { Moleculer::Node.new(id: "test", services: [service_1, service_2]) }
   describe "#actions" do
     let(:context) { double(Moleculer::Context, params: { "a" => 1, "b" => 2 }) }
     it "returns all actions for all services" do
@@ -46,7 +46,6 @@ RSpec.describe Moleculer::Node do
     end
   end
 
-  subject { Moleculer::Node.new({}, services: [service_1, service_2]) }
   describe "#events" do
     it "returns all events for all services" do
       expect(subject.events).to be_a(Hash)
@@ -55,8 +54,9 @@ RSpec.describe Moleculer::Node do
   end
 
   describe "#call" do
+    let(:context) { double(Moleculer::Context, params: { "a" => 1, "b" => 2 }) }
     it "calls the local endpoint if called" do
-      expect(subject.call("service_1.action_1", {})).to be_truthy
+      expect(subject.call("service_1.action_1", context)).to be_truthy
     end
   end
 end

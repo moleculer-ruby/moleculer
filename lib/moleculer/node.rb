@@ -24,13 +24,12 @@ module Moleculer
     # @return [Array<Moleculer::Service>] the services of the node
     attr_accessor :services
 
-    def initialize(info, services: [], local: false)
-      @id             = id
+    def initialize(options = {})
+      @id             = options.fetch(:id)
       @available      = true
       @last_heartbeat = Time.now
-      @local          = local
-      @info           = info
-      @services       = services.collect(&:new)
+      @local          = options[:local] || false
+      @services       = (options[:services] || []).collect(&:new)
     end
 
     ##
