@@ -3,6 +3,7 @@
 require "semantic_logger"
 
 require "moleculer/version"
+require "moleculer/node"
 require "moleculer/service"
 require "moleculer/context"
 require "moleculer/transporters"

@@ -33,18 +33,15 @@ RSpec.describe Moleculer::Service do
       end
     end
 
-    describe "#call_action" do
-      let(:context) { double(Moleculer::Context, params: { "a" => 1, "b" => 2 }) }
-      it "calls the action" do
-        expect(subject.call_action("add", context)).to eq(3)
-      end
-    end
 
-    describe "#call_event" do
+    describe "#actions" do
       let(:context) { double(Moleculer::Context, params: { "a" => 1, "b" => 2 }) }
-      it "should call the event" do
-        expect(subject).to receive(:an_event).with(context)
-        subject.call_event("an_event", context)
+      it "returns the actions" do
+        expect(subject.actions["test.add"]).to be_a(Moleculer::Service::Action)
+      end
+
+      it "the returned Proc calls #call_action" do
+        expect(subject.actions["test.add"].call(context)).to eq(3)
       end
     end
   end
