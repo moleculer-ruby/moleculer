@@ -20,6 +20,9 @@ module Moleculer
   #     end
   #   end
   #
+  # @param [Hash] options Service options
+  # @option options [String] :name The name of the service
+  # @option options [Array<Symbol>] :version The version of the service]
   # @abstract
   class Service
     ##
