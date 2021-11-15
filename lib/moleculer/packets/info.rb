@@ -72,19 +72,19 @@ module Moleculer
       # @return [Hash] The INFO packet data.
       def to_h
         {
-          ver:        PROTOCOL_VERSION,
-          sender:     sender,
-          hostname:   hostname,
-          metadata:   metadata,
-          instanceID: instance_id,
-          ipList:     ip_list,
-          client:     {
-            type:        client[:type],
-            version:     client[:version],
-            langVersion: client[:lang_version],
+          ver:         PROTOCOL_VERSION,
+          sender:      sender,
+          hostname:    hostname,
+          metadata:    metadata,
+          instance_id: instance_id,
+          ip_list:     ip_list,
+          client:      {
+            type:         client[:type],
+            version:      client[:version],
+            lang_version: client[:lang_version],
           },
-          services:   services,
-          seq:        seq,
+          services:    services,
+          seq:         seq,
         }
       end
     end

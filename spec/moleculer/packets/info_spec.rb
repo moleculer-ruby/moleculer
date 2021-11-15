@@ -128,23 +128,23 @@ RSpec.describe Moleculer::Packets::Info do
       )
 
       expect(packet.to_h).to eq({
-                                  ver:        Moleculer::PROTOCOL_VERSION,
-                                  sender:     "sender",
-                                  hostname:   "hostname",
-                                  metadata:   {
+                                  ver:         Moleculer::PROTOCOL_VERSION,
+                                  sender:      "sender",
+                                  hostname:    "hostname",
+                                  metadata:    {
                                     some: "metadata",
                                   },
-                                  instanceID: "instance_id",
-                                  client:     {
-                                    type:        "ruby",
-                                    version:     "0.4.0",
-                                    langVersion: "3.0.2",
+                                  instance_id: "instance_id",
+                                  client:      {
+                                    type:         "ruby",
+                                    version:      "0.4.0",
+                                    lang_version: "3.0.2",
                                   },
-                                  services:   {
+                                  services:    {
                                     "some" => "service",
                                   },
-                                  ipList:     ["ip_list"],
-                                  seq:        0,
+                                  ip_list:     ["ip_list"],
+                                  seq:         0,
                                 })
     end
   end
