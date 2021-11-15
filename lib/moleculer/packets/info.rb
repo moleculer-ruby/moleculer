@@ -11,9 +11,7 @@ module Moleculer
       # method accepts a node, it calls #to_info on it and passes the resulting hash into
       # ::new with the info hash keys converted to camel case strings.
       def self.from_node(node)
-        new(node
-              .to_info
-              .deep_camelize_keys)
+        new(node.to_info)
       end
 
       ##
@@ -48,21 +46,30 @@ module Moleculer
       # @return [Hash] the client information
       attr_reader :client
 
+      ##
+      # @param data [Hash] Info packet data.
       def initialize(data)
+        data.deep_symbolize_keys!
+
         @seq         = data["seq"]
         @services    = data["services"]
-        @metadata    = data["metadata"].deep_symbolize_keys
+        @metadata    = (data["metadata"] || {}).deep_symbolize_keys
         @instance_id = data["instanceID"]
         @hostname    = data["hostname"]
+
+        client_info = data["client"] || {}
+
         @client      = {
-          type:         data["client"]["type"],
-          version:      data["client"]["version"],
-          lang_version: data["client"]["langVersion"],
+          type:         client_info["type"],
+          version:      client_info["version"],
+          lang_version: client_info["langVersion"],
         }
         @ip_list     = data["ipList"]
         @sender      = data["sender"]
       end
 
+      ##
+      # @return [Hash] The INFO packet data.
       def to_h
         {
           ver:        PROTOCOL_VERSION,

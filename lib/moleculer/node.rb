@@ -135,7 +135,7 @@ module Moleculer
         client:      client.to_info,
         metadata:    {},
         seq:         seq,
-      }
+      }.deep_camelize_keys
     end
 
     private

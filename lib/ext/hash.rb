@@ -14,6 +14,10 @@ class Hash
     end
   end
 
+  def deep_symbolize_keys!
+    self.replace(deep_camelize_keys)
+  end
+
   def deep_stringify_keys
     each_with_object({}) do |(key, value), result|
       value       = value.deep_stringify_keys if value.is_a? Hash
