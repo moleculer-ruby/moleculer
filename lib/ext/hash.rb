@@ -39,4 +39,16 @@ class Hash
       end || key] = value
     end
   end
+
+  # recursivly underscores keys of a hash
+  def deep_underscore_keys
+    each_with_object({}) do |(key, value), result|
+      value       = value.deep_underscore_keys if value.is_a? Hash
+      result[begin
+        key.to_s.underscore
+      rescue StandardError
+        key
+      end || key] = value
+    end
+  end
 end

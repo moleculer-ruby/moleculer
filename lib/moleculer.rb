@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "semantic_logger"
-require "awrence"
 
 require "ext/hash"
 require "ext/string"

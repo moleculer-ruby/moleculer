@@ -2,15 +2,12 @@ PATH
   remote: .
   specs:
     moleculer (0.3.0)
-      awrence (~> 1.2)
-      plissken (~> 1.4)
       semantic_logger (~> 4.8)
 
 GEM
   remote: https://rubygems.org/
   specs:
     ast (2.4.2)
-    awrence (1.2.1)
     backport (1.2.0)
     benchmark (0.1.1)
     concurrent-ruby (1.1.9)
@@ -27,7 +24,6 @@ GEM
     parallel (1.21.0)
     parser (3.0.2.0)
       ast (~> 2.4.1)
-    plissken (1.4.1)
     racc (1.6.0)
     rainbow (3.0.0)
     rake (13.0.6)
