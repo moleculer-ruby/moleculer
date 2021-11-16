@@ -5,6 +5,17 @@ module Moleculer
     ##
     # Base transporter class
     class Base
+      include SemanticLogger::Loggable
+
+      attr_reader :connected
+
+      def initialize(config, serializer:)
+        @config     = config
+        @connected  = false
+        @serializer = serializer
+        @prefix     = "MOL-"
+      end
+
       def connect
         raise NotImplementedError
       end
@@ -13,7 +24,12 @@ module Moleculer
         raise NotImplementedError
       end
 
-      def subscribe
+      ##
+      # Subscribes to a moleculer topic
+      #
+      # @param cmd [String] the cmd to subscribe to
+      # @param node_id [String] the node id to subscribe to
+      def subscribe(cmd, node_id = nil)
         raise NotImplementedError
       end
 
@@ -27,6 +43,25 @@ module Moleculer
 
       def send
         raise NotImplementedError
+      end
+
+      private
+
+      attr_reader :config, :serializer, :prefix
+
+      def get_topic_name(cmd, node_id)
+        "#{prefix}#{cmd}#{node_topic(node_id)}"
+      end
+
+      def node_topic(node_id)
+        return ".#{node_id}" if node_id
+
+        ""
+      end
+
+      def receive(cmd, payload)
+        message = serializer.deserialize(payload)
+        Packets.from(cmd, message)
       end
     end
   end

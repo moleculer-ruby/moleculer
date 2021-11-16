@@ -2,9 +2,12 @@
 
 require "semantic_logger"
 
+require "concurrent"
+
 require "ext/hash"
 require "ext/string"
 
+require "moleculer/logger"
 require "moleculer/version"
 require "moleculer/packets"
 require "moleculer/node"
