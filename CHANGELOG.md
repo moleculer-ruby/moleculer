@@ -1,4 +1,7 @@
 ## Unreleased
+## Breaking Changes
+* Rebuild from scratch, better supporting protocol version 4.0 and MoleculerJS 0.14.0. Completely new configuration
+  and API
 
 ## 0.4.0
 ### Breaking Changes
