@@ -1,16 +1,7 @@
-require "bundler/setup"
+# frozen_string_literal: true
 require "moleculer"
-require "simplecov"
-require "timecop"
-
-# Turn off logging for specs
-ENV["MOLECULER_LOG_FILE"] = "/dev/null"
-load File.expand_path("../lib/moleculer/configuration.rb", __dir__)
-
 
 RSpec.configure do |config|
-  SimpleCov.start
-
   # Enable flags like --only-failures and --next-failure
   config.example_status_persistence_file_path = ".rspec_status"
 
@@ -21,4 +12,3 @@ RSpec.configure do |config|
     c.syntax = :expect
   end
 end
-

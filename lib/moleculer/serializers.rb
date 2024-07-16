@@ -1,10 +1,4 @@
-module Moleculer
-  module Serializers
+# frozen_string_literal: true
 
-    def self.for(serializer)
-      require_relative("serializers/#{serializer}")
-      Serializers.const_get(serializer.to_s.split("_").map(&:capitalize).join)
-    end
-
-  end
-end
+require_relative "serializers/base"
+require_relative "serializers/json"

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module Moleculer
-  VERSION = "0.5.0"
-  PROTOCOL_VERSION = "4.0"
+  module Types
+    include Dry::Types()
+  end
 end

@@ -1,23 +1,16 @@
-require "json"
+# frozen_string_literal: true
 
 module Moleculer
   module Serializers
     ##
-    # Serializes data packets to and from JSON
-    class Json
-      def initialize(config)
-        @logger = config.logger.get_child("[SERIALIZER]")
-        @config = config
+    # JSON serializer for Moleculer
+    class JSON < Base
+      def serialize(object:, type: nil)
+        ::JSON.dump(object)
       end
 
-      def serialize(message)
-        message.to_h.to_json
-      end
-
-      def deserialize(message)
-        JSON.parse(message)
-      rescue StandardError => e
-        @config.handle_error(e)
+      def deserialize(data:, type: nil)
+        ::JSON.parse(data)
       end
     end
   end

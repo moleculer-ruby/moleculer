@@ -1,47 +1,10 @@
-Layout/ExtraSpacing:
-  ForceEqualSignAlignment: true
-
-Layout/IndentFirstHashElement:
-  EnforcedStyle: consistent
-
-Layout/IndentationWidth:
-  IgnoredPatterns: []
-
-Layout/AlignHash:
-  EnforcedColonStyle: table
-  EnforcedHashRocketStyle: table
-
-Style/ModuleFunction:
-  Enabled: false
-
-Style/TrailingCommaInArguments:
-  EnforcedStyleForMultiline: comma
-
-Style/TrailingCommaInHashLiteral:
-  EnforcedStyleForMultiline: comma
-
-Style/TrailingCommaInArrayLiteral:
-  EnforcedStyleForMultiline: comma
+AllCops:
+  TargetRubyVersion: 3.3
+  NewCops: enable
 
 Style/FrozenStringLiteralComment:
-  Enabled: true
-
+  SafeAutoCorrect: true
 Style/StringLiterals:
-    EnforcedStyle: "double_quotes"
-
-Metrics/LineLength:
-  Max: 120
-  IgnoreCopDirectives: true
-
-Metrics/ModuleLength:
-  Enabled: false
-
-Metrics/MethodLength:
-  Enabled: false
-
-Metrics/BlockLength:
-  Enabled: false
-
-Metrics/ParameterLists:
-  Enabled: false
-
+  EnforcedStyle: double_quotes
+Style/StringLiteralsInInterpolation:
+  EnforcedStyle: double_quotes
